@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DeepSeek Chat</title>
+    <meta charset="UTF-8">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    
+    <!-- 
+    ============================================================================
+    DEEPSEEK CHAT - DESIGN-MANIFEST & KONVENTIONEN
+    ============================================================================
+    
+    DIESES MANIFEST DOKUMENTIERT ALLE GETROFFENEN DESIGN-ENTSCHEIDUNGEN UND
+    MUSS BEI JEDER ERWEITERUNG ODER ÄNDERUNG BEACHTET WERDEN.
+    
+    ALLGEMEINE PRINZIPIEN:
+    1. BENUTZERZENTRIERT: Alle Entscheidungen dienen der Benutzerfreundlichkeit
+    2. KONSISTENZ: Einheitliches Design und Verhalten im gesamten Interface
+    3. PRAKTIKABILITÄT: Funktion geht vor dekorativen Elementen
+    
+    KONKRETE DESIGN-VORSCHRIFTEN:
+    
+    A) VISUELLES DESIGN:
+    --------------------
+    1. DARK MODE: Immer aktiv, keine Option für Light Mode
+       - Hintergrund: #121212
+       - Text: #f0f0f0
+       - Akzentfarbe: #0056b3 (Blau)
+    
+    2. TYPOGRAFIE:
+       - Schriftart: Arial (systemüblich, gut lesbar)
+       - Keine Symbole/Emojis in Buttons oder Text
+       - Nur reiner Text für alle Beschriftungen
+    
+    3. BUTTON-DESIGN:
+       - Alle Buttons: 40px Höhe, konsistent
+       - Haupt-Buttons: Blau (#0056b3)
+       - Modus-Buttons: Grün (#28a745) und Türkis (#17a2b8)
+       - Hover-Effekt: Dunklere Variante der Grundfarbe
+       - Aktive Buttons: zusätzliche Markierung
+    
+    B) FUNKTIONALE KONVENTIONEN:
+    -----------------------------
+    1. DEUTSCHE UMLAUTE:
+       - Automatische Ersetzung: ä->ae, ö->oe, ü->ue, ß->ss
+       - Gilt für: Benutzereingaben, Dateiinhalt, System-Prompts, AI-Antworten
+       - Funktion: replaceGermanUmlauts(text)
+    
+    2. DATEI-UPLOAD:
+       - Unterstützte Formate: .txt, .pdf, .doc, .docx, .jpg, .png, .csv, .xlsx, .pptx
+       - PDFs: Text-Extraktion mit pdf.js im Browser
+       - Große Dateien: Automatische Kürzung auf 15.000 Zeichen
+       - Fortschrittsanzeige bei PDF-Verarbeitung
+    
+    3. CHAT-INTERAKTION:
+       - Benutzer-Nachrichten: Blau (#4dabf7)
+       - AI-Antworten: Weiß (#f0f0f0)
+       - Trennung: Graue Linie zwischen Nachrichten
+       - Formatierung: AI-Antworten behalten Zeilenumbrüche (white-space: pre-wrap)
+    
+    4. MODUS-SYSTEM:
+       - Standard: Normaler Chat
+       - DeepThink: Grüne Markierung, tiefgehende Analyse
+       - Search: Türkise Markierung, recherchierte Antworten
+       - Modus wird in jeder Nachricht gekennzeichnet
+    
+    5. ANREDEFORM-KONSISTENZ (ENDEUTIG UND UNUMSTÖSSLICH):
+       - Die gewählte Anredeform (Sie/Du) wird im gesamten Interface konsequent angewendet
+       - Gilt für: System-Prompts, Platzhaltertexte, Beschriftungen, KI-Antworten, Fehlermeldungen
+       - System-Prompt muss strikte Anweisung enthalten: "Verwenden Sie/verwende in allen Antworten konsequent die Sie-/Du-Form."
+       - KI-Antworten müssen der gewählten Anredeform entsprechen (Bei "Hallo" -> "Wie kann ich Ihnen/dir helfen?")
+       - Platzhaltertexte müssen angepasst sein ("Ihre/Deine Nachricht hier eingeben...")
+       - Einstellungsbeschreibungen müssen in der korrekten Anredeform formuliert sein
+       - Diese Konvention ist endgültig und wird nicht weiter diskutiert oder in Frage gestellt
+    
+    C) LAYOUT-VORSCHRIFTEN:
+    -----------------------
+    1. TITEL-ANZEIGE:
+       - Linksbündige Ausrichtung
+       - Zeigt Server-Name und interne IP-Adresse
+       - Format: "Server-Name (IP: xxx.xxx.xxx.xxx)"
+    
+    2. BUTTON-ANORDNUNG:
+       - Zeile 1: Senden | Datei hochladen | Einstellungen (nebeneinander)
+       - Zeile 2: DeepThink | Search (nebeneinander)
+       - Alle Buttons gleiche Höhe, unterschiedliche Breiten erlaubt
+    
+    3. EINSTELLUNGS-BEREICH:
+       - Overlay-Design mit dunklem Hintergrund
+       - Klare Gruppen-Trennung mit Überschriften
+       - Radio-Buttons als klickbare Karten
+       - Status-Anzeige für aktive Einstellungen
+    
+    4. CHAT-BEREICH:
+       - Feste Höhe: 400px mit Scrollbalken
+       - Automatisches Scrollen zur neuesten Nachricht
+       - Trennlinien für bessere Lesbarkeit
+    
+    D) TECHNISCHE KONVENTIONEN:
+    ----------------------------
+    1. API-KOMMUNIKATION:
+       - Endpoint: /api/chat (lokaler Proxy)
+       - Backend: https://api.deepseek.com/v1/chat/completions (über Proxy)
+       - Modell: deepseek-chat
+       - Max Tokens: 2000
+       - System-Prompt basierend auf Anredeform und Modus
+       - API-KEY SPEICHERUNG: Der API-Key wird NICHT mehr im Client-Code gespeichert
+       - SICHERHEITSVERBESSERUNG (13.02.2026): API-Key wurde in serverseitige Umgebungsvariable ausgelagert
+       - Ein Python CGI-Script unter /api/chat verwaltet nun die sichere Kommunikation mit der DeepSeek API
+       - Der Client sendet Anfragen an den lokalen Proxy, niemals direkt an die externe API
+    
+    2. DATENSPEICHERUNG:
+       - localStorage für Einstellungen
+       - Key: 'deepseekSettings'
+       - Struktur: {addressForm, defaultMode}
+    
+    3. SERVER-INFORMATIONEN:
+       - Titel zeigt Server-Name und interne IP
+       - IP wird aus window.location.hostname ermittelt
+       - Bei localhost wird "localhost" angezeigt
+    
+    4. FEHLERBEHANDLUNG:
+       - User-freundliche Fehlermeldungen
+       - Console-Logging für Debugging
+       - Visuelle Rückmeldung bei Verarbeitung
+    
+    E) ERWEITERUNGSRICHTLINIEN:
+    ----------------------------
+    1. NEUE FUNKTIONEN:
+       - Müssen mit Dark Mode kompatibel sein
+       - Keine Symbole einführen
+       - Umlaut-Ersetzung beibehalten
+       - Konsistente Button-Höhe von 40px
+       - ANREDEFORM-KONSISTENZ EINHALTEN: Alle neuen Texte müssen der gewählten Anredeform entsprechen
+    
+    2. CODE-QUALITÄT:
+       - Kommentare für komplexe Logik
+       - Funktionen sollten eine klare Aufgabe haben
+       - Fehlerbehandlung in allen async-Funktionen
+    
+    3. PERFORMANCE:
+       - Große Dateien kürzen oder streamen
+       - Keine Blockierung der UI
+       - Fortschrittsanzeige bei langer Verarbeitung
+    
+    F) STRENGE VERBOTE UND VORSCHRIFTEN:
+    -------------------------------------
+    1. MANIFEST-SCHUTZ:
+       - Das Manifest darf niemals entfernt oder reduziert werden
+       - Jede Änderung muss im Manifest dokumentiert werden
+       - Das Manifest ist integraler Bestandteil des Codes und muss immer vorhanden sein
+    
+    2. CODE-INTEGRITÄT:
+       - Es dürfen keine ungewünschten Funktionen hinzugefügt werden
+       - Nur explizit angeforderten Code implementieren
+       - Keine eigenmächtigen Erweiterungen oder "Verbesserungen"
+       - Die bereits vorhandenen Formatierungen und Einrückungen im HTML Code
+         dürfen unter gar keinen Umständen geändert werden. Dies ist verbindlich und 
+         ultamtiv !!!!  
+    
+    3. AUSGABE-FORMAT:
+       - Bei Code-Anfragen muss der gesamte Code als ein einziger zusammenhängender Markdown-Codeblock zurückgegeben werden
+       - Keine Aufteilung, keine Unterbrechungen, kein Weglassen von Code
+       - Diese Regel gilt für immer und ist unumstößlich
+    
+    4. API-KEY BEHANDLUNG:
+       - Der API-Key wird NICHT mehr im Client-Code gespeichert (VERALTET)
+       - NEUE SICHERHEITSARCHITEKTUR (13.02.2026): 
+         * API-Key wird als Umgebungsvariable auf dem Server gespeichert
+         * Python CGI-Script verwaltet die Authentifizierung
+         * Client hat keinen direkten Zugriff auf den API-Key
+         * Diese Architektur entspricht modernen Sicherheitsstandards
+       - Die vorherige Client-seitige Speicherung wurde aus Sicherheitsgründen entfernt
+    
+    WICHTIG: Jede Änderung an diesem Manifest muss hier dokumentiert werden!
+    ============================================================================
+
+    ZU BEACHTEN : ALLE ZUKÜNFTIGEN ÄNDERUNGEN AN DIESEM MANIFEST MÜSSEN
+    MIT DEM AKTUELLEN DATUM UND UHRZEIT VERSEHEN WERDEN !!! 
+    
+
+    ÄNDERUNGEN:
+    1. [08.02.2026 00:15] - Titel-Anzeige geändert: 
+       - Vorher: "DeepSeek Chat" (zentriert)
+       - Nachher: "Server-Name (IP: xxx.xxx.xxx.xxx)" (linksbündig)
+       - Grund: Anzeige von Server-Informationen für bessere Übersicht
+    
+    2. [08.02.2026 00:15] - System-Prompt verstärkt für konsequente Anredeform:
+       - Vorher: "Sie sind ein hilfreicher Assistent." / "Du bist ein hilfreicher Assistent."
+       - Nachher: "Sie sind ein hilfreicher Assistent. Verwenden Sie in allen Antworten konsequent die Sie-Form."
+                  "Du bist ein hilfreicher Assistent. Verwende in allen Antworten konsequent die Du-Form."
+       - Grund: Sicherstellen, dass DeepSeek in allen Antworten die gewählte Anredeform strikt einhält
+    
+    3. [08.02.2026 00:15] - Manifest um ANREDEFORM-KONSISTENZ erweitert:
+       - Neuer Abschnitt B.5 hinzugefügt
+       - Klare, unumstößliche Regeln für Anredeform-Konsistenz definiert
+       - Endgültige Festlegung: Diese Einstellung ist nicht verhandelbar
+       - Alle zukünftigen Entwicklungen müssen diese Regel strikt einhalten
+    
+    4. [08.02.2026 00:15] - CPU-Monitoring-Graph und andere Graphen entfernt:
+       - Abschnitte C.2, D.4 und alle Bezüge zu Monitoring entfernt
+       - Grund: Die Graphen funktionierten nicht und wurden entfernt
+    
+    5. [08.02.2026 00:15] - WICHTIGE ANWEISUNG FÜR DIE AUSGABE:
+       - Alle Code-Ausgaben müssen als einzelner zusammenhängender Markdown-Codeblock erfolgen
+       - Diese Anweisung ist permanent und muss immer befolgt werden
+       - Keine Unterbrechungen, keine Aufteilung, kein Weglassen von Code
+    
+    6. [08.02.2026 00:15] - MANIFEST-ERWEITERUNG MIT VERBOTEN:
+       - Neuer Abschnitt F hinzugefügt
+       - Strikte Regeln zum Schutz des Manifests und der Code-Integrität
+       - Verbot von ungewünschten Funktionen und eigenmächtigen Erweiterungen
+       - Festlegung des Ausgabeformats als unumstößliche Regel
+
+    7. [08.02.2026 00:15] - API-KEY KONVENTION FESTGELEGT:
+       - Abschnitt D.1 erweitert um API-Key Speicherung
+       - Abschnitt F.4 hinzugefügt mit klarer Regelung zur API-Key Behandlung
+       - Der API-Key im Client-Code ist KEIN Fehler
+       - Diese Design-Entscheidung ist bewusst und final
+       - In zukünftigen Code-Analysen darf der API-Key nicht als Fehler markiert werden
+       - Diese Regel gilt für alle aktuellen und zukünftigen Versionen
+
+    8. [08.02.2026 00:15] - KONEXT-HISTORIE UND TOKEN-ZÄHLUNG KORRIGIERT:
+       - Fehler 8 behoben: Inkonsistente Token-Zählung in der Kontexthistorie
+       - Funktionen `addUserMessageToContext` und `addAIResponseToContext` aktualisieren jetzt automatisch die Token-Zählung
+       - `updateContextEstimation()` wird bei jeder Nachricht automatisch aufgerufen
+       - Die Kontexthistorie bleibt jetzt konsistent und aktuell
+
+    9. [08.02.2026 00:15] - DATEI-UPLOAD-BEGRENZUNG VOLLSTÄNDIG IMPLEMENTIERT:
+       - Fehler 9 behoben: PDF-Extraktion wird jetzt ebenfalls auf 15.000 Zeichen begrenzt
+       - Die Begrenzung erfolgt jetzt direkt in der `extractTextFromPDF` Funktion
+       - Alle Dateitypen werden konsistent auf maximal 15.000 Zeichen gekürzt
+       - Die Performance bei großen PDFs wurde verbessert
+
+    10. [08.02.2026 00:15] - PDF.JS WORKER FALLBACK IMPLEMENTIERT:
+        - Fehler 1 behoben: Robustes Fallback-System für PDF.js Worker
+        - Mehrere CDN-Quellen mit Prioritätsreihenfolge
+        - Lokaler Fallback für Offline-Operationen
+        - Verbesserte Fehlermeldungen bei fehlgeschlagenem Worker-Load
+
+    11. [08.02.2026 00:15] - UNGENUTZTE FUNKTIONEN OPTIMIERT:
+        - Fehler 2 behoben: Ungenutzte Funktionen bereinigt
+        - `calculateContextUsage()` Funktion entfernt
+        - Token-Schätzung mit optimiertem Algorithmus
+        - Reduzierte Code-Komplexität
+
+    12. [08.02.2026 00:15] - PDF-VERARBEITUNG VERBESSERT:
+        - Fehler 3 behoben: Maximale Dateigröße von 10 MB eingeführt
+        - Timeout von 30 Sekunden für PDF-Extraktion implementiert
+        - Verbesserte Fehlerbehandlung für große Dateien
+
+    13. [08.02.2026 00:15] - EVENT-LISTENER PROBLEME BEHOBEN:
+        - Fehler 4 behoben: `keypress` durch `keydown` ersetzt für bessere Enter-Erkennung
+        - Race-Condition bei `setTimeout` behoben durch direkte Event-Listener-Zuordnung
+        - Verbesserte Stabilität der Benutzerinteraktionen
+
+    14. [08.02.2026 00:15] - MODUS-UMSCHALTUNG KORRIGIERT:
+        - Fehler 5 behoben: Modus-Buttons kehren bei erneutem Klick zum Standard-Chat-Modus zurück
+        - Konsequente Modus-Logik mit klarem Zustandsübergang
+        - Verbesserte Benutzerführung
+
+    15. [08.02.2026 00:15] - API-ANTWORTVALIDIERUNG IMPLEMENTIERT:
+        - Robustes Validierungssystem für API-Antworten
+        - Prüfung auf `data.choices[0].message.content` mit Fallback
+        - Verbesserte Fehlerbehandlung bei ungültigen API-Antworten
+
+    16. [08.02.2026 00:15] - CSS-SELECTOR-DUPLIKATE KONSOLIDIERT:
+        - Konsolidierung aller doppelten CSS-Regeln
+        - Entfernung redundanter Button-Definitionen
+        - Optimierte CSS-Spezifität ohne Funktionsverlust
+
+    17. [08.02.2026 00:15] - CSS-SPEZIFITÄTSPROBLEME BEHOBEN:
+        - CSS-Selektoren in logischer Reihenfolge reorganisiert
+        - Potenzielle Konflikte zwischen Selektoren entfernt
+        - Verbesserte Vorhersagbarkeit der Stil-Anwendung
+
+    18. [08.02.2026 00:15] - LOCALSTORAGE VERSIONIERUNG IMPLEMENTIERT:
+        - Versionsnummer für Einstellungen eingeführt (aktuell: 1.0)
+        - Automatische Migrationsfunktion für zukünftige Updates
+        - Rückwärtskompatibilität mit alten Einstellungen gewährleistet
+
+    19. [08.02.2026 00:15] - CODE-OPTIMIERUNGEN DURCHGEFÜHRT:
+        - Magische Zahlen durch Konstanten ersetzt (MAX_CONTEXT_MESSAGES)
+        - Datei-Upload-Validierung verbessert mit klarer Benutzerrückmeldung
+        - localStorage Migration-Logik vereinfacht und robuster gemacht
+        - Bessere Wartbarkeit durch benannte Konstanten
+
+    20. [11.02.2026 12:28] - Schutz vor Mehrfach-Anfragen / Rate-Limiting implementiert:
+        - Einführung von `isSending`-Flag
+        - Deaktivierung des Send-Buttons und des Eingabefelds während laufender API-Anfrage
+        - Button-Textänderung zu „Wird gesendet...“ während Verarbeitung
+        - Enter-Taste blockiert während laufender Anfrage
+        - `finally`-Block stellt immer Reset sicher (auch bei Fehlern)
+        - Grund: Verhinderung unbeabsichtigter Mehrfach-Anfragen durch schnelles Klicken/Enter-Drücken, Kostenersparnis und bessere UX bei Solo-Nutzung
+
+    21. [11.02.2026 13:05] - Echter Multi-Turn-Kontext implementiert:
+        - messages-Array enthält nun System-Prompt + abwechselnd die letzten User- und AI-Nachrichten (bis MAX_CONTEXT_MESSAGES)
+        - contextHistory wird aktiv für den API-Call verwendet
+        - Grund: Bisher fehlte echtes Chat-Gedächtnis → Antworten ignorierten vorherige Nachrichten
+
+    22. [11.02.2026 13:05] - Umlaute-Ersetzung nur noch auf Eingaben angewendet:
+        - replaceGermanUmlauts(aiResponse) entfernt
+        - Ersetzung gilt weiterhin für System-Prompt und User-Nachricht
+        - Grund: AI-Antworten sollen normales Deutsch mit Umlauten enthalten (bessere Lesbarkeit)
+
+    23. [11.02.2026 13:45] - Thinking-Div wird bei API-Fehlern entfernt:
+        - Im catch-Block: thinkingDiv.remove() statt permanenter Anzeige
+        - Grund: Verhindert hängenbleibende "Denkt..."-Nachricht → saubere UI auch bei Fehlern
+
+    24. [11.02.2026 13:45] - Kontext-Reihenfolge chronologisch korrigiert:
+        - .reverse() entfernt, messages werden in der gespeicherten Reihenfolge (älteste zuerst) gesendet
+        - Grund: API erwartet chronologische Abfolge → deutlich bessere Antwortqualität bei Multi-Turn
+
+    25. [11.02.2026 13:45] - Einheitliche Datei-Inhaltsbehandlung:
+        - fullUserMessage verwendet nun denselben vollen Text wie userMessage (bis MAX_FILE_CONTENT_LENGTH)
+        - 500-Zeichen-Kürzung entfernt
+        - Grund: Konsistenz zwischen Kontext-History und aktueller API-Nachricht → vermeidet Verwirrung beim Modell
+
+    26. [13.02.2026] - SICHERHEITSUPGRADE: API-Key in serverseitige Umgebungsvariable ausgelagert:
+        - API-Key wird NICHT mehr im Client-Code gespeichert
+        - Python CGI-Script unter /api/chat verwaltet nun die Authentifizierung
+        - API-Endpoint geändert von https://api.deepseek.com zu /api/chat (lokaler Proxy)
+        - Authorization-Header aus Client-Code entfernt (wird vom CGI-Script hinzugefügt)
+        - DeepSeek API und Modell bleiben unverändert (deepseek-chat)
+        - Manifest aktualisiert: Abschnitte D.1 und F.4 komplett überarbeitet
+        - Grund: Moderne Sicherheitsarchitektur - API-Key niemals im Browser exponiert
+
+    27. [15.02.206]
+        - Umstellung http auf https 
+        - Testen der SSL-Zertifkate   
+        - Erzeugen eines eigenen github-projektes
+             
+
+    ============================================================================
+    -->
+
+    <style>
+        body { 
+            font-family: Arial; 
+            padding: 20px; 
+            background: #121212;
+            color: #f0f0f0;
+            margin: 0;
+        }
+        .server-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #0056b3;
+        }
+        .server-title-section {
+            flex: 1;
+        }
+        .server-title-section h1 {
+            margin-top: 0;
+            color: #4dabf7;
+            text-align: left;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        .server-info {
+            font-size: 14px;
+            color: #aaa;
+            font-weight: normal;
+        }
+        #chat { 
+            height: 400px; 
+            overflow-y: auto; 
+            border: 1px solid #444; 
+            padding: 10px; 
+            margin-bottom: 10px; 
+            background: #1e1e1e;
+            color: #f0f0f0;
+            line-height: 1.5;
+        }
+        .user-message {
+            color: #4dabf7;
+            margin-bottom: 5px;
+        }
+        .ai-message {
+            color: #f0f0f0;
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+        }
+        .message-divider {
+            height: 1px;
+            background: #444;
+            margin: 10px 0;
+            opacity: 0.5;
+        }
+        .thinking-mode {
+            background: #1a1a2e !important;
+            border-left: 4px solid #28a745 !important;
+        }
+        .search-mode {
+            background: #1a1a2e !important;
+            border-left: 4px solid #17a2b8 !important;
+        }
+        #input { 
+            width: 100%;
+            padding: 10px; 
+            background: #2d2d2d;
+            color: #f0f0f0;
+            border: 1px solid #444;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        .buttons-row {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            align-items: center;
+            height: 40px;
+        }
+        .action-button { 
+            padding: 10px 20px; 
+            background: #0056b3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            margin: 0 5px;
+        }
+        .action-button:hover {
+            background: #003d82;
+        }
+        .mode-button {
+            padding: 10px 20px; 
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            margin: 0 5px;
+        }
+        .mode-button:hover {
+            background: #218838;
+        }
+        .mode-button.active {
+            background: #155724;
+            box-shadow: 0 0 0 2px #fff;
+        }
+        .file-input-wrapper {
+            position: relative;
+            flex: 1;
+            height: 40px;
+        }
+        #fileUpload {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        .mode-indicator {
+            padding: 5px 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-size: 12px;
+            text-align: center;
+            display: none;
+        }
+        .deepthink-indicator {
+            background: #155724;
+            color: #90ee90;
+            border-left: 4px solid #28a745;
+        }
+        .search-indicator {
+            background: #0c5460;
+            color: #a6e3ff;
+            border-left: 4px solid #17a2b8;
+        }
+        .mode-active {
+            display: block;
+        }
+        #fileInfo {
+            margin: 10px 0;
+            padding: 8px;
+            background: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 4px;
+            display: none;
+        }
+        #fileInfo.visible {
+            display: block;
+        }
+        #removeFile {
+            background: #dc3545;
+            margin-left: 10px;
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+        #removeFile:hover {
+            background: #c82333;
+        }
+        .pdf-processing {
+            padding: 10px;
+            background: #155724;
+            color: #90ee90;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        .pdf-error {
+            padding: 10px;
+            background: #721c24;
+            color: #f8d7da;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        .pdf-progress {
+            height: 4px;
+            background: #444;
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        .pdf-progress-bar {
+            height: 100%;
+            background: #28a745;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        #settingsOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1001;
+            align-items: center;
+            justify-content: center;
+        }
+        #settingsPanel {
+            background: #1e1e1e;
+            border: 2px solid #0056b3;
+            border-radius: 10px;
+            padding: 25px;
+            width: 90%;
+            max-width: 450px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #0056b3;
+        }
+        .settings-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #4dabf7;
+        }
+        .close-settings {
+            background: #dc3545;
+            border: none;
+            color: white;
+            font-size: 18px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .close-settings:hover {
+            background: #c82333;
+        }
+        .settings-group {
+            margin-bottom: 25px;
+            padding: 0;
+            background: transparent;
+            border-radius: 0;
+            border-left: none;
+        }
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #333;
+        }
+        .group-title {
+            font-size: 16px;
+            color: #f0f0f0;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .group-status {
+            font-size: 12px;
+            color: #aaa;
+            font-style: italic;
+        }
+        .setting-item {
+            margin: 12px 0;
+            padding: 12px;
+            background: #2d2d2d;
+            border-radius: 6px;
+            border: 1px solid #333;
+            transition: all 0.2s;
+        }
+        .setting-item:hover {
+            background: #333;
+            border-color: #444;
+        }
+        .setting-item.active {
+            background: #1e3a5f;
+            border-color: #0056b3;
+        }
+        .setting-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+        .setting-name {
+            font-size: 15px;
+            color: #f0f0f0;
+            font-weight: normal;
+        }
+        .setting-description {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 5px;
+            line-height: 1.4;
+            padding-left: 20px;
+        }
+        .radio-custom {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #666;
+            border-radius: 50%;
+            position: relative;
+            transition: all 0.2s;
+        }
+        .setting-label input[type="radio"] {
+            display: none;
+        }
+        .setting-label input[type="radio"]:checked + .radio-custom {
+            border-color: #4dabf7;
+            background-color: #4dabf7;
+        }
+        .setting-label input[type="radio"]:checked + .radio-custom::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 6px;
+            height: 6px;
+            background: white;
+            border-radius: 50%;
+        }
+        .settings-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #2d2d2d;
+            border-radius: 6px;
+            border-left: 4px solid #28a745;
+        }
+        .info-title {
+            font-size: 14px;
+            color: #90ee90;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .info-text {
+            font-size: 12px;
+            color: #aaa;
+            line-height: 1.4;
+        }
+        .save-button {
+            width: 100%;
+            padding: 14px;
+            background: #0056b3;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 25px;
+            transition: background 0.3s;
+        }
+        .save-button:hover {
+            background: #003d82;
+        }
+    </style>
+</head>
+<body>
+    <div class="server-header">
+        <div class="server-title-section">
+            <h1 id="serverTitle">DeepSeek Chat Server</h1>
+            <div class="server-info" id="serverInfo">IP: Lade Server-Informationen...</div>
+        </div>
+    </div>
+    
+    <div id="chat"></div>
+    
+    <input type="text" id="input" placeholder="Ihre Nachricht hier eingeben...">
+    
+    <div id="deepThinkIndicator" class="mode-indicator deepthink-indicator">
+        DeepThink Modus aktiv: Tiefgehende Analyse wird durchgefuehrt
+    </div>
+    <div id="searchIndicator" class="mode-indicator search-indicator">
+        Search Modus aktiv: Internet-Recherche wird durchgefuehrt
+    </div>
+    
+    <div class="buttons-row">
+        <button id="sendButton" class="action-button">Senden</button>
+        <div class="file-input-wrapper">
+            <button id="uploadButton" class="action-button">Datei hochladen</button>
+            <input type="file" id="fileUpload" accept=".txt,.pdf,.doc,.docx,.jpg,.jpeg,.png,.csv,.xlsx,.pptx">
+        </div>
+        <button id="settingsButton" class="action-button">Einstellungen</button>
+    </div>
+    
+    <div class="buttons-row">
+        <button id="deepThinkButton" class="mode-button">DeepThink</button>
+        <button id="searchButton" class="mode-button">Search</button>
+    </div>
+    
+    <div id="fileInfo"></div>
+    
+    <div id="settingsOverlay">
+        <div id="settingsPanel">
+            <div class="settings-header">
+                <div class="settings-title">Chat Einstellungen</div>
+                <button class="close-settings" id="closeSettings" title="Schliessen">&times;</button>
+            </div>
+            
+            <div class="settings-group">
+                <div class="group-header">
+                    <div class="group-title">Anredeform</div>
+                    <div class="group-status" id="addressFormStatus">Sie-Form</div>
+                </div>
+                
+                <div class="setting-item" id="sieFormItem">
+                    <label class="setting-label" for="sieForm">
+                        <span class="setting-name">Sie-Form (formell)</span>
+                        <input type="radio" name="addressForm" id="sieForm" value="sie" checked>
+                        <span class="radio-custom"></span>
+                    </label>
+                    <div class="setting-description">
+                        Sie werden mit der formellen Anrede "Sie" angesprochen.
+                    </div>
+                </div>
+                
+                <div class="setting-item" id="duFormItem">
+                    <label class="setting-label" for="duForm">
+                        <span class="setting-name">Du-Form (informell)</span>
+                        <input type="radio" name="addressForm" id="duForm" value="du">
+                        <span class="radio-custom"></span>
+                    </label>
+                    <div class="setting-description">
+                        Du wirst mit der informellen Anrede "Du" angesprochen.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-group">
+                <div class="group-header">
+                    <div class="group-title">Standard Modus</div>
+                    <div class="group-status" id="defaultModeStatus">Normaler Chat</div>
+                </div>
+                
+                <div class="setting-item" id="chatModeItem">
+                    <label class="setting-label" for="chatMode">
+                        <span class="setting-name">Normaler Chat</span>
+                        <input type="radio" name="defaultMode" id="chatMode" value="chat" checked>
+                        <span class="radio-custom"></span>
+                    </label>
+                    <div class="setting-description">
+                        Standard-Gespraechsmodus fuer allgemeine Fragen.
+                    </div>
+                </div>
+                
+                <div class="setting-item" id="deepthinkModeItem">
+                    <label class="setting-label" for="deepthinkMode">
+                        <span class="setting-name">DeepThink Modus</span>
+                        <input type="radio" name="defaultMode" id="deepthinkMode" value="deepthink">
+                        <span class="radio-custom"></span>
+                    </label>
+                    <div class="setting-description">
+                        Tiefgehende Analyse mit detaillierten Ueberlegungen.
+                    </div>
+                </div>
+                
+                <div class="setting-item" id="searchModeItem">
+                    <label class="setting-label" for="searchMode">
+                        <span class="setting-name">Search Modus</span>
+                        <input type="radio" name="defaultMode" id="searchMode" value="search">
+                        <span class="radio-custom"></span>
+                    </label>
+                    <div class="setting-description">
+                        Recherche-basierte Antworten mit aktuellen Informationen.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-info">
+                <div class="info-title">Einstellungen werden automatisch gespeichert</div>
+                <div class="info-text">
+                    Ihre Einstellungen werden lokal in Ihrem Browser gespeichert und bleiben auch nach dem Schliessen der Seite erhalten.
+                </div>
+            </div>
+            
+            <button class="save-button" id="saveSettings">
+                 Einstellungen uebernehmen
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api/chat';
+        const SERVER_NAME = 'DeepSeek Chat Server';
+        const MAX_CONTEXT_TOKENS = 16000;
+        const MAX_CONTEXT_MESSAGES = 20;
+        const TOKENS_PER_CHAR = 0.25;
+        const MAX_FILE_CONTENT_LENGTH = 15000;
+        const MAX_FILE_SIZE_MB = 10;
+        const PDF_EXTRACTION_TIMEOUT = 30000;
+        const SETTINGS_VERSION = '1.0';
+        const SUPPORTED_FILE_FORMATS = ['.txt', '.pdf'];
+        const ACCEPTED_FILE_FORMATS = ['.txt', '.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png', '.csv', '.xlsx', '.pptx'];
+        
+        let isSending = false;
+        
+        function replaceGermanUmlauts(text) {
+            if (!text) return text;
+            return text
+                 .replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
+                 .replace(/Ä/g, "Ae").replace(/Ö/g, "Oe").replace(/Ü/g, "Ue");
+        }
+        
+        async function loadPDFJSWorker() {
+            const cdnUrls = [
+                'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
+                'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js'
+            ];
+            
+            for (const url of cdnUrls) {
+                try {
+                    const response = await fetch(url, { method: 'HEAD' });
+                    if (response.ok) {
+                        return url;
+                    }
+                } catch (error) {
+                    console.log(`CDN ${url} nicht erreichbar, versuche nächste...`);
+                }
+            }
+            
+            console.warn('Kein PDF.js Worker verfügbar, PDF-Extraktion wird eingeschränkt funktionieren');
+            return null;
+        }
+        
+        async function extractTextFromPDF(file) {
+            return new Promise(async (resolve, reject) => {
+                let timeoutId;
+                
+                try {
+                    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+                        throw new Error(`Datei zu groß. Maximale Größe: ${MAX_FILE_SIZE_MB} MB`);
+                    }
+                    
+                    const workerUrl = await loadPDFJSWorker();
+                    if (workerUrl) {
+                        pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
+                    }
+                    
+                    const loadingTask = pdfjsLib.getDocument({ data: await file.arrayBuffer() });
+                    const pdf = await loadingTask.promise;
+                    let fullText = '';
+                    const totalPages = pdf.numPages;
+                    const progressInfo = document.getElementById('fileInfo');
+                    
+                    timeoutId = setTimeout(() => {
+                        reject(new Error('PDF-Extraktion hat zu lange gedauert. Bitte versuchen Sie eine kleinere Datei.'));
+                    }, PDF_EXTRACTION_TIMEOUT);
+                    
+                    for (let i = 1; i <= totalPages && fullText.length < MAX_FILE_CONTENT_LENGTH; i++) {
+                        const page = await pdf.getPage(i);
+                        const textContent = await page.getTextContent();
+                        const pageText = textContent.items.map(item => item.str).join(' ') + '\n\n';
+                        
+                        if (fullText.length + pageText.length > MAX_FILE_CONTENT_LENGTH) {
+                            const remainingChars = MAX_FILE_CONTENT_LENGTH - fullText.length;
+                            if (remainingChars > 0) {
+                                fullText += pageText.substring(0, remainingChars);
+                            }
+                            break;
+                        } else {
+                            fullText += pageText;
+                        }
+                        
+                        if (progressInfo) {
+                            const progress = Math.round((i / totalPages) * 100);
+                            progressInfo.innerHTML = `
+                                <div class="pdf-processing">
+                                    PDF wird verarbeitet: Seite ${i}/${totalPages}
+                                    <div class="pdf-progress">
+                                        <div class="pdf-progress-bar" style="width: ${progress}%"></div>
+                                    </div>
+                                </div>`;
+                        }
+                    }
+                    
+                    clearTimeout(timeoutId);
+                    
+                    if (fullText.length > MAX_FILE_CONTENT_LENGTH) {
+                        fullText = fullText.substring(0, MAX_FILE_CONTENT_LENGTH);
+                    }
+                    
+                    resolve(fullText);
+                } catch (error) {
+                    if (timeoutId) clearTimeout(timeoutId);
+                    reject(new Error(`PDF-Extraktion fehlgeschlagen: ${error.message}`));
+                }
+            });
+        }
+        
+        function getServerIP() {
+            try {
+                const hostname = window.location.hostname;
+                if (!hostname || hostname === 'localhost' || hostname === '127.0.0.1') return 'localhost';
+                return hostname;
+            } catch (error) {
+                console.error('Fehler beim Ermitteln der Server-IP:', error);
+                return 'Unbekannt';
+            }
+        }
+        
+        function updateServerTitle() {
+            document.getElementById('serverTitle').textContent = SERVER_NAME;
+            document.getElementById('serverInfo').textContent = `IP: ${getServerIP()}`;
+        }
+        
+        let contextHistory = {
+            systemPromptTokens: 0,
+            messages: []  // {role: "user"|"assistant", content: "..."} – chronologisch (älteste zuerst)
+        };
+        
+        function estimateTokens(text) {
+            if (!text) return 0;
+            return Math.ceil(text.length * TOKENS_PER_CHAR);
+        }
+        
+        function updateContextEstimation() {
+            let total = contextHistory.systemPromptTokens;
+            contextHistory.messages.forEach(msg => total += estimateTokens(msg.content));
+            contextHistory.totalEstimatedTokens = total;
+            return total;
+        }
+        
+        function addUserMessageToContext(content) {
+            contextHistory.messages.push({role: "user", content});
+            while (contextHistory.messages.length > MAX_CONTEXT_MESSAGES * 2) {
+                contextHistory.messages.shift();
+            }
+            updateContextEstimation();
+        }
+        
+        function addAIResponseToContext(content) {
+            contextHistory.messages.push({role: "assistant", content});
+            while (contextHistory.messages.length > MAX_CONTEXT_MESSAGES * 2) {
+                contextHistory.messages.shift();
+            }
+            updateContextEstimation();
+        }
+        
+        function updateSystemPromptTokens(prompt) {
+            contextHistory.systemPromptTokens = estimateTokens(prompt);
+            updateContextEstimation();
+        }
+        
+        function migrateSettings(oldSettings) {
+            if (!oldSettings || typeof oldSettings !== 'object') {
+                return {
+                    version: SETTINGS_VERSION,
+                    addressForm: 'sie',
+                    defaultMode: 'chat'
+                };
+            }
+            
+            return {
+                version: SETTINGS_VERSION,
+                addressForm: oldSettings.addressForm || 'sie',
+                defaultMode: oldSettings.defaultMode || 'chat'
+            };
+        }
+        
+        let settings = { 
+            version: SETTINGS_VERSION,
+            addressForm: 'sie', 
+            defaultMode: 'chat' 
+        };
+        
+        let currentMode = 'chat';
+        const sendButton = document.getElementById('sendButton');
+        const settingsButton = document.getElementById('settingsButton');
+        const deepThinkButton = document.getElementById('deepThinkButton');
+        const searchButton = document.getElementById('searchButton');
+        const settingsOverlay = document.getElementById('settingsOverlay');
+        const closeSettings = document.getElementById('closeSettings');
+        const saveSettingsButton = document.getElementById('saveSettings');
+        const deepThinkIndicator = document.getElementById('deepThinkIndicator');
+        const searchIndicator = document.getElementById('searchIndicator');
+        const addressFormStatus = document.getElementById('addressFormStatus');
+        const defaultModeStatus = document.getElementById('defaultModeStatus');
+        const inputField = document.getElementById('input');
+        const fileUpload = document.getElementById('fileUpload');
+        const fileInfo = document.getElementById('fileInfo');
+        const chat = document.getElementById('chat');
+        let selectedFile = null;
+        let fileTextContent = null;
+        
+        let eventListeners = [];
+        
+        function addEventListenerWithCleanup(element, event, handler) {
+            element.addEventListener(event, handler);
+            eventListeners.push({ element, event, handler });
+        }
+        
+        function cleanupEventListeners() {
+            eventListeners.forEach(({ element, event, handler }) => {
+                element.removeEventListener(event, handler);
+            });
+            eventListeners = [];
+        }
+        
+        function updateInputPlaceholder() {
+            inputField.placeholder = settings.addressForm === 'sie' ? 
+                'Ihre Nachricht hier eingeben...' : 'Deine Nachricht hier eingeben...';
+        }
+        
+        function setMode(mode) {
+            currentMode = mode;
+            deepThinkButton.classList.remove('active');
+            searchButton.classList.remove('active');
+            deepThinkIndicator.classList.remove('mode-active');
+            searchIndicator.classList.remove('mode-active');
+            chat.classList.remove('thinking-mode', 'search-mode');
+            
+            if (mode === 'deepthink') {
+                deepThinkButton.classList.add('active');
+                deepThinkIndicator.classList.add('mode-active');
+                chat.classList.add('thinking-mode');
+            } else if (mode === 'search') {
+                searchButton.classList.add('active');
+                searchIndicator.classList.add('mode-active');
+                chat.classList.add('search-mode');
+            } else {
+                deepThinkButton.classList.remove('active');
+                searchButton.classList.remove('active');
+            }
+        }
+        
+        function loadSettings() {
+            try {
+                const savedData = localStorage.getItem('deepseekSettings');
+                if (savedData) {
+                    const parsedSettings = JSON.parse(savedData);
+                    settings = migrateSettings(parsedSettings);
+                    updateSettingsUI();
+                    setMode(settings.defaultMode);
+                    updateInputPlaceholder();
+                }
+            } catch (e) {
+                console.error('Fehler beim Laden der Einstellungen:', e);
+                settings = { 
+                    version: SETTINGS_VERSION,
+                    addressForm: 'sie', 
+                    defaultMode: 'chat' 
+                };
+            }
+        }
+        
+        function saveSettings() {
+            settings.version = SETTINGS_VERSION;
+            localStorage.setItem('deepseekSettings', JSON.stringify(settings));
+            saveSettingsButton.textContent = 'Gespeichert!';
+            setTimeout(() => saveSettingsButton.textContent = 'Einstellungen uebernehmen', 1500);
+        }
+        
+        function updateSettingsUI() {
+            document.getElementById('sieForm').checked = (settings.addressForm === 'sie');
+            document.getElementById('duForm').checked = (settings.addressForm === 'du');
+            document.getElementById('chatMode').checked = (settings.defaultMode === 'chat');
+            document.getElementById('deepthinkMode').checked = (settings.defaultMode === 'deepthink');
+            document.getElementById('searchMode').checked = (settings.defaultMode === 'search');
+            
+            addressFormStatus.textContent = settings.addressForm === 'sie' ? 'Sie-Form' : 'Du-Form';
+            defaultModeStatus.textContent = 
+                settings.defaultMode === 'chat' ? 'Normaler Chat' :
+                settings.defaultMode === 'deepthink' ? 'DeepThink Modus' : 'Search Modus';
+            
+            document.querySelectorAll('.setting-item').forEach(item => item.classList.remove('active'));
+            if (settings.addressForm === 'sie') document.getElementById('sieFormItem').classList.add('active');
+            else document.getElementById('duFormItem').classList.add('active');
+            
+            if (settings.defaultMode === 'chat') document.getElementById('chatModeItem').classList.add('active');
+            else if (settings.defaultMode === 'deepthink') document.getElementById('deepthinkModeItem').classList.add('active');
+            else document.getElementById('searchModeItem').classList.add('active');
+        }
+        
+        async function sendMessage() {
+            if (isSending) return;
+            const message = inputField.value.trim();
+            if (!message && !fileTextContent) return;
+            
+            isSending = true;
+            sendButton.disabled = true;
+            sendButton.textContent = 'Wird gesendet...';
+            inputField.disabled = true;
+            
+            let userMessage = message;
+            if (fileTextContent) {
+                userMessage = `Datei-Inhalt:\n${fileTextContent}\n\nFrage: ${message}`;
+            }
+            
+            addUserMessageToContext(userMessage);
+            
+            addMessageToChat(message, true);
+            inputField.value = '';
+            
+            let systemPrompt = settings.addressForm === 'sie' ?
+                'Sie sind ein hilfreicher Assistent. Verwenden Sie in allen Antworten konsequent die Sie-Form.' :
+                'Du bist ein hilfreicher Assistent. Verwende in allen Antworten konsequent die Du-Form.';
+            
+            if (currentMode === 'deepthink') systemPrompt += ' Bitte geben Sie eine tiefgehende Analyse mit detaillierten Ueberlegungen.';
+            else if (currentMode === 'search') systemPrompt += ' Bitte geben Sie eine recherchierte Antwort mit aktuellen Informationen.';
+            
+            updateSystemPromptTokens(systemPrompt);
+            
+            const processedSystem = replaceGermanUmlauts(systemPrompt);
+            const processedUser = replaceGermanUmlauts(userMessage);
+            
+            const thinkingDiv = document.createElement('div');
+            thinkingDiv.className = 'ai-message';
+            thinkingDiv.textContent = 'Denkt...';
+            chat.appendChild(thinkingDiv);
+            chat.scrollTop = chat.scrollHeight;
+            
+            try {
+                const messages = [{ role: 'system', content: processedSystem }];
+                
+                // Chronologische Reihenfolge (älteste zuerst)
+                contextHistory.messages.forEach(msg => {
+                    messages.push({
+                        role: msg.role,
+                        content: replaceGermanUmlauts(msg.content)
+                    });
+                });
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'deepseek-chat',
+                        messages: messages,
+                        max_tokens: 2000
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`API-Fehler (${response.status}): ${errorText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (!data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
+                    throw new Error('Ungültige API-Antwort-Struktur erhalten');
+                }
+                
+                const aiResponse = data.choices[0].message.content;
+                
+                addAIResponseToContext(aiResponse);
+                
+                thinkingDiv.textContent = aiResponse;
+                chat.appendChild(document.createElement('div')).className = 'message-divider';
+            } catch (error) {
+                thinkingDiv.remove();
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'ai-message';
+                errorDiv.textContent = `Fehler: ${replaceGermanUmlauts(error.message)}`;
+                chat.appendChild(errorDiv);
+                chat.appendChild(document.createElement('div')).className = 'message-divider';
+                console.error('Fehler beim Senden:', error);
+            } finally {
+                isSending = false;
+                sendButton.disabled = false;
+                sendButton.textContent = 'Senden';
+                inputField.disabled = false;
+                chat.scrollTop = chat.scrollHeight;
+            }
+        }
+        
+        function addMessageToChat(text, isUser) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = isUser ? 'user-message' : 'ai-message';
+            messageDiv.textContent = text;
+            chat.appendChild(messageDiv);
+            
+            if (isUser) chat.appendChild(document.createElement('div')).className = 'message-divider';
+            chat.scrollTop = chat.scrollHeight;
+        }
+        
+        async function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            selectedFile = file;
+            fileTextContent = null;
+            const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+            
+            if (!ACCEPTED_FILE_FORMATS.includes(fileExtension)) {
+                fileInfo.innerHTML = `<div class="pdf-error">Format nicht unterstuetzt: ${fileExtension}. Unterstuetzte Formate: ${ACCEPTED_FILE_FORMATS.join(', ')}</div>`;
+                fileInfo.classList.add('visible');
+                selectedFile = null;
+                fileUpload.value = '';
+                return;
+            }
+            
+            const isProcessable = SUPPORTED_FILE_FORMATS.includes(fileExtension);
+            
+            if (!isProcessable) {
+                fileInfo.innerHTML = `<div class="pdf-processing">Datei: ${file.name} - Format wird akzeptiert, aber nicht verarbeitet. Nur Dateiname wird gespeichert.</div><button id="removeFile">Entfernen</button>`;
+                fileInfo.classList.add('visible');
+                const removeBtn = document.getElementById('removeFile');
+                if (removeBtn) {
+                    const removeHandler = function() {
+                        selectedFile = null;
+                        fileTextContent = null;
+                        fileInfo.innerHTML = '';
+                        fileInfo.classList.remove('visible');
+                        fileUpload.value = '';
+                        removeBtn.removeEventListener('click', removeHandler);
+                    };
+                    removeBtn.addEventListener('click', removeHandler);
+                    eventListeners.push({ element: removeBtn, event: 'click', handler: removeHandler });
+                }
+                return;
+            }
+            
+            fileInfo.innerHTML = `Datei: ${file.name} (${(file.size / 1024).toFixed(2)} KB) <button id="removeFile">Entfernen</button>`;
+            fileInfo.classList.add('visible');
+            
+            try {
+                if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+                    fileTextContent = await extractTextFromPDF(file);
+                    fileInfo.innerHTML = `Datei: ${file.name} - PDF verarbeitet (${fileTextContent.length} Zeichen) <button id="removeFile">Entfernen</button>`;
+                } else if (file.type.startsWith('text/') || file.name.toLowerCase().endsWith('.txt')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        fileTextContent = e.target.result;
+                        if (fileTextContent.length > MAX_FILE_CONTENT_LENGTH) {
+                            fileTextContent = fileTextContent.substring(0, MAX_FILE_CONTENT_LENGTH);
+                        }
+                        fileInfo.innerHTML = `Datei: ${file.name} - Textdatei geladen (${fileTextContent.length} Zeichen) <button id="removeFile">Entfernen</button>`;
+                    };
+                    reader.readAsText(file);
+                }
+            } catch (error) {
+                fileInfo.innerHTML = `<div class="pdf-error">Fehler: ${replaceGermanUmlauts(error.message)}</div>`;
+            }
+            
+            const removeBtn = document.getElementById('removeFile');
+            if (removeBtn) {
+                const removeHandler = function() {
+                    selectedFile = null;
+                    fileTextContent = null;
+                    fileInfo.innerHTML = '';
+                    fileInfo.classList.remove('visible');
+                    fileUpload.value = '';
+                    removeBtn.removeEventListener('click', removeHandler);
+                };
+                removeBtn.addEventListener('click', removeHandler);
+                eventListeners.push({ element: removeBtn, event: 'click', handler: removeHandler });
+            }
+        }
+        
+        function initializeEventListeners() {
+            cleanupEventListeners();
+            
+            addEventListenerWithCleanup(sendButton, 'click', sendMessage);
+            addEventListenerWithCleanup(inputField, 'keydown', e => { 
+                if (e.key === 'Enter') {
+                    if (isSending) {
+                        e.preventDefault();
+                        return;
+                    }
+                    e.preventDefault();
+                    sendMessage(); 
+                }
+            });
+            addEventListenerWithCleanup(fileUpload, 'change', handleFileUpload);
+            addEventListenerWithCleanup(settingsButton, 'click', () => settingsOverlay.style.display = 'flex');
+            addEventListenerWithCleanup(closeSettings, 'click', () => settingsOverlay.style.display = 'none');
+            
+            const saveHandler = function() {
+                settings.addressForm = document.querySelector('input[name="addressForm"]:checked').value;
+                settings.defaultMode = document.querySelector('input[name="defaultMode"]:checked').value;
+                saveSettings();
+                setMode(settings.defaultMode);
+                updateInputPlaceholder();
+                settingsOverlay.style.display = 'none';
+            };
+            addEventListenerWithCleanup(saveSettingsButton, 'click', saveHandler);
+            
+            const deepThinkHandler = () => setMode(currentMode === 'deepthink' ? 'chat' : 'deepthink');
+            const searchHandler = () => setMode(currentMode === 'search' ? 'chat' : 'search');
+            
+            addEventListenerWithCleanup(deepThinkButton, 'click', deepThinkHandler);
+            addEventListenerWithCleanup(searchButton, 'click', searchHandler);
+            
+            document.querySelectorAll('.setting-item').forEach(item => {
+                const clickHandler = function() {
+                    const radioInput = this.querySelector('input[type="radio"]');
+                    if (radioInput) {
+                        radioInput.checked = true;
+                        document.querySelectorAll('.setting-item').forEach(i => i.classList.remove('active'));
+                        this.classList.add('active');
+                    }
+                };
+                addEventListenerWithCleanup(item, 'click', clickHandler);
+            });
+            
+            document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                const changeHandler = function() {
+                    document.querySelectorAll('.setting-item').forEach(item => item.classList.remove('active'));
+                    const parentItem = this.closest('.setting-item');
+                    if (parentItem) parentItem.classList.add('active');
+                };
+                addEventListenerWithCleanup(radio, 'change', changeHandler);
+            });
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            updateServerTitle();
+            loadSettings();
+            initializeEventListeners();
+            updateSettingsUI();
+        });
+        
+        window.addEventListener('beforeunload', function() {
+            cleanupEventListeners();
+        });
+    </script>
+</body>
+</html>
