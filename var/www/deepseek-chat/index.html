@@ -138,7 +138,7 @@
        - Visuelle Rückmeldung bei Verarbeitung
 
     5. LOG-ANZEIGE-FUNKTION (NEU):
-       - Tastenkombination: Strg+Alt+L (Ctrl+Alt+L) zum Öffnen/Schliessen
+       - Tastenkombination: F2 (Funktionstaste 2) zum Öffnen/Schliessen
        - Endpoint: /cgi-bin/get-log.py zum Abrufen der Log-Datei
        - Log-Datei-Pfad: /var/www/deepseek-chat/cgi/deepseek-chat.log
        - Bei erfolgreichem Abruf: Anzeige im Log-Overlay
@@ -380,6 +380,15 @@
         - Manifest-Abschnitt D.5 entsprechend aktualisiert
         - Event-Listener im JavaScript angepasst (e.ctrlKey && e.altKey && e.key === 'L')
         - Grund: Endgültige Firefox-Kompatibilität und intuitive Merkbarkeit (L = Log)
+
+    32. [16.02.2026 00:15] - TASTENKOMBINATION AUF F2 GEÄNDERT:
+        - Bisher: Strg+Alt+L (Ctrl+Alt+L) - funktional aber drei Tasten
+        - Neu: F2 (Funktionstaste 2) - in Firefox vollständig frei und nur eine Taste
+        - Recherche: F2 wird von Firefox nicht als Standard-Shortcut verwendet
+        - Manifest-Abschnitt D.5 entsprechend aktualisiert
+        - Event-Listener im JavaScript angepasst (e.key === 'F2')
+        - e.preventDefault() hinzugefügt um eventuelle Browser-Funktionen zu blockieren
+        - Grund: Maximale Einfachheit und Benutzerfreundlichkeit
 
     ============================================================================
     -->
@@ -1575,9 +1584,9 @@
 
             // Log-Overlay Event-Listener
             addEventListenerWithCleanup(document, 'keydown', function(e) {
-                // Strg+Alt+L (Ctrl+Alt+L) zum Öffnen/Schliessen des Log-Overlays
-                if (e.ctrlKey && e.altKey && e.key === 'L') {
-                    e.preventDefault();
+                // F2 zum Öffnen/Schliessen des Log-Overlays
+                if (e.key === 'F2') {
+                    e.preventDefault(); // Verhindert eventuelle Browser-Funktionen
                     toggleLogOverlay();
                 }
                 // Escape zum Schliessen des Log-Overlays
@@ -1606,3 +1615,5 @@
     </script>
 </body>
 </html>
+
+
