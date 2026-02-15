@@ -1,1 +1,0 @@
-/var/www/deepseek-chat/cgi-bin/deepseek-api.py
