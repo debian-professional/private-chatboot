@@ -1,6 +1,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -86,6 +87,7 @@
     2. BUTTON-ANORDNUNG:
        - Zeile 1: Senden | Datei hochladen | Einstellungen (nebeneinander)
        - Zeile 2: DeepThink | Search (nebeneinander)
+       - NEU: Zeile 3: Log-Dateien (zentriert oder linksbündig)
        - Alle Buttons gleiche Höhe, unterschiedliche Breiten erlaubt
     
     3. EINSTELLUNGS-BEREICH:
@@ -138,7 +140,7 @@
        - Visuelle Rückmeldung bei Verarbeitung
 
     5. LOG-ANZEIGE-FUNKTION (NEU):
-       - Tastenkombination: F2 (Funktionstaste 2) zum Öffnen/Schliessen
+       - Button "Log-Dateien" in eigener Button-Reihe unter den Modi
        - Endpoint: /cgi-bin/get-log.py zum Abrufen der Log-Datei
        - Log-Datei-Pfad: /var/www/deepseek-chat/cgi/deepseek-chat.log
        - Bei erfolgreichem Abruf: Anzeige im Log-Overlay
@@ -357,38 +359,12 @@
         - API-Keys werden bewusst nicht geloggt
         - OPTIONS-Requests werden ignoriert, um das Log nicht zu überfluten
 
-    29. [15.02.2026 22:45] - LOG-ANZEIGE MIT CTRL+D IMPLEMENTIERT:
-        - Tastenkombination Strg+D (Ctrl+D) zum Öffnen des Log-Overlays hinzugefügt
-        - Neues serverseitiges Skript `/cgi-bin/get-log.py` zum Abrufen der Log-Datei
-        - Neues Log-Overlay mit Monospace-Schrift, Schliessen- und Aktualisieren-Button
-        - Overlay schliesst mit Escape-Taste oder Klick auf Schliessen-Button
-        - Fehlerbehandlung bei nicht erreichbarem Log-Endpoint
-        - Leeres Log zeigt Hinweis "Keine Log-Einträge vorhanden"
-        - Manifest erweitert: Abschnitt C.5 (Layout) und D.5 (technische Konventionen)
-        - Grund: Vereinfachung der Fehlersuche durch schnellen Zugriff auf Server-Logs
-
-    30. [15.02.2026 23:15] - TASTENKOMBINATION AUF CTRL+SHIFT+L GEÄNDERT:
-        - Bisher: Strg+D (Ctrl+D) - Konflikt mit Firefox-Lesezeichen
-        - Neu: Strg+Umschalt+L (Ctrl+Shift+L) - in Firefox frei
-        - Manifest-Abschnitt D.5 entsprechend aktualisiert
-        - Event-Listener im JavaScript angepasst
-        - Grund: Firefox-Kompatibilität und Vermeidung von Browser-Shortcut-Konflikten
-
-    31. [15.02.2026 23:45] - TASTENKOMBINATION AUF CTRL+ALT+L GEÄNDERT:
-        - Bisher: Strg+Umschalt+L (Ctrl+Shift+L) - Konflikt mit Firefox-Lesezeichen-Manager
-        - Neu: Strg+Alt+L (Ctrl+Alt+L) - in Firefox garantiert frei
-        - Manifest-Abschnitt D.5 entsprechend aktualisiert
-        - Event-Listener im JavaScript angepasst (e.ctrlKey && e.altKey && e.key === 'L')
-        - Grund: Endgültige Firefox-Kompatibilität und intuitive Merkbarkeit (L = Log)
-
-    32. [16.02.2026 00:15] - TASTENKOMBINATION AUF F2 GEÄNDERT:
-        - Bisher: Strg+Alt+L (Ctrl+Alt+L) - funktional aber drei Tasten
-        - Neu: F2 (Funktionstaste 2) - in Firefox vollständig frei und nur eine Taste
-        - Recherche: F2 wird von Firefox nicht als Standard-Shortcut verwendet
-        - Manifest-Abschnitt D.5 entsprechend aktualisiert
-        - Event-Listener im JavaScript angepasst (e.key === 'F2')
-        - e.preventDefault() hinzugefügt um eventuelle Browser-Funktionen zu blockieren
-        - Grund: Maximale Einfachheit und Benutzerfreundlichkeit
+    29. [16.02.2026 01:30] - ALLE TASTENKOMBINATIONEN ENTFERNT, LOG-BUTTON HINZUGEFÜGT:
+        - Entfernt: Alle vorherigen Tastenkombinationen (Strg+D, Strg+Shift+L, Strg+Alt+L, F2)
+        - Neu: Eigene Button-Reihe unter den Modi mit Button "Log-Dateien"
+        - Button-Design: 40px Höhe, Farbe Blau (#0056b3) wie Haupt-Buttons
+        - Manifest aktualisiert: Abschnitt C.2 um Zeile 3 ergänzt
+        - Grund: Tastenkombinationen funktionierten nicht zuverlässig in Firefox, Button ist einfacher und zuverlässiger
 
     ============================================================================
     -->
@@ -515,6 +491,32 @@
         .mode-button.active {
             background: #155724;
             box-shadow: 0 0 0 2px #fff;
+        }
+        .log-button-row {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            align-items: center;
+            height: 40px;
+            justify-content: center;
+        }
+        .log-button {
+            padding: 10px 20px;
+            background: #0056b3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 200px;
+            margin: 0 auto;
+        }
+        .log-button:hover {
+            background: #003d82;
         }
         .file-input-wrapper {
             position: relative;
@@ -910,6 +912,11 @@
         <button id="deepThinkButton" class="mode-button">DeepThink</button>
         <button id="searchButton" class="mode-button">Search</button>
     </div>
+
+    <!-- Neue Button-Reihe für Log-Dateien -->
+    <div class="log-button-row">
+        <button id="logButton" class="log-button">Log-Dateien</button>
+    </div>
     
     <div id="fileInfo"></div>
     
@@ -1208,6 +1215,7 @@
         const settingsButton = document.getElementById('settingsButton');
         const deepThinkButton = document.getElementById('deepThinkButton');
         const searchButton = document.getElementById('searchButton');
+        const logButton = document.getElementById('logButton');
         const settingsOverlay = document.getElementById('settingsOverlay');
         const closeSettings = document.getElementById('closeSettings');
         const saveSettingsButton = document.getElementById('saveSettings');
@@ -1561,6 +1569,9 @@
             addEventListenerWithCleanup(deepThinkButton, 'click', deepThinkHandler);
             addEventListenerWithCleanup(searchButton, 'click', searchHandler);
             
+            // Log-Button Event-Listener
+            addEventListenerWithCleanup(logButton, 'click', toggleLogOverlay);
+            
             document.querySelectorAll('.setting-item').forEach(item => {
                 const clickHandler = function() {
                     const radioInput = this.querySelector('input[type="radio"]');
@@ -1582,14 +1593,8 @@
                 addEventListenerWithCleanup(radio, 'change', changeHandler);
             });
 
-            // Log-Overlay Event-Listener
+            // Escape zum Schliessen des Log-Overlays
             addEventListenerWithCleanup(document, 'keydown', function(e) {
-                // F2 zum Öffnen/Schliessen des Log-Overlays
-                if (e.key === 'F2') {
-                    e.preventDefault(); // Verhindert eventuelle Browser-Funktionen
-                    toggleLogOverlay();
-                }
-                // Escape zum Schliessen des Log-Overlays
                 if (e.key === 'Escape' && logOverlay.style.display === 'flex') {
                     logOverlay.style.display = 'none';
                 }
@@ -1615,5 +1620,3 @@
     </script>
 </body>
 </html>
-
-
