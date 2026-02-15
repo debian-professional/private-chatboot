@@ -138,7 +138,7 @@
        - Visuelle Rückmeldung bei Verarbeitung
 
     5. LOG-ANZEIGE-FUNKTION (NEU):
-       - Tastenkombination: Strg+Umschalt+L (Ctrl+Shift+L) zum Öffnen/Schliessen
+       - Tastenkombination: Strg+Alt+L (Ctrl+Alt+L) zum Öffnen/Schliessen
        - Endpoint: /cgi-bin/get-log.py zum Abrufen der Log-Datei
        - Log-Datei-Pfad: /var/www/deepseek-chat/cgi/deepseek-chat.log
        - Bei erfolgreichem Abruf: Anzeige im Log-Overlay
@@ -373,6 +373,13 @@
         - Manifest-Abschnitt D.5 entsprechend aktualisiert
         - Event-Listener im JavaScript angepasst
         - Grund: Firefox-Kompatibilität und Vermeidung von Browser-Shortcut-Konflikten
+
+    31. [15.02.2026 23:45] - TASTENKOMBINATION AUF CTRL+ALT+L GEÄNDERT:
+        - Bisher: Strg+Umschalt+L (Ctrl+Shift+L) - Konflikt mit Firefox-Lesezeichen-Manager
+        - Neu: Strg+Alt+L (Ctrl+Alt+L) - in Firefox garantiert frei
+        - Manifest-Abschnitt D.5 entsprechend aktualisiert
+        - Event-Listener im JavaScript angepasst (e.ctrlKey && e.altKey && e.key === 'L')
+        - Grund: Endgültige Firefox-Kompatibilität und intuitive Merkbarkeit (L = Log)
 
     ============================================================================
     -->
@@ -1568,8 +1575,8 @@
 
             // Log-Overlay Event-Listener
             addEventListenerWithCleanup(document, 'keydown', function(e) {
-                // Strg+Umschalt+L (Ctrl+Shift+L) zum Öffnen/Schliessen des Log-Overlays
-                if (e.ctrlKey && e.shiftKey && e.key === 'L') {
+                // Strg+Alt+L (Ctrl+Alt+L) zum Öffnen/Schliessen des Log-Overlays
+                if (e.ctrlKey && e.altKey && e.key === 'L') {
                     e.preventDefault();
                     toggleLogOverlay();
                 }
@@ -1599,5 +1606,3 @@
     </script>
 </body>
 </html>
-
-
