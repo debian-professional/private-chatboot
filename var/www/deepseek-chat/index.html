@@ -95,6 +95,16 @@
        - Feste Höhe: 400px mit Scrollbalken
        - Automatisches Scrollen zur neuesten Nachricht
        - Trennlinien für bessere Lesbarkeit
+
+    5. LOG-ANZEIGE-BEREICH (NEU):
+       - Overlay-Design analog zu Einstellungen
+       - Dunkler Hintergrund (#1e1e1e) mit weisser Schrift (#f0f0f0)
+       - Monospace-Schriftart (Consolas, Monaco, monospace) für Log-Darstellung
+       - Feste Breite: 90% des Viewports, maximale Höhe: 80vh
+       - Integrierter Scrollbalken bei Überlauf
+       - Schliessen-Button oben rechts (rot, 36x36px)
+       - Aktualisieren-Button zum Neuladen des Logs
+       - Zeilenumbrüche werden beibehalten (white-space: pre-wrap)
     
     D) TECHNISCHE KONVENTIONEN:
     ----------------------------
@@ -123,6 +133,15 @@
        - User-freundliche Fehlermeldungen
        - Console-Logging für Debugging
        - Visuelle Rückmeldung bei Verarbeitung
+
+    5. LOG-ANZEIGE-FUNKTION (NEU):
+       - Tastenkombination: Strg+D (Ctrl+D) zum Öffnen/Schliessen
+       - Endpoint: /cgi-bin/get-log.py zum Abrufen der Log-Datei
+       - Log-Datei-Pfad: /var/www/deepseek-chat/cgi/deepseek-chat.log
+       - Bei erfolgreichem Abruf: Anzeige im Log-Overlay
+       - Bei Fehler: Anzeige einer benutzerfreundlichen Fehlermeldung
+       - Bei leerem Log: Hinweis "Keine Log-Einträge vorhanden"
+       - Overlay schliesst mit Escape-Taste oder Klick auf Schliessen-Button
     
     E) ERWEITERUNGSRICHTLINIEN:
     ----------------------------
@@ -328,13 +347,22 @@
     27. [15.02.2026 12.00 ] - Umstellung http auf https, Testen der SSL-Zertifikate, 
         - Erzeugen eines eigenen github-projektes
 
-
     28. [15.02.2026 21:30] - SERVERSEITIGES LOGGING IMPLEMENTIERT:
         - Neue Funktion `log_to_file` in `deepseek-api.py` eingeführt
         - Log-Datei unter `/var/www/deepseek-chat/cgi/deepseek-chat.log`
         - Aufgezeichnet werden: Zeitstempel, IP, Methode, Pfad, HTTP-Status, ggf. Fehlermeldung
         - API-Keys werden bewusst nicht geloggt
         - OPTIONS-Requests werden ignoriert, um das Log nicht zu überfluten
+
+    29. [15.02.2026 22:45] - LOG-ANZEIGE MIT CTRL+D IMPLEMENTIERT:
+        - Tastenkombination Strg+D (Ctrl+D) zum Öffnen des Log-Overlays hinzugefügt
+        - Neues serverseitiges Skript `/cgi-bin/get-log.py` zum Abrufen der Log-Datei
+        - Neues Log-Overlay mit Monospace-Schrift, Schliessen- und Aktualisieren-Button
+        - Overlay schliesst mit Escape-Taste oder Klick auf Schliessen-Button
+        - Fehlerbehandlung bei nicht erreichbarem Log-Endpoint
+        - Leeres Log zeigt Hinweis "Keine Log-Einträge vorhanden"
+        - Manifest erweitert: Abschnitt C.5 (Layout) und D.5 (technische Konventionen)
+        - Grund: Vereinfachung der Fehlersuche durch schnellen Zugriff auf Server-Logs
 
     ============================================================================
     -->
@@ -718,6 +746,110 @@
         .save-button:hover {
             background: #003d82;
         }
+
+        /* Log-Overlay Styles */
+        #logOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1002;
+            align-items: center;
+            justify-content: center;
+        }
+        #logPanel {
+            background: #1e1e1e;
+            border: 2px solid #0056b3;
+            border-radius: 10px;
+            padding: 25px;
+            width: 90%;
+            max-width: 1200px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #0056b3;
+        }
+        .log-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #4dabf7;
+        }
+        .log-header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .log-refresh-button {
+            background: #28a745;
+            border: none;
+            color: white;
+            font-size: 14px;
+            width: auto;
+            height: 36px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 15px;
+        }
+        .log-refresh-button:hover {
+            background: #218838;
+        }
+        .close-log {
+            background: #dc3545;
+            border: none;
+            color: white;
+            font-size: 18px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .close-log:hover {
+            background: #c82333;
+        }
+        #logContent {
+            background: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 15px;
+            overflow-y: auto;
+            font-family: Consolas, Monaco, 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #f0f0f0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            min-height: 300px;
+            max-height: calc(80vh - 120px);
+        }
+        .log-empty {
+            color: #aaa;
+            font-style: italic;
+            text-align: center;
+            padding: 50px 0;
+        }
+        .log-error {
+            color: #f8d7da;
+            background: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
@@ -844,8 +976,25 @@
         </div>
     </div>
 
+    <!-- Log Overlay -->
+    <div id="logOverlay">
+        <div id="logPanel">
+            <div class="log-header">
+                <div class="log-title">Server-Log</div>
+                <div class="log-header-buttons">
+                    <button class="log-refresh-button" id="refreshLog">Aktualisieren</button>
+                    <button class="close-log" id="closeLog" title="Schliessen">&times;</button>
+                </div>
+            </div>
+            <div id="logContent">
+                <div class="log-empty">Log wird geladen...</div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const API_URL = '/api/chat';
+        const LOG_API_URL = '/cgi-bin/get-log.py';
         const SERVER_NAME = 'DeepSeek Chat Server';
         const MAX_CONTEXT_TOKENS = 16000;
         const MAX_CONTEXT_MESSAGES = 20;
@@ -1044,6 +1193,10 @@
         const fileUpload = document.getElementById('fileUpload');
         const fileInfo = document.getElementById('fileInfo');
         const chat = document.getElementById('chat');
+        const logOverlay = document.getElementById('logOverlay');
+        const logContent = document.getElementById('logContent');
+        const closeLog = document.getElementById('closeLog');
+        const refreshLog = document.getElementById('refreshLog');
         let selectedFile = null;
         let fileTextContent = null;
         
@@ -1314,6 +1467,39 @@
                 eventListeners.push({ element: removeBtn, event: 'click', handler: removeHandler });
             }
         }
+
+        // Log-Funktionen
+        async function loadLogContent() {
+            try {
+                logContent.innerHTML = '<div class="log-empty">Log wird geladen...</div>';
+                
+                const response = await fetch(LOG_API_URL);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP-Fehler ${response.status}`);
+                }
+                
+                const logText = await response.text();
+                
+                if (!logText || logText.trim() === '') {
+                    logContent.innerHTML = '<div class="log-empty">Keine Log-Einträge vorhanden</div>';
+                } else {
+                    logContent.textContent = logText;
+                }
+            } catch (error) {
+                console.error('Fehler beim Laden des Logs:', error);
+                logContent.innerHTML = `<div class="log-error">Fehler beim Laden des Logs: ${replaceGermanUmlauts(error.message)}</div>`;
+            }
+        }
+
+        function toggleLogOverlay() {
+            if (logOverlay.style.display === 'flex') {
+                logOverlay.style.display = 'none';
+            } else {
+                logOverlay.style.display = 'flex';
+                loadLogContent();
+            }
+        }
         
         function initializeEventListeners() {
             cleanupEventListeners();
@@ -1369,6 +1555,25 @@
                 };
                 addEventListenerWithCleanup(radio, 'change', changeHandler);
             });
+
+            // Log-Overlay Event-Listener
+            addEventListenerWithCleanup(document, 'keydown', function(e) {
+                // Strg+D (Ctrl+D) zum Öffnen/Schliessen des Log-Overlays
+                if (e.ctrlKey && e.key === 'd') {
+                    e.preventDefault();
+                    toggleLogOverlay();
+                }
+                // Escape zum Schliessen des Log-Overlays
+                if (e.key === 'Escape' && logOverlay.style.display === 'flex') {
+                    logOverlay.style.display = 'none';
+                }
+            });
+
+            addEventListenerWithCleanup(closeLog, 'click', () => {
+                logOverlay.style.display = 'none';
+            });
+
+            addEventListenerWithCleanup(refreshLog, 'click', loadLogContent);
         }
         
         document.addEventListener('DOMContentLoaded', function() {
@@ -1384,5 +1589,6 @@
     </script>
 </body>
 </html>
+
 
 
