@@ -4,13 +4,19 @@ Verzeichnisse :
 
 /var/www/deepseek-chat/
 /var/www/deepseek-chat/cgi-bin
+/var/www/deepseek-chat/sessions
 
 Dateien : 
 
 /var/www/deepseek-chat/index.html 
+/var/www/deepseek-chat/manifest
 /var/www/deepseek-chat/files-directorys
-/var/www/deepseek-chat/cgi-bin/deepseek-api-py
+/var/www/deepseek-chat/cgi-bin/deepseek-api.py
 /var/www/deepseek-chat/cgi-bin/get-log.py
+/var/www/deepseek-chat/cgi-bin/save-session.py
+/var/www/deepseek-chat/cgi-bin/load-session.py
+/var/www/deepseek-chat/cgi-bin/delete-session.py
+/var/www/deepseek-chat/cgi-bin/export-pdf.py
+/var/www/deepseek-chat/cgi-bin/export-markdown.py
 
- 
 

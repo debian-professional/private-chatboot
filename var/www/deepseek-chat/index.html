@@ -4,6 +4,18 @@
     <title>DeepSeek Chat</title>
     <meta charset="UTF-8">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    
+    <!-- 
+    ============================================================================
+    DEEPSEEK CHAT
+    ============================================================================
+    Alle Design-Entscheidungen und Konventionen sind dokumentiert in:
+    /var/www/deepseek-chat/manifest
+    
+    Bitte lesen und befolgen Sie das Manifest bei allen Änderungen!
+    ============================================================================
+    -->
+
     <style>
         body { 
             font-family: Arial; 
@@ -47,6 +59,34 @@
             background: #1e1e1e;
             color: #f0f0f0;
             line-height: 1.5;
+        }
+        .message-container {
+            position: relative;
+            margin-bottom: 5px;
+            padding-right: 30px;
+        }
+        .message-container:hover .delete-message-btn {
+            display: block;
+        }
+        .delete-message-btn {
+            display: none;
+            position: absolute;
+            right: 5px;
+            top: 5px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 0;
+            line-height: 20px;
+            text-align: center;
+        }
+        .delete-message-btn:hover {
+            background: #c82333;
         }
         .user-message {
             color: #4dabf7;
@@ -105,10 +145,58 @@
         .action-button:hover {
             background: #003d82;
         }
-        .action-button:disabled {
-            background: #444;
-            cursor: not-allowed;
-            opacity: 0.7;
+        .dropdown-container {
+            position: relative;
+            flex: 1;
+        }
+        .dropdown-button {
+            width: 100%;
+            padding: 10px 20px;
+            background: #0056b3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .dropdown-button:hover {
+            background: #003d82;
+        }
+        .dropdown-arrow {
+            margin-left: 10px;
+            font-size: 12px;
+        }
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 45px;
+            left: 0;
+            right: 0;
+            background: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 4px;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        .dropdown-menu.show {
+            display: block;
+        }
+        .dropdown-item {
+            padding: 12px 20px;
+            color: #f0f0f0;
+            cursor: pointer;
+            border-bottom: 1px solid #444;
+            transition: background 0.2s;
+        }
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+        .dropdown-item:hover {
+            background: #3d3d3d;
         }
         .mode-button {
             padding: 10px 20px; 
@@ -131,41 +219,6 @@
         .mode-button.active {
             background: #155724;
             box-shadow: 0 0 0 2px #fff;
-        }
-        .mode-button.search-mode-btn {
-            background: #17a2b8;
-        }
-        .mode-button.search-mode-btn:hover {
-            background: #138496;
-        }
-        .mode-button.search-mode-btn.active {
-            background: #0c5460;
-        }
-        .log-button-row {
-            display: flex;
-            gap: 10px;
-            margin: 15px 0;
-            align-items: center;
-            height: 40px;
-            justify-content: center;
-        }
-        .log-button {
-            padding: 10px 20px;
-            background: #0056b3;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 200px;
-            margin: 0 auto;
-        }
-        .log-button:hover {
-            background: #003d82;
         }
         .file-input-wrapper {
             position: relative;
@@ -250,28 +303,6 @@
             background: #28a745;
             width: 0%;
             transition: width 0.3s;
-        }
-        .token-warning {
-            padding: 8px;
-            margin: 10px 0;
-            background: #856404;
-            color: #fff3cd;
-            border-left: 4px solid #ffc107;
-            border-radius: 4px;
-            font-size: 13px;
-            display: none;
-        }
-        .token-warning.visible {
-            display: block;
-        }
-        .token-info {
-            padding: 5px 10px;
-            margin: 5px 0;
-            background: #2d2d2d;
-            color: #aaa;
-            border-radius: 4px;
-            font-size: 12px;
-            text-align: right;
         }
         #settingsOverlay {
             display: none;
@@ -445,109 +476,101 @@
         .save-button:hover {
             background: #003d82;
         }
-
-        /* Log-Overlay Styles */
-        #logOverlay {
+        #sessionsOverlay {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 1002;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1001;
             align-items: center;
             justify-content: center;
         }
-        #logPanel {
+        #sessionsPanel {
             background: #1e1e1e;
             border: 2px solid #0056b3;
             border-radius: 10px;
             padding: 25px;
             width: 90%;
-            max-width: 1200px;
+            max-width: 600px;
             max-height: 80vh;
-            display: flex;
-            flex-direction: column;
+            overflow-y: auto;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
-        .log-header {
+        .session-item {
+            background: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.2s;
+        }
+        .session-item:hover {
+            background: #333;
+            border-color: #0056b3;
+        }
+        .session-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #0056b3;
+            margin-bottom: 10px;
         }
-        .log-title {
-            font-size: 22px;
-            font-weight: bold;
+        .session-id {
+            font-size: 14px;
             color: #4dabf7;
+            font-weight: bold;
         }
-        .log-header-buttons {
+        .session-date {
+            font-size: 12px;
+            color: #aaa;
+        }
+        .session-preview {
+            font-size: 12px;
+            color: #f0f0f0;
+            margin: 8px 0;
+            font-style: italic;
+        }
+        .session-count {
+            font-size: 11px;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+        .session-actions {
             display: flex;
             gap: 10px;
         }
-        .log-refresh-button {
+        .session-load-btn {
+            flex: 1;
+            padding: 8px 15px;
             background: #28a745;
-            border: none;
             color: white;
-            font-size: 14px;
-            width: auto;
-            height: 36px;
+            border: none;
             border-radius: 4px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 15px;
+            font-size: 13px;
         }
-        .log-refresh-button:hover {
+        .session-load-btn:hover {
             background: #218838;
         }
-        .close-log {
+        .session-delete-btn {
+            padding: 8px 15px;
             background: #dc3545;
-            border: none;
             color: white;
-            font-size: 18px;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
+            border: none;
+            border-radius: 4px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            font-size: 13px;
         }
-        .close-log:hover {
+        .session-delete-btn:hover {
             background: #c82333;
         }
-        #logContent {
-            background: #2d2d2d;
-            border: 1px solid #444;
-            border-radius: 4px;
-            padding: 15px;
-            overflow-y: auto;
-            font-family: Consolas, Monaco, 'Courier New', monospace;
-            font-size: 13px;
-            line-height: 1.6;
-            color: #f0f0f0;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            min-height: 300px;
-            max-height: calc(80vh - 120px);
-        }
-        .log-empty {
-            color: #aaa;
-            font-style: italic;
+        .no-sessions {
             text-align: center;
-            padding: 50px 0;
-        }
-        .log-error {
-            color: #f8d7da;
-            background: #721c24;
-            padding: 15px;
-            border-radius: 4px;
-            margin: 10px 0;
+            padding: 40px;
+            color: #aaa;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -563,9 +586,6 @@
     
     <input type="text" id="input" placeholder="Ihre Nachricht hier eingeben...">
     
-    <div id="tokenInfo" class="token-info"></div>
-    <div id="tokenWarning" class="token-warning"></div>
-    
     <div id="deepThinkIndicator" class="mode-indicator deepthink-indicator">
         DeepThink Modus aktiv: Tiefgehende Analyse wird durchgefuehrt
     </div>
@@ -579,17 +599,27 @@
             <button id="uploadButton" class="action-button">Datei hochladen</button>
             <input type="file" id="fileUpload" accept=".txt,.pdf,.doc,.docx,.jpg,.jpeg,.png,.csv,.xlsx,.pptx">
         </div>
+        <div class="dropdown-container">
+            <button id="exportButton" class="dropdown-button">
+                Exportieren
+                <span class="dropdown-arrow">▼</span>
+            </button>
+            <div id="exportMenu" class="dropdown-menu">
+                <div class="dropdown-item" id="exportPdfBtn">Als PDF herunterladen</div>
+                <div class="dropdown-item" id="exportMarkdownBtn">Als Markdown herunterladen</div>
+                <div class="dropdown-item" id="loadSessionBtn">Chat-Verlauf laden</div>
+            </div>
+        </div>
         <button id="settingsButton" class="action-button">Einstellungen</button>
     </div>
     
     <div class="buttons-row">
         <button id="deepThinkButton" class="mode-button">DeepThink</button>
-        <button id="searchButton" class="mode-button search-mode-btn">Search</button>
+        <button id="searchButton" class="mode-button">Search</button>
     </div>
-
-    <!-- Neue Button-Reihe für Log-Dateien -->
-    <div class="log-button-row">
-        <button id="logButton" class="log-button">Log-Dateien</button>
+    
+    <div class="buttons-row">
+        <button id="logButton" class="action-button">Log-Dateien</button>
     </div>
     
     <div id="fileInfo"></div>
@@ -683,32 +713,28 @@
         </div>
     </div>
 
-    <!-- Log Overlay -->
-    <div id="logOverlay">
-        <div id="logPanel">
-            <div class="log-header">
-                <div class="log-title">Server-Log</div>
-                <div class="log-header-buttons">
-                    <button class="log-refresh-button" id="refreshLog">Aktualisieren</button>
-                    <button class="close-log" id="closeLog" title="Schliessen">&times;</button>
-                </div>
+    <div id="sessionsOverlay">
+        <div id="sessionsPanel">
+            <div class="settings-header">
+                <div class="settings-title">Gespeicherte Chats</div>
+                <button class="close-settings" id="closeSessions" title="Schliessen">&times;</button>
             </div>
-            <div id="logContent">
-                <div class="log-empty">Log wird geladen...</div>
-            </div>
+            <div id="sessionsList"></div>
         </div>
     </div>
 
     <script>
-        const API_URL = '/api/chat';
-        const LOG_API_URL = '/cgi-bin/get-log.py';
+        const API_URL = '/cgi-bin/deepseek-api.py';
+        const SAVE_SESSION_URL = '/cgi-bin/save-session.py';
+        const LOAD_SESSION_URL = '/cgi-bin/load-session.py';
+        const DELETE_SESSION_URL = '/cgi-bin/delete-session.py';
+        const EXPORT_PDF_URL = '/cgi-bin/export-pdf.py';
+        const EXPORT_MARKDOWN_URL = '/cgi-bin/export-markdown.py';
+        
         const SERVER_NAME = 'DeepSeek Chat Server';
-        const MAX_CONTEXT_TOKENS = 128000;
+        const MAX_CONTEXT_TOKENS = 16000;
         const MAX_CONTEXT_MESSAGES = 20;
-        // Verbesserte Token-Schätzung: 1 Token ≈ 4 Zeichen für Deutsch (genauer als 0.25)
-        // Basierend auf typischen Tokenizer-Verhältnissen für europäische Sprachen
-        const CHARS_PER_TOKEN = 4;
-        const TOKENS_PER_CHAR = 1 / CHARS_PER_TOKEN;
+        const TOKENS_PER_CHAR = 0.25;
         const MAX_FILE_CONTENT_LENGTH = 15000;
         const MAX_FILE_SIZE_MB = 10;
         const PDF_EXTRACTION_TIMEOUT = 30000;
@@ -717,7 +743,16 @@
         const ACCEPTED_FILE_FORMATS = ['.txt', '.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png', '.csv', '.xlsx', '.pptx'];
         
         let isSending = false;
-        let lastApiResponse = null; // Speichert die letzte API-Antwort für Token-Informationen
+        let currentSessionId = null;
+        let messageIdCounter = 0;
+        
+        function generateSessionId() {
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0];
+            const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '');
+            const random = Math.random().toString(36).substring(2, 8);
+            return `${dateStr}_${timeStr}_${random}`;
+        }
         
         function replaceGermanUmlauts(text) {
             if (!text) return text;
@@ -830,89 +865,296 @@
         
         let contextHistory = {
             systemPromptTokens: 0,
-            messages: [],  // {role: "user"|"assistant", content: "..."} – chronologisch (älteste zuerst)
-            totalEstimatedTokens: 0,
-            actualTokens: 0 // Wird aus API-Responses aktualisiert
+            messages: []
         };
         
-        // Verbesserte Token-Schätzung mit Wort-basierter Heuristik
         function estimateTokens(text) {
             if (!text) return 0;
-            
-            // Entferne mehrfache Leerzeichen und Zeilenumbrüche für konsistente Zählung
-            const normalizedText = text.replace(/\s+/g, ' ').trim();
-            
-            // Deutsche Sprache: Durchschnittliche Wortlänge ca. 6-8 Zeichen
-            // Ein Token entspricht etwa 0.75 Wörtern oder 4-5 Zeichen
-            const words = normalizedText.split(' ').length;
-            const characters = normalizedText.length;
-            
-            // Kombinierte Schätzung: Wörter und Zeichen
-            const wordBasedEstimate = Math.ceil(words * 1.3); // 1 Wort ≈ 1.3 Tokens für Deutsch
-            const charBasedEstimate = Math.ceil(characters / CHARS_PER_TOKEN);
-            
-            // Verwende den höheren Wert als konservative Schätzung
-            return Math.max(wordBasedEstimate, charBasedEstimate);
+            return Math.ceil(text.length * TOKENS_PER_CHAR);
         }
         
         function updateContextEstimation() {
             let total = contextHistory.systemPromptTokens;
             contextHistory.messages.forEach(msg => total += estimateTokens(msg.content));
             contextHistory.totalEstimatedTokens = total;
-            
-            const tokenInfo = document.getElementById('tokenInfo');
-            const tokenWarning = document.getElementById('tokenWarning');
-            
-            // Zeige Token-Informationen an
-            if (total > 0) {
-                let infoText = `Geschätzte Token: ${total}`;
-                if (contextHistory.actualTokens > 0) {
-                    infoText += ` | Tatsächliche Token (letzte Antwort): ${contextHistory.actualTokens}`;
-                }
-                infoText += ` | Maximum: ${MAX_CONTEXT_TOKENS}`;
-                tokenInfo.textContent = infoText;
-                
-                // Warnung bei Annäherung an Limit
-                if (total > MAX_CONTEXT_TOKENS * 0.8) {
-                    tokenWarning.textContent = `Warnung: Kontext nähert sich dem Maximum (${total}/${MAX_CONTEXT_TOKENS}). Ältere Nachrichten werden möglicherweise gekürzt.`;
-                    tokenWarning.classList.add('visible');
-                } else {
-                    tokenWarning.classList.remove('visible');
-                }
-            }
-            
             return total;
         }
         
-        function addUserMessageToContext(content) {
-            contextHistory.messages.push({role: "user", content});
-            trimContextByTokens();
+        function addUserMessageToContext(content, mode, hasFile) {
+            const msgId = ++messageIdCounter;
+            const timestamp = new Date().toISOString();
+            contextHistory.messages.push({
+                id: msgId,
+                role: "user",
+                content,
+                mode,
+                hasFile,
+                timestamp,
+                estimatedTokens: estimateTokens(content)
+            });
+            while (contextHistory.messages.length > MAX_CONTEXT_MESSAGES * 2) {
+                contextHistory.messages.shift();
+            }
             updateContextEstimation();
+            return msgId;
         }
         
-        function addAIResponseToContext(content, actualTokens = null) {
-            contextHistory.messages.push({role: "assistant", content});
-            if (actualTokens) {
-                contextHistory.actualTokens = actualTokens;
+        function addAIResponseToContext(content, mode) {
+            const msgId = ++messageIdCounter;
+            const timestamp = new Date().toISOString();
+            contextHistory.messages.push({
+                id: msgId,
+                role: "assistant",
+                content,
+                mode,
+                timestamp,
+                estimatedTokens: estimateTokens(content)
+            });
+            while (contextHistory.messages.length > MAX_CONTEXT_MESSAGES * 2) {
+                contextHistory.messages.shift();
             }
-            trimContextByTokens();
             updateContextEstimation();
-        }
-        
-        function trimContextByTokens() {
-            // Entferne älteste Nachrichten bis das geschätzte Token-Limit unterschritten wird
-            // aber behalte mindestens die letzten 2 Nachrichten (eine User + eine AI)
-            const MIN_MESSAGES = 2;
-            
-            while (contextHistory.messages.length > MIN_MESSAGES && 
-                   updateContextEstimation() > MAX_CONTEXT_TOKENS * 0.9) { // 90% als Sicherheitspuffer
-                contextHistory.messages.shift(); // Älteste Nachricht entfernen
-            }
+            return msgId;
         }
         
         function updateSystemPromptTokens(prompt) {
             contextHistory.systemPromptTokens = estimateTokens(prompt);
             updateContextEstimation();
+        }
+        
+        async function saveSession() {
+            if (!currentSessionId) {
+                currentSessionId = generateSessionId();
+            }
+            
+            try {
+                const chatData = {
+                    version: "1.0",
+                    timestamp: new Date().toISOString(),
+                    serverInfo: {
+                        name: SERVER_NAME,
+                        ip: getServerIP()
+                    },
+                    settings: settings,
+                    messages: contextHistory.messages
+                };
+                
+                const response = await fetch(SAVE_SESSION_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: currentSessionId,
+                        chatData: chatData
+                    })
+                });
+                
+                if (!response.ok) {
+                    console.error('Session-Speicherung fehlgeschlagen:', response.status);
+                }
+            } catch (error) {
+                console.error('Fehler beim Speichern der Session:', error);
+            }
+        }
+        
+        async function loadSessionsList() {
+            try {
+                const response = await fetch(LOAD_SESSION_URL, { method: 'GET' });
+                if (!response.ok) throw new Error('Laden fehlgeschlagen');
+                
+                const data = await response.json();
+                const sessions = data.sessions || [];
+                
+                const sessionsList = document.getElementById('sessionsList');
+                
+                if (sessions.length === 0) {
+                    sessionsList.innerHTML = '<div class="no-sessions">Keine gespeicherten Chats vorhanden</div>';
+                    return;
+                }
+                
+                sessionsList.innerHTML = sessions.map(session => `
+                    <div class="session-item" data-session-id="${session.sessionId}">
+                        <div class="session-header">
+                            <div class="session-id">${session.sessionId}</div>
+                            <div class="session-date">${session.timestamp}</div>
+                        </div>
+                        <div class="session-preview">"${session.preview}..."</div>
+                        <div class="session-count">${session.messageCount} Nachrichten</div>
+                        <div class="session-actions">
+                            <button class="session-load-btn" onclick="loadSpecificSession('${session.sessionId}')">Laden</button>
+                            <button class="session-delete-btn" onclick="deleteSession('${session.sessionId}')">Loeschen</button>
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Fehler beim Laden der Sessions:', error);
+                document.getElementById('sessionsList').innerHTML = '<div class="no-sessions">Fehler beim Laden der Sessions</div>';
+            }
+        }
+        
+        async function loadSpecificSession(sessionId) {
+            if (confirm('Aktueller Chat wird gespeichert und die ausgewaehlte Session wird geladen. Fortfahren?')) {
+                await saveSession();
+                
+                try {
+                    const response = await fetch(LOAD_SESSION_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ sessionId })
+                    });
+                    
+                    if (!response.ok) throw new Error('Laden fehlgeschlagen');
+                    
+                    const data = await response.json();
+                    const chatData = data.chatData;
+                    
+                    // Chat leeren
+                    document.getElementById('chat').innerHTML = '';
+                    
+                    // Neue Session-ID setzen
+                    currentSessionId = sessionId;
+                    
+                    // Context History wiederherstellen
+                    contextHistory.messages = chatData.messages || [];
+                    messageIdCounter = Math.max(...contextHistory.messages.map(m => m.id || 0), 0);
+                    
+                    // Nachrichten anzeigen
+                    chatData.messages.forEach(msg => {
+                        if (msg.role === 'user') {
+                            addMessageToChat(msg.content, true, msg.id, msg.mode);
+                        } else {
+                            addMessageToChat(msg.content, false, msg.id, msg.mode);
+                        }
+                    });
+                    
+                    // Settings laden
+                    if (chatData.settings) {
+                        settings = chatData.settings;
+                        updateSettingsUI();
+                        setMode(settings.defaultMode);
+                        updateInputPlaceholder();
+                    }
+                    
+                    // Overlay schließen
+                    document.getElementById('sessionsOverlay').style.display = 'none';
+                    
+                } catch (error) {
+                    alert('Fehler beim Laden der Session: ' + error.message);
+                }
+            }
+        }
+        
+        async function deleteSession(sessionId) {
+            if (confirm(`Session ${sessionId} wirklich loeschen?`)) {
+                try {
+                    const response = await fetch(DELETE_SESSION_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ sessionId })
+                    });
+                    
+                    if (!response.ok) throw new Error('Löschen fehlgeschlagen');
+                    
+                    // Liste neu laden
+                    await loadSessionsList();
+                    
+                } catch (error) {
+                    alert('Fehler beim Löschen der Session: ' + error.message);
+                }
+            }
+        }
+        
+        async function exportPDF() {
+            try {
+                const chatData = {
+                    version: "1.0",
+                    timestamp: new Date().toISOString(),
+                    serverInfo: {
+                        name: SERVER_NAME,
+                        ip: getServerIP()
+                    },
+                    settings: settings,
+                    messages: contextHistory.messages
+                };
+                
+                const response = await fetch(EXPORT_PDF_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chatData })
+                });
+                
+                if (!response.ok) throw new Error('PDF-Export fehlgeschlagen');
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `deepseek-chat-${currentSessionId || 'export'}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+            } catch (error) {
+                alert('Fehler beim PDF-Export: ' + error.message);
+            }
+        }
+        
+        async function exportMarkdown() {
+            try {
+                const chatData = {
+                    version: "1.0",
+                    timestamp: new Date().toISOString(),
+                    serverInfo: {
+                        name: SERVER_NAME,
+                        ip: getServerIP()
+                    },
+                    settings: settings,
+                    messages: contextHistory.messages
+                };
+                
+                const response = await fetch(EXPORT_MARKDOWN_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chatData })
+                });
+                
+                if (!response.ok) throw new Error('Markdown-Export fehlgeschlagen');
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `deepseek-chat-${currentSessionId || 'export'}.md`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+            } catch (error) {
+                alert('Fehler beim Markdown-Export: ' + error.message);
+            }
+        }
+        
+        async function deleteMessage(msgId) {
+            if (!confirm('Nachricht wirklich loeschen?')) return;
+            
+            // Nachricht aus DOM entfernen
+            const container = document.querySelector(`[data-msg-id="${msgId}"]`);
+            if (container) {
+                const divider = container.nextElementSibling;
+                if (divider && divider.classList.contains('message-divider')) {
+                    divider.remove();
+                }
+                container.remove();
+            }
+            
+            // Nachricht aus Context entfernen
+            contextHistory.messages = contextHistory.messages.filter(m => m.id !== msgId);
+            updateContextEstimation();
+            
+            // Session aktualisieren
+            await saveSession();
         }
         
         function migrateSettings(oldSettings) {
@@ -942,7 +1184,6 @@
         const settingsButton = document.getElementById('settingsButton');
         const deepThinkButton = document.getElementById('deepThinkButton');
         const searchButton = document.getElementById('searchButton');
-        const logButton = document.getElementById('logButton');
         const settingsOverlay = document.getElementById('settingsOverlay');
         const closeSettings = document.getElementById('closeSettings');
         const saveSettingsButton = document.getElementById('saveSettings');
@@ -954,13 +1195,16 @@
         const fileUpload = document.getElementById('fileUpload');
         const fileInfo = document.getElementById('fileInfo');
         const chat = document.getElementById('chat');
-        const logOverlay = document.getElementById('logOverlay');
-        const logContent = document.getElementById('logContent');
-        const closeLog = document.getElementById('closeLog');
-        const refreshLog = document.getElementById('refreshLog');
+        const exportButton = document.getElementById('exportButton');
+        const exportMenu = document.getElementById('exportMenu');
+        const exportPdfBtn = document.getElementById('exportPdfBtn');
+        const exportMarkdownBtn = document.getElementById('exportMarkdownBtn');
+        const loadSessionBtn = document.getElementById('loadSessionBtn');
+        const sessionsOverlay = document.getElementById('sessionsOverlay');
+        const closeSessions = document.getElementById('closeSessions');
+        
         let selectedFile = null;
         let fileTextContent = null;
-        
         let eventListeners = [];
         
         function addEventListenerWithCleanup(element, event, handler) {
@@ -1065,9 +1309,10 @@
                 userMessage = `Datei-Inhalt:\n${fileTextContent}\n\nFrage: ${message}`;
             }
             
-            addUserMessageToContext(userMessage);
+            const hasFile = !!fileTextContent;
+            const msgId = addUserMessageToContext(userMessage, currentMode, hasFile);
             
-            addMessageToChat(message, true);
+            addMessageToChat(message, true, msgId, currentMode);
             inputField.value = '';
             
             let systemPrompt = settings.addressForm === 'sie' ?
@@ -1091,7 +1336,6 @@
             try {
                 const messages = [{ role: 'system', content: processedSystem }];
                 
-                // Chronologische Reihenfolge (älteste zuerst)
                 contextHistory.messages.forEach(msg => {
                     messages.push({
                         role: msg.role,
@@ -1123,22 +1367,23 @@
                 }
                 
                 const aiResponse = data.choices[0].message.content;
-                
-                // Token-Informationen aus API-Response extrahieren (falls vorhanden)
-                let actualTokens = null;
-                if (data.usage && data.usage.total_tokens) {
-                    actualTokens = data.usage.total_tokens;
-                }
-                
-                addAIResponseToContext(aiResponse, actualTokens);
+                const aiMsgId = addAIResponseToContext(aiResponse, currentMode);
                 
                 thinkingDiv.textContent = aiResponse;
+                thinkingDiv.setAttribute('data-msg-id', aiMsgId);
+                thinkingDiv.classList.add('message-container');
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-message-btn';
+                deleteBtn.textContent = 'X';
+                deleteBtn.onclick = () => deleteMessage(aiMsgId);
+                thinkingDiv.appendChild(deleteBtn);
+                
                 chat.appendChild(document.createElement('div')).className = 'message-divider';
                 
-                // Context nach der Antwort erneut trimmen basierend auf tatsächlichen Tokens
-                if (actualTokens) {
-                    trimContextByTokens();
-                }
+                // Session speichern
+                await saveSession();
+                
             } catch (error) {
                 thinkingDiv.remove();
                 const errorDiv = document.createElement('div');
@@ -1156,11 +1401,26 @@
             }
         }
         
-        function addMessageToChat(text, isUser) {
+        function addMessageToChat(text, isUser, msgId, mode) {
+            const messageContainer = document.createElement('div');
+            messageContainer.className = 'message-container';
+            messageContainer.setAttribute('data-msg-id', msgId);
+            
             const messageDiv = document.createElement('div');
             messageDiv.className = isUser ? 'user-message' : 'ai-message';
             messageDiv.textContent = text;
-            chat.appendChild(messageDiv);
+            
+            messageContainer.appendChild(messageDiv);
+            
+            if (isUser || msgId) {
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-message-btn';
+                deleteBtn.textContent = 'X';
+                deleteBtn.onclick = () => deleteMessage(msgId);
+                messageContainer.appendChild(deleteBtn);
+            }
+            
+            chat.appendChild(messageContainer);
             
             if (isUser) chat.appendChild(document.createElement('div')).className = 'message-divider';
             chat.scrollTop = chat.scrollHeight;
@@ -1239,39 +1499,6 @@
                 eventListeners.push({ element: removeBtn, event: 'click', handler: removeHandler });
             }
         }
-
-        // Log-Funktionen
-        async function loadLogContent() {
-            try {
-                logContent.innerHTML = '<div class="log-empty">Log wird geladen...</div>';
-                
-                const response = await fetch(LOG_API_URL);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP-Fehler ${response.status}`);
-                }
-                
-                const logText = await response.text();
-                
-                if (!logText || logText.trim() === '') {
-                    logContent.innerHTML = '<div class="log-empty">Keine Log-Einträge vorhanden</div>';
-                } else {
-                    logContent.textContent = logText;
-                }
-            } catch (error) {
-                console.error('Fehler beim Laden des Logs:', error);
-                logContent.innerHTML = `<div class="log-error">Fehler beim Laden des Logs: ${replaceGermanUmlauts(error.message)}</div>`;
-            }
-        }
-
-        function toggleLogOverlay() {
-            if (logOverlay.style.display === 'flex') {
-                logOverlay.style.display = 'none';
-            } else {
-                logOverlay.style.display = 'flex';
-                loadLogContent();
-            }
-        }
         
         function initializeEventListeners() {
             cleanupEventListeners();
@@ -1291,6 +1518,38 @@
             addEventListenerWithCleanup(settingsButton, 'click', () => settingsOverlay.style.display = 'flex');
             addEventListenerWithCleanup(closeSettings, 'click', () => settingsOverlay.style.display = 'none');
             
+            // Dropdown Export
+            addEventListenerWithCleanup(exportButton, 'click', () => {
+                exportMenu.classList.toggle('show');
+            });
+            
+            addEventListenerWithCleanup(exportPdfBtn, 'click', () => {
+                exportMenu.classList.remove('show');
+                exportPDF();
+            });
+            
+            addEventListenerWithCleanup(exportMarkdownBtn, 'click', () => {
+                exportMenu.classList.remove('show');
+                exportMarkdown();
+            });
+            
+            addEventListenerWithCleanup(loadSessionBtn, 'click', async () => {
+                exportMenu.classList.remove('show');
+                await loadSessionsList();
+                sessionsOverlay.style.display = 'flex';
+            });
+            
+            addEventListenerWithCleanup(closeSessions, 'click', () => {
+                sessionsOverlay.style.display = 'none';
+            });
+            
+            // Dropdown schließen bei Klick außerhalb
+            addEventListenerWithCleanup(document, 'click', (e) => {
+                if (!exportButton.contains(e.target) && !exportMenu.contains(e.target)) {
+                    exportMenu.classList.remove('show');
+                }
+            });
+            
             const saveHandler = function() {
                 settings.addressForm = document.querySelector('input[name="addressForm"]:checked').value;
                 settings.defaultMode = document.querySelector('input[name="defaultMode"]:checked').value;
@@ -1306,9 +1565,6 @@
             
             addEventListenerWithCleanup(deepThinkButton, 'click', deepThinkHandler);
             addEventListenerWithCleanup(searchButton, 'click', searchHandler);
-            
-            // Log-Button Event-Listener
-            addEventListenerWithCleanup(logButton, 'click', toggleLogOverlay);
             
             document.querySelectorAll('.setting-item').forEach(item => {
                 const clickHandler = function() {
@@ -1330,19 +1586,6 @@
                 };
                 addEventListenerWithCleanup(radio, 'change', changeHandler);
             });
-
-            // Escape zum Schliessen des Log-Overlays
-            addEventListenerWithCleanup(document, 'keydown', function(e) {
-                if (e.key === 'Escape' && logOverlay.style.display === 'flex') {
-                    logOverlay.style.display = 'none';
-                }
-            });
-
-            addEventListenerWithCleanup(closeLog, 'click', () => {
-                logOverlay.style.display = 'none';
-            });
-
-            addEventListenerWithCleanup(refreshLog, 'click', loadLogContent);
         }
         
         document.addEventListener('DOMContentLoaded', function() {
@@ -1350,7 +1593,9 @@
             loadSettings();
             initializeEventListeners();
             updateSettingsUI();
-            updateContextEstimation();
+            
+            // Neue Session initialisieren
+            currentSessionId = generateSessionId();
         });
         
         window.addEventListener('beforeunload', function() {
