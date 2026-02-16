@@ -164,7 +164,7 @@
     -------------------------------------
     1. MANIFEST-SCHUTZ:
        - Das Manifest darf niemals entfernt oder reduziert werden
-       - Jede Änderung muss im Manifest dokumentiert werden
+       - Jede Änderung muss zwingend im Manifest dokumentiert werden
        - Das Manifest ist integraler Bestandteil des Codes und muss immer vorhanden sein
     
     2. CODE-INTEGRITÄT:
@@ -197,39 +197,46 @@
     
 
     ÄNDERUNGEN:
-    1. [08.02.2026 00:15] - Titel-Anzeige geändert: 
+    1. [08.02.2026 00:15] 
+       - Titel-Anzeige geändert: 
        - Vorher: "DeepSeek Chat" (zentriert)
        - Nachher: "Server-Name (IP: xxx.xxx.xxx.xxx)" (linksbündig)
        - Grund: Anzeige von Server-Informationen für bessere Übersicht
     
-    2. [08.02.2026 00:15] - System-Prompt verstärkt für konsequente Anredeform:
+    2. [08.02.2026 00:15] 
+       - System-Prompt verstärkt für konsequente Anredeform:
        - Vorher: "Sie sind ein hilfreicher Assistent." / "Du bist ein hilfreicher Assistent."
        - Nachher: "Sie sind ein hilfreicher Assistent. Verwenden Sie in allen Antworten konsequent die Sie-Form."
                   "Du bist ein hilfreicher Assistent. Verwende in allen Antworten konsequent die Du-Form."
        - Grund: Sicherstellen, dass DeepSeek in allen Antworten die gewählte Anredeform strikt einhält
     
-    3. [08.02.2026 00:15] - Manifest um ANREDEFORM-KONSISTENZ erweitert:
+    3. [08.02.2026 00:15] 
+       - Manifest um ANREDEFORM-KONSISTENZ erweitert:
        - Neuer Abschnitt B.5 hinzugefügt
        - Klare, unumstößliche Regeln für Anredeform-Konsistenz definiert
        - Endgültige Festlegung: Diese Einstellung ist nicht verhandelbar
        - Alle zukünftigen Entwicklungen müssen diese Regel strikt einhalten
     
-    4. [08.02.2026 00:15] - CPU-Monitoring-Graph und andere Graphen entfernt:
+    4. [08.02.2026 00:15] 
+       - CPU-Monitoring-Graph und andere Graphen entfernt:
        - Abschnitte C.2, D.4 und alle Bezüge zu Monitoring entfernt
        - Grund: Die Graphen funktionierten nicht und wurden entfernt
     
-    5. [08.02.2026 00:15] - WICHTIGE ANWEISUNG FÜR DIE AUSGABE:
+    5. [08.02.2026 00:15] 
+       - WICHTIGE ANWEISUNG FÜR DIE AUSGABE:
        - Alle Code-Ausgaben müssen als einzelner zusammenhängender Markdown-Codeblock erfolgen
        - Diese Anweisung ist permanent und muss immer befolgt werden
        - Keine Unterbrechungen, keine Aufteilung, kein Weglassen von Code
     
-    6. [08.02.2026 00:15] - MANIFEST-ERWEITERUNG MIT VERBOTEN:
+    6. [08.02.2026 00:15] 
+       - MANIFEST-ERWEITERUNG MIT VERBOTEN:
        - Neuer Abschnitt F hinzugefügt
        - Strikte Regeln zum Schutz des Manifests und der Code-Integrität
        - Verbot von ungewünschten Funktionen und eigenmächtigen Erweiterungen
        - Festlegung des Ausgabeformats als unumstößliche Regel
 
-    7. [08.02.2026 00:15] - API-KEY KONVENTION FESTGELEGT:
+    7. [08.02.2026 00:15] 
+       - API-KEY KONVENTION FESTGELEGT:
        - Abschnitt D.1 erweitert um API-Key Speicherung
        - Abschnitt F.4 hinzugefügt mit klarer Regelung zur API-Key Behandlung
        - Der API-Key im Client-Code ist KEIN Fehler
@@ -237,66 +244,78 @@
        - In zukünftigen Code-Analysen darf der API-Key nicht als Fehler markiert werden
        - Diese Regel gilt für alle aktuellen und zukünftigen Versionen
 
-    8. [08.02.2026 00:15] - KONEXT-HISTORIE UND TOKEN-ZÄHLUNG KORRIGIERT:
+    8. [08.02.2026 00:15] 
+       - KONEXT-HISTORIE UND TOKEN-ZÄHLUNG KORRIGIERT:
        - Fehler 8 behoben: Inkonsistente Token-Zählung in der Kontexthistorie
        - Funktionen `addUserMessageToContext` und `addAIResponseToContext` aktualisieren jetzt automatisch die Token-Zählung
        - `updateContextEstimation()` wird bei jeder Nachricht automatisch aufgerufen
        - Die Kontexthistorie bleibt jetzt konsistent und aktuell
 
-    9. [08.02.2026 00:15] - DATEI-UPLOAD-BEGRENZUNG VOLLSTÄNDIG IMPLEMENTIERT:
+    9. [08.02.2026 00:15] 
+       - DATEI-UPLOAD-BEGRENZUNG VOLLSTÄNDIG IMPLEMENTIERT:
        - Fehler 9 behoben: PDF-Extraktion wird jetzt ebenfalls auf 15.000 Zeichen begrenzt
        - Die Begrenzung erfolgt jetzt direkt in der `extractTextFromPDF` Funktion
        - Alle Dateitypen werden konsistent auf maximal 15.000 Zeichen gekürzt
        - Die Performance bei großen PDFs wurde verbessert
 
-    10. [08.02.2026 00:15] - PDF.JS WORKER FALLBACK IMPLEMENTIERT:
+    10. [08.02.2026 00:15] 
+        - PDF.JS WORKER FALLBACK IMPLEMENTIERT:
         - Fehler 1 behoben: Robustes Fallback-System für PDF.js Worker
         - Mehrere CDN-Quellen mit Prioritätsreihenfolge
         - Lokaler Fallback für Offline-Operationen
         - Verbesserte Fehlermeldungen bei fehlgeschlagenem Worker-Load
 
-    11. [08.02.2026 00:15] - UNGENUTZTE FUNKTIONEN OPTIMIERT:
+    11. [08.02.2026 00:15] 
+        - UNGENUTZTE FUNKTIONEN OPTIMIERT:
         - Fehler 2 behoben: Ungenutzte Funktionen bereinigt
         - `calculateContextUsage()` Funktion entfernt
         - Token-Schätzung mit optimiertem Algorithmus
         - Reduzierte Code-Komplexität
 
-    12. [08.02.2026 00:15] - PDF-VERARBEITUNG VERBESSERT:
+    12. [08.02.2026 00:15] 
+        - PDF-VERARBEITUNG VERBESSERT:
         - Fehler 3 behoben: Maximale Dateigröße von 10 MB eingeführt
         - Timeout von 30 Sekunden für PDF-Extraktion implementiert
         - Verbesserte Fehlerbehandlung für große Dateien
 
-    13. [08.02.2026 00:15] - EVENT-LISTENER PROBLEME BEHOBEN:
+    13. [08.02.2026 00:15] 
+        - EVENT-LISTENER PROBLEME BEHOBEN:
         - Fehler 4 behoben: `keypress` durch `keydown` ersetzt für bessere Enter-Erkennung
         - Race-Condition bei `setTimeout` behoben durch direkte Event-Listener-Zuordnung
         - Verbesserte Stabilität der Benutzerinteraktionen
 
-    14. [08.02.2026 00:15] - MODUS-UMSCHALTUNG KORRIGIERT:
+    14. [08.02.2026 00:15] 
+        - MODUS-UMSCHALTUNG KORRIGIERT:
         - Fehler 5 behoben: Modus-Buttons kehren bei erneutem Klick zum Standard-Chat-Modus zurück
         - Konsequente Modus-Logik mit klarem Zustandsübergang
         - Verbesserte Benutzerführung
 
-    15. [08.02.2026 00:15] - API-ANTWORTVALIDIERUNG IMPLEMENTIERT:
+    15. [08.02.2026 00:15] 
+        - API-ANTWORTVALIDIERUNG IMPLEMENTIERT:
         - Robustes Validierungssystem für API-Antworten
         - Prüfung auf `data.choices[0].message.content` mit Fallback
         - Verbesserte Fehlerbehandlung bei ungültigen API-Antworten
 
-    16. [08.02.2026 00:15] - CSS-SELECTOR-DUPLIKATE KONSOLIDIERT:
+    16. [08.02.2026 00:15] 
+        - CSS-SELECTOR-DUPLIKATE KONSOLIDIERT:
         - Konsolidierung aller doppelten CSS-Regeln
         - Entfernung redundanter Button-Definitionen
         - Optimierte CSS-Spezifität ohne Funktionsverlust
 
-    17. [08.02.2026 00:15] - CSS-SPEZIFITÄTSPROBLEME BEHOBEN:
+    17. [08.02.2026 00:15] 
+        - CSS-SPEZIFITÄTSPROBLEME BEHOBEN:
         - CSS-Selektoren in logischer Reihenfolge reorganisiert
         - Potenzielle Konflikte zwischen Selektoren entfernt
         - Verbesserte Vorhersagbarkeit der Stil-Anwendung
 
-    18. [08.02.2026 00:15] - LOCALSTORAGE VERSIONIERUNG IMPLEMENTIERT:
+    18. [08.02.2026 00:15] 
+        - LOCALSTORAGE VERSIONIERUNG IMPLEMENTIERT:
         - Versionsnummer für Einstellungen eingeführt (aktuell: 1.0)
         - Automatische Migrationsfunktion für zukünftige Updates
         - Rückwärtskompatibilität mit alten Einstellungen gewährleistet
 
-    19. [08.02.2026 00:15] - CODE-OPTIMIERUNGEN DURCHGEFÜHRT:
+    19. [08.02.2026 00:15] 
+        - Code Optimierungen druchgeführt:
         - Magische Zahlen durch Konstanten ersetzt (MAX_CONTEXT_MESSAGES)
         - Datei-Upload-Validierung verbessert mit klarer Benutzerrückmeldung
         - localStorage Migration-Logik vereinfacht und robuster gemacht
@@ -310,7 +329,8 @@
         - `finally`-Block stellt immer Reset sicher (auch bei Fehlern)
         - Grund: Verhinderung unbeabsichtigter Mehrfach-Anfragen durch schnelles Klicken/Enter-Drücken, Kostenersparnis und bessere UX bei Solo-Nutzung
 
-    21. [11.02.2026 13:05] - Echter Multi-Turn-Kontext implementiert:
+    21. [11.02.2026 13:05] 
+        - Echter Multi-Turn-Kontext implementiert:
         - messages-Array enthält nun System-Prompt + abwechselnd die letzten User- und AI-Nachrichten (bis MAX_CONTEXT_MESSAGES)
         - contextHistory wird aktiv für den API-Call verwendet
         - Grund: Bisher fehlte echtes Chat-Gedächtnis → Antworten ignorierten vorherige Nachrichten
@@ -328,13 +348,15 @@
         - .reverse() entfernt, messages werden in der gespeicherten Reihenfolge (älteste zuerst) gesendet
         - Grund: API erwartet chronologische Abfolge → deutlich bessere Antwortqualität bei Multi-Turn
 
-    25. [11.02.2026 13:45] - Einheitliche Datei-Inhaltsbehandlung:
+    25. [11.02.2026 13:45] 
+        - Einheitliche Datei-Inhaltsbehandlung:
         - fullUserMessage verwendet nun denselben vollen Text wie userMessage (bis MAX_FILE_CONTENT_LENGTH)
         - 500-Zeichen-Kürzung entfernt
         - Grund: Konsistenz zwischen Kontext-History und aktueller API-Nachricht → vermeidet Verwirrung beim Modell
 
-    26. [13.02.2026 12:00 ] - SICHERHEITSUPGRADE: API-Key in serverseitige Umgebungsvariable ausgelagert:
-        - API-Key wird NICHT mehr im Client-Code gespeichert
+    26. [13.02.2026 12:00 ] 
+        - SICHERHEITSUPGRADE: API-Key in serverseitige Umgebungsvariable ausgelagert:
+        - API-Key wird nun NICHT mehr im Client-Code gespeichert
         - Python CGI-Script unter /api/chat verwaltet nun die Authentifizierung
         - API-Endpoint geändert von https://api.deepseek.com zu /api/chat (lokaler Proxy)
         - Authorization-Header aus Client-Code entfernt (wird vom CGI-Script hinzugefügt)
@@ -345,19 +367,24 @@
     27. [15.02.2026 12.00 ] - Umstellung http auf https, Testen der SSL-Zertifikate, 
         - Erzeugen eines eigenen github-projektes unter der  URL
 
-    28. [15.02.2026 21:30] - SERVERSEITIGES LOGGING IMPLEMENTIERT:
+    28. [15.02.2026 21:30]
         - Neue Funktion `log_to_file` in `deepseek-api.py` eingeführt
         - Log-Datei unter `/var/www/deepseek-chat/cgi/deepseek-chat.log`
         - Aufgezeichnet werden: Zeitstempel, IP, Methode, Pfad, HTTP-Status, ggf. Fehlermeldung
         - API-Keys werden bewusst nicht geloggt
         - OPTIONS-Requests werden ignoriert, um das Log nicht zu überfluten
 
-    29. [16.02.2026 01:30] - ALLE TASTENKOMBINATIONEN ENTFERNT, LOG-BUTTON HINZUGEFÜGT:
+    29. [16.02.2026 01:30] 
+        - Alle Tastenkombinationen entfernt, LOG Button ist nun zusätzlich.
         - Neu: Eigene Button-Reihe unter den Modi mit Button "Log-Dateien"
         - Button-Design: 40px Höhe, Farbe Blau (#0056b3) wie Haupt-Buttons
         - Manifest aktualisiert: Abschnitt C.2 um Zeile 3 ergänzt
         - Grund: Tastenkombinationen funktionierten nicht zuverlässig in Firefox, Button ist einfacher und zuverlässiger
 
+    30. [16.02.2026 01:30] 
+        - Token Zählung massive verbessert inlusive einer Warnung beim erreichen 
+          der maximalen Grösse des Kontext Windows 
+   
     ============================================================================
    
 
