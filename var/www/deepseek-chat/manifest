@@ -1,0 +1,364 @@
+
+    ============================================================================
+    DEEPSEEK CHAT - DESIGN-MANIFEST & KONVENTIONEN
+    ============================================================================
+    
+    DIESES MANIFEST DOKUMENTIERT ALLE GETROFFENEN DESIGN-ENTSCHEIDUNGEN UND
+    MUSS BEI JEDER ERWEITERUNG ODER ÄNDERUNG BEACHTET WERDEN.
+    ALLE ÄNDERUNGEN AM PROJEKT MÜSSEN IN DIESER DATEI DOKUMENTIERT WERDEN !!!
+    
+    ALLGEMEINE PRINZIPIEN:
+    1. BENUTZERZENTRIERT: Alle Entscheidungen dienen der Benutzerfreundlichkeit
+    2. KONSISTENZ: Einheitliches Design und Verhalten im gesamten Interface
+    3. PRAKTIKABILITÄT: Funktion geht vor dekorativen Elementen
+    
+    KONKRETE DESIGN-VORSCHRIFTEN:
+    
+    A) VISUELLES DESIGN:
+    --------------------
+    1. DARK MODE: Immer aktiv, keine Option für Light Mode
+       - Hintergrund: #121212
+       - Text: #f0f0f0
+       - Akzentfarbe: #0056b3 (Blau)
+    
+    2. TYPOGRAFIE:
+       - Schriftart: Arial (systemüblich, gut lesbar)
+       - Keine Symbole/Emojis in Buttons oder Text
+       - Nur reiner Text für alle Beschriftungen
+    
+    3. BUTTON-DESIGN:
+       - Alle Buttons: 40px Höhe, konsistent
+       - Haupt-Buttons: Blau (#0056b3)
+       - Modus-Buttons: Grün (#28a745) und Türkis (#17a2b8)
+       - Hover-Effekt: Dunklere Variante der Grundfarbe
+       - Aktive Buttons: zusätzliche Markierung
+    
+    B) FUNKTIONALE KONVENTIONEN:
+    -----------------------------
+    1. DEUTSCHE UMLAUTE:
+       - Automatische Ersetzung: ä->ae, ö->oe, ü->ue, ß->ss
+       - Gilt für: Benutzereingaben, Dateiinhalt, System-Prompts, AI-Antworten
+       - Funktion: replaceGermanUmlauts(text)
+    
+    2. DATEI-UPLOAD:
+       - Unterstützte Formate: .txt, .pdf, .doc, .docx, .jpg, .png, .csv, .xlsx, .pptx
+       - PDFs: Text-Extraktion mit pdf.js im Browser
+       - Große Dateien: Automatische Kürzung auf 15.000 Zeichen
+       - Fortschrittsanzeige bei PDF-Verarbeitung
+    
+    3. CHAT-INTERAKTION:
+       - Benutzer-Nachrichten: Blau (#4dabf7)
+       - AI-Antworten: Weiß (#f0f0f0)
+       - Trennung: Graue Linie zwischen Nachrichten
+       - Formatierung: AI-Antworten behalten Zeilenumbrüche (white-space: pre-wrap)
+    
+    4. MODUS-SYSTEM:
+       - Standard: Normaler Chat
+       - DeepThink: Grüne Markierung, tiefgehende Analyse
+       - Search: Türkise Markierung, recherchierte Antworten
+       - Modus wird in jeder Nachricht gekennzeichnet
+    
+    5. ANREDEFORM-KONSISTENZ (ENDEUTIG UND UNUMSTÖSSLICH):
+       - Die gewählte Anredeform (Sie/Du) wird im gesamten Interface konsequent angewendet
+       - Gilt für: System-Prompts, Platzhaltertexte, Beschriftungen, KI-Antworten, Fehlermeldungen
+       - System-Prompt muss strikte Anweisung enthalten: "Verwenden Sie/verwende in allen Antworten konsequent die Sie-/Du-Form."
+       - KI-Antworten müssen der gewählten Anredeform entsprechen (Bei "Hallo" -> "Wie kann ich Ihnen/dir helfen?")
+       - Platzhaltertexte müssen angepasst sein ("Ihre/Deine Nachricht hier eingeben...")
+       - Einstellungsbeschreibungen müssen in der korrekten Anredeform formuliert sein
+       - Diese Konvention ist endgültig und wird nicht weiter diskutiert oder in Frage gestellt
+    
+    C) LAYOUT-VORSCHRIFTEN:
+    -----------------------
+    1. TITEL-ANZEIGE:
+       - Linksbündige Ausrichtung
+       - Zeigt Server-Name und interne IP-Adresse
+       - Format: "Server-Name (IP: xxx.xxx.xxx.xxx)"
+    
+    2. BUTTON-ANORDNUNG:
+       - Zeile 1: Senden | Datei hochladen | Einstellungen (nebeneinander)
+       - Zeile 2: DeepThink | Search (nebeneinander)
+       - NEU: Zeile 3: Log-Dateien (zentriert oder linksbündig)
+       - Alle Buttons gleiche Höhe, unterschiedliche Breiten erlaubt
+    
+    3. EINSTELLUNGS-BEREICH:
+       - Overlay-Design mit dunklem Hintergrund
+       - Klare Gruppen-Trennung mit Überschriften
+       - Radio-Buttons als klickbare Karten
+       - Status-Anzeige für aktive Einstellungen
+    
+    4. CHAT-BEREICH:
+       - Feste Höhe: 400px mit Scrollbalken
+       - Automatisches Scrollen zur neuesten Nachricht
+       - Trennlinien für bessere Lesbarkeit
+
+    5. LOG-ANZEIGE-BEREICH (NEU):
+       - Overlay-Design analog zu Einstellungen
+       - Dunkler Hintergrund (#1e1e1e) mit weisser Schrift (#f0f0f0)
+       - Monospace-Schriftart (Consolas, Monaco, monospace) für Log-Darstellung
+       - Feste Breite: 90% des Viewports, maximale Höhe: 80vh
+       - Integrierter Scrollbalken bei Überlauf
+       - Schliessen-Button oben rechts (rot, 36x36px)
+       - Aktualisieren-Button zum Neuladen des Logs
+       - Zeilenumbrüche werden beibehalten (white-space: pre-wrap)
+    
+    D) TECHNISCHE KONVENTIONEN:
+    ----------------------------
+    1. API-KOMMUNIKATION:
+       - Endpoint: /api/chat (lokaler Proxy)
+       - Backend: https://api.deepseek.com/v1/chat/completions (über Proxy)
+       - Modell: deepseek-chat
+       - Max Tokens: 2000
+       - System-Prompt basierend auf Anredeform und Modus
+       - API-KEY SPEICHERUNG: Der API-Key wird NICHT mehr im Client-Code gespeichert
+       - SICHERHEITSVERBESSERUNG (13.02.2026): API-Key wurde in serverseitige Umgebungsvariable ausgelagert
+       - Ein Python CGI-Script unter /api/chat verwaltet nun die sichere Kommunikation mit der DeepSeek API
+       - Der Client sendet Anfragen an den lokalen Proxy, niemals direkt an die externe API
+    
+    2. DATENSPEICHERUNG:
+       - localStorage für Einstellungen
+       - Key: 'deepseekSettings'
+       - Struktur: {addressForm, defaultMode}
+    
+    3. SERVER-INFORMATIONEN:
+       - Titel zeigt Server-Name und interne IP
+       - IP wird aus window.location.hostname ermittelt
+       - Bei localhost wird "localhost" angezeigt
+    
+    4. FEHLERBEHANDLUNG:
+       - User-freundliche Fehlermeldungen
+       - Console-Logging für Debugging
+       - Visuelle Rückmeldung bei Verarbeitung
+
+    5. LOG-ANZEIGE-FUNKTION (NEU):
+       - Button "Log-Dateien" in eigener Button-Reihe unter den Modi
+       - Endpoint: /cgi-bin/get-log.py zum Abrufen der Log-Datei
+       - Log-Datei-Pfad: /var/www/deepseek-chat/cgi/deepseek-chat.log
+       - Alle Pfade und Dateien sind genau definiert /var/www/deepseek-chat/files-directorys
+       - Bei erfolgreichem Abruf: Anzeige im Log-Overlay
+       - Bei Fehler: Anzeige einer benutzerfreundlichen Fehlermeldung
+       - Bei leerem Log: Hinweis "Keine Log-Einträge vorhanden"
+       - Overlay schliesst mit Escape-Taste oder Klick auf Schliessen-Button
+    
+    E) ERWEITERUNGSRICHTLINIEN:
+    ----------------------------
+    1. NEUE FUNKTIONEN:
+       - Müssen mit Dark Mode kompatibel sein
+       - Keine Symbole einführen
+       - Umlaut-Ersetzung beibehalten
+       - Konsistente Button-Höhe von 40px
+       - ANREDEFORM-KONSISTENZ EINHALTEN: Alle neuen Texte müssen der gewählten Anredeform entsprechen
+    
+    2. CODE-QUALITÄT:
+       - Kommentare für komplexe Logik
+       - Funktionen sollten eine klare Aufgabe haben
+       - Fehlerbehandlung in allen async-Funktionen
+       - Keinerlei Verwendung von PHP Code !!!!
+       - Sofern möglich nur JavaScript und Python !!!
+
+    3. PERFORMANCE:
+       - Große Dateien kürzen oder streamen
+       - Keine Blockierung der UI
+       - Fortschrittsanzeige bei langer Verarbeitung
+    
+    F) STRENGE VERBOTE UND VORSCHRIFTEN:
+    -------------------------------------
+    1. MANIFEST-SCHUTZ:
+       - Das Manifest darf niemals entfernt oder reduziert werden
+       - Jede Änderung muss im Manifest dokumentiert werden
+       - Das Manifest ist integraler Bestandteil des Codes und muss immer vorhanden sein
+    
+    2. CODE-INTEGRITÄT:
+       - Es dürfen keine ungewünschten Funktionen hinzugefügt werden
+       - Nur explizit angeforderten Code implementieren
+       - Keine eigenmächtigen Erweiterungen oder "Verbesserungen"
+       - Die bereits vorhandenen Formatierungen und Einrückungen im HTML Code
+         dürfen unter gar keinen Umständen geändert werden. Dies ist verbindlich und 
+         ultamtiv !!!!  
+    
+    3. AUSGABE-FORMAT:
+       - Bei Code-Anfragen muss der gesamte Code als ein einziger zusammenhängender Markdown-Codeblock zurückgegeben werden
+       - Keine Aufteilung, keine Unterbrechungen, kein Weglassen von Code
+       - Diese Regel gilt für immer und ist unumstößlich
+    
+    4. API-KEY BEHANDLUNG:
+       - Der API-Key wird NICHT mehr im Client-Code gespeichert (VERALTET)
+       - NEUE SICHERHEITSARCHITEKTUR (13.02.2026): 
+         * API-Key wird als Umgebungsvariable auf dem Server gespeichert
+         * Python CGI-Script verwaltet die Authentifizierung
+         * Client hat keinen direkten Zugriff auf den API-Key
+         * Diese Architektur entspricht modernen Sicherheitsstandards
+       - Die vorherige Client-seitige Speicherung wurde aus Sicherheitsgründen entfernt
+    
+    WICHTIG: Jede Änderung an diesem Manifest muss hier dokumentiert werden!
+    ============================================================================
+
+    ZU BEACHTEN : ALLE ZUKÜNFTIGEN ÄNDERUNGEN AN DIESEM MANIFEST MÜSSEN
+    MIT DEM AKTUELLEN DATUM UND UHRZEIT VERSEHEN WERDEN !!! 
+    
+
+    ÄNDERUNGEN:
+    1. [08.02.2026 00:15] - Titel-Anzeige geändert: 
+       - Vorher: "DeepSeek Chat" (zentriert)
+       - Nachher: "Server-Name (IP: xxx.xxx.xxx.xxx)" (linksbündig)
+       - Grund: Anzeige von Server-Informationen für bessere Übersicht
+    
+    2. [08.02.2026 00:15] - System-Prompt verstärkt für konsequente Anredeform:
+       - Vorher: "Sie sind ein hilfreicher Assistent." / "Du bist ein hilfreicher Assistent."
+       - Nachher: "Sie sind ein hilfreicher Assistent. Verwenden Sie in allen Antworten konsequent die Sie-Form."
+                  "Du bist ein hilfreicher Assistent. Verwende in allen Antworten konsequent die Du-Form."
+       - Grund: Sicherstellen, dass DeepSeek in allen Antworten die gewählte Anredeform strikt einhält
+    
+    3. [08.02.2026 00:15] - Manifest um ANREDEFORM-KONSISTENZ erweitert:
+       - Neuer Abschnitt B.5 hinzugefügt
+       - Klare, unumstößliche Regeln für Anredeform-Konsistenz definiert
+       - Endgültige Festlegung: Diese Einstellung ist nicht verhandelbar
+       - Alle zukünftigen Entwicklungen müssen diese Regel strikt einhalten
+    
+    4. [08.02.2026 00:15] - CPU-Monitoring-Graph und andere Graphen entfernt:
+       - Abschnitte C.2, D.4 und alle Bezüge zu Monitoring entfernt
+       - Grund: Die Graphen funktionierten nicht und wurden entfernt
+    
+    5. [08.02.2026 00:15] - WICHTIGE ANWEISUNG FÜR DIE AUSGABE:
+       - Alle Code-Ausgaben müssen als einzelner zusammenhängender Markdown-Codeblock erfolgen
+       - Diese Anweisung ist permanent und muss immer befolgt werden
+       - Keine Unterbrechungen, keine Aufteilung, kein Weglassen von Code
+    
+    6. [08.02.2026 00:15] - MANIFEST-ERWEITERUNG MIT VERBOTEN:
+       - Neuer Abschnitt F hinzugefügt
+       - Strikte Regeln zum Schutz des Manifests und der Code-Integrität
+       - Verbot von ungewünschten Funktionen und eigenmächtigen Erweiterungen
+       - Festlegung des Ausgabeformats als unumstößliche Regel
+
+    7. [08.02.2026 00:15] - API-KEY KONVENTION FESTGELEGT:
+       - Abschnitt D.1 erweitert um API-Key Speicherung
+       - Abschnitt F.4 hinzugefügt mit klarer Regelung zur API-Key Behandlung
+       - Der API-Key im Client-Code ist KEIN Fehler
+       - Diese Design-Entscheidung ist bewusst und final
+       - In zukünftigen Code-Analysen darf der API-Key nicht als Fehler markiert werden
+       - Diese Regel gilt für alle aktuellen und zukünftigen Versionen
+
+    8. [08.02.2026 00:15] - KONEXT-HISTORIE UND TOKEN-ZÄHLUNG KORRIGIERT:
+       - Fehler 8 behoben: Inkonsistente Token-Zählung in der Kontexthistorie
+       - Funktionen `addUserMessageToContext` und `addAIResponseToContext` aktualisieren jetzt automatisch die Token-Zählung
+       - `updateContextEstimation()` wird bei jeder Nachricht automatisch aufgerufen
+       - Die Kontexthistorie bleibt jetzt konsistent und aktuell
+
+    9. [08.02.2026 00:15] - DATEI-UPLOAD-BEGRENZUNG VOLLSTÄNDIG IMPLEMENTIERT:
+       - Fehler 9 behoben: PDF-Extraktion wird jetzt ebenfalls auf 15.000 Zeichen begrenzt
+       - Die Begrenzung erfolgt jetzt direkt in der `extractTextFromPDF` Funktion
+       - Alle Dateitypen werden konsistent auf maximal 15.000 Zeichen gekürzt
+       - Die Performance bei großen PDFs wurde verbessert
+
+    10. [08.02.2026 00:15] - PDF.JS WORKER FALLBACK IMPLEMENTIERT:
+        - Fehler 1 behoben: Robustes Fallback-System für PDF.js Worker
+        - Mehrere CDN-Quellen mit Prioritätsreihenfolge
+        - Lokaler Fallback für Offline-Operationen
+        - Verbesserte Fehlermeldungen bei fehlgeschlagenem Worker-Load
+
+    11. [08.02.2026 00:15] - UNGENUTZTE FUNKTIONEN OPTIMIERT:
+        - Fehler 2 behoben: Ungenutzte Funktionen bereinigt
+        - `calculateContextUsage()` Funktion entfernt
+        - Token-Schätzung mit optimiertem Algorithmus
+        - Reduzierte Code-Komplexität
+
+    12. [08.02.2026 00:15] - PDF-VERARBEITUNG VERBESSERT:
+        - Fehler 3 behoben: Maximale Dateigröße von 10 MB eingeführt
+        - Timeout von 30 Sekunden für PDF-Extraktion implementiert
+        - Verbesserte Fehlerbehandlung für große Dateien
+
+    13. [08.02.2026 00:15] - EVENT-LISTENER PROBLEME BEHOBEN:
+        - Fehler 4 behoben: `keypress` durch `keydown` ersetzt für bessere Enter-Erkennung
+        - Race-Condition bei `setTimeout` behoben durch direkte Event-Listener-Zuordnung
+        - Verbesserte Stabilität der Benutzerinteraktionen
+
+    14. [08.02.2026 00:15] - MODUS-UMSCHALTUNG KORRIGIERT:
+        - Fehler 5 behoben: Modus-Buttons kehren bei erneutem Klick zum Standard-Chat-Modus zurück
+        - Konsequente Modus-Logik mit klarem Zustandsübergang
+        - Verbesserte Benutzerführung
+
+    15. [08.02.2026 00:15] - API-ANTWORTVALIDIERUNG IMPLEMENTIERT:
+        - Robustes Validierungssystem für API-Antworten
+        - Prüfung auf `data.choices[0].message.content` mit Fallback
+        - Verbesserte Fehlerbehandlung bei ungültigen API-Antworten
+
+    16. [08.02.2026 00:15] - CSS-SELECTOR-DUPLIKATE KONSOLIDIERT:
+        - Konsolidierung aller doppelten CSS-Regeln
+        - Entfernung redundanter Button-Definitionen
+        - Optimierte CSS-Spezifität ohne Funktionsverlust
+
+    17. [08.02.2026 00:15] - CSS-SPEZIFITÄTSPROBLEME BEHOBEN:
+        - CSS-Selektoren in logischer Reihenfolge reorganisiert
+        - Potenzielle Konflikte zwischen Selektoren entfernt
+        - Verbesserte Vorhersagbarkeit der Stil-Anwendung
+
+    18. [08.02.2026 00:15] - LOCALSTORAGE VERSIONIERUNG IMPLEMENTIERT:
+        - Versionsnummer für Einstellungen eingeführt (aktuell: 1.0)
+        - Automatische Migrationsfunktion für zukünftige Updates
+        - Rückwärtskompatibilität mit alten Einstellungen gewährleistet
+
+    19. [08.02.2026 00:15] - CODE-OPTIMIERUNGEN DURCHGEFÜHRT:
+        - Magische Zahlen durch Konstanten ersetzt (MAX_CONTEXT_MESSAGES)
+        - Datei-Upload-Validierung verbessert mit klarer Benutzerrückmeldung
+        - localStorage Migration-Logik vereinfacht und robuster gemacht
+        - Bessere Wartbarkeit durch benannte Konstanten
+
+    20. [11.02.2026 12:28] - Schutz vor Mehrfach-Anfragen / Rate-Limiting implementiert:
+        - Einführung von `isSending`-Flag
+        - Deaktivierung des Send-Buttons und des Eingabefelds während laufender API-Anfrage
+        - Button-Textänderung zu „Wird gesendet...“ während Verarbeitung
+        - Enter-Taste blockiert während laufender Anfrage
+        - `finally`-Block stellt immer Reset sicher (auch bei Fehlern)
+        - Grund: Verhinderung unbeabsichtigter Mehrfach-Anfragen durch schnelles Klicken/Enter-Drücken, Kostenersparnis und bessere UX bei Solo-Nutzung
+
+    21. [11.02.2026 13:05] - Echter Multi-Turn-Kontext implementiert:
+        - messages-Array enthält nun System-Prompt + abwechselnd die letzten User- und AI-Nachrichten (bis MAX_CONTEXT_MESSAGES)
+        - contextHistory wird aktiv für den API-Call verwendet
+        - Grund: Bisher fehlte echtes Chat-Gedächtnis → Antworten ignorierten vorherige Nachrichten
+
+    22. [11.02.2026 13:05] - Umlaute-Ersetzung nur noch auf Eingaben angewendet:
+        - replaceGermanUmlauts(aiResponse) entfernt
+        - Ersetzung gilt weiterhin für System-Prompt und User-Nachricht
+        - Grund: AI-Antworten sollen normales Deutsch mit Umlauten enthalten (bessere Lesbarkeit)
+
+    23. [11.02.2026 13:45] - Thinking-Div wird bei API-Fehlern entfernt:
+        - Im catch-Block: thinkingDiv.remove() statt permanenter Anzeige
+        - Grund: Verhindert hängenbleibende "Denkt..."-Nachricht → saubere UI auch bei Fehlern
+
+    24. [11.02.2026 13:45] - Kontext-Reihenfolge chronologisch korrigiert:
+        - .reverse() entfernt, messages werden in der gespeicherten Reihenfolge (älteste zuerst) gesendet
+        - Grund: API erwartet chronologische Abfolge → deutlich bessere Antwortqualität bei Multi-Turn
+
+    25. [11.02.2026 13:45] - Einheitliche Datei-Inhaltsbehandlung:
+        - fullUserMessage verwendet nun denselben vollen Text wie userMessage (bis MAX_FILE_CONTENT_LENGTH)
+        - 500-Zeichen-Kürzung entfernt
+        - Grund: Konsistenz zwischen Kontext-History und aktueller API-Nachricht → vermeidet Verwirrung beim Modell
+
+    26. [13.02.2026 12:00 ] - SICHERHEITSUPGRADE: API-Key in serverseitige Umgebungsvariable ausgelagert:
+        - API-Key wird NICHT mehr im Client-Code gespeichert
+        - Python CGI-Script unter /api/chat verwaltet nun die Authentifizierung
+        - API-Endpoint geändert von https://api.deepseek.com zu /api/chat (lokaler Proxy)
+        - Authorization-Header aus Client-Code entfernt (wird vom CGI-Script hinzugefügt)
+        - DeepSeek API und Modell bleiben unverändert (deepseek-chat)
+        - Manifest aktualisiert: Abschnitte D.1 und F.4 komplett überarbeitet
+        - Grund: Moderne Sicherheitsarchitektur - API-Key niemals im Browser exponiert
+
+    27. [15.02.2026 12.00 ] - Umstellung http auf https, Testen der SSL-Zertifikate, 
+        - Erzeugen eines eigenen github-projektes unter der  URL
+
+    28. [15.02.2026 21:30] - SERVERSEITIGES LOGGING IMPLEMENTIERT:
+        - Neue Funktion `log_to_file` in `deepseek-api.py` eingeführt
+        - Log-Datei unter `/var/www/deepseek-chat/cgi/deepseek-chat.log`
+        - Aufgezeichnet werden: Zeitstempel, IP, Methode, Pfad, HTTP-Status, ggf. Fehlermeldung
+        - API-Keys werden bewusst nicht geloggt
+        - OPTIONS-Requests werden ignoriert, um das Log nicht zu überfluten
+
+    29. [16.02.2026 01:30] - ALLE TASTENKOMBINATIONEN ENTFERNT, LOG-BUTTON HINZUGEFÜGT:
+        - Neu: Eigene Button-Reihe unter den Modi mit Button "Log-Dateien"
+        - Button-Design: 40px Höhe, Farbe Blau (#0056b3) wie Haupt-Buttons
+        - Manifest aktualisiert: Abschnitt C.2 um Zeile 3 ergänzt
+        - Grund: Tastenkombinationen funktionierten nicht zuverlässig in Firefox, Button ist einfacher und zuverlässiger
+
+    ============================================================================
+   
+
+

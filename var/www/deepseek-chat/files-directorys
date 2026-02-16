@@ -1,0 +1,15 @@
+
+Verzeichnisse :
+
+/var/www/deepseek-chat/
+/var/www/deepseek-chat/cgi-bin
+
+Dateien : 
+
+/var/www/deepseek-chat/index.html 
+/var/www/deepseek-chat/files-directorys
+/var/www/deepseek-chat/cgi-bin/deepseek-api-py
+/var/www/deepseek-chat/cgi-bin/get-log.py
+
+ 
+
