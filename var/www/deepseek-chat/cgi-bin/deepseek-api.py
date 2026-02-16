@@ -16,7 +16,7 @@ def log_to_file(status_code, response_data):
         if os.environ.get('REQUEST_METHOD') == 'OPTIONS':
             return
 
-        log_path = '/var/www/deepseek-chat/cgi/deepseek-chat.log'
+        log_path = '/var/www/deepseek-chat/cgi-bin/deepseek-chat.log'
         ip = os.environ.get('REMOTE_ADDR', 'unknown')
         method = os.environ.get('REQUEST_METHOD', 'unknown')
         path = os.environ.get('REQUEST_URI', 'unknown')
