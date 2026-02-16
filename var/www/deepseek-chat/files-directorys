@@ -18,5 +18,3 @@ Dateien :
 /var/www/deepseek-chat/cgi-bin/delete-session.py
 /var/www/deepseek-chat/cgi-bin/export-pdf.py
 /var/www/deepseek-chat/cgi-bin/export-markdown.py
-
-
