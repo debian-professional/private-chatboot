@@ -1812,6 +1812,54 @@
             chat.scrollTop = chat.scrollHeight;
         }
         
+        // =====================================================================
+        // MAGIC BYTES SIGNATUREN fuer ausfuehrbare Dateien
+        // Erkennt: Windows 32/64 Bit, Linux 32/64 Bit, macOS 32/64 Bit,
+        //          ARM 32/64 Bit, Shell Scripts, Java Bytecode, Python Bytecode
+        // =====================================================================
+        const EXECUTABLE_SIGNATURES = [
+            // Windows 32/64 Bit - PE/MZ Header (EXE, DLL, SYS, SCR)
+            { bytes: [0x4D, 0x5A],                                                                                                                         platform: "Windows 32/64 Bit",        format: "PE/MZ Executable" },
+            // Linux 32 Bit - ELF32
+            { bytes: [0x7F, 0x45, 0x4C, 0x46, 0x01],                                                                                                      platform: "Linux 32 Bit",             format: "ELF32 Executable" },
+            // Linux 64 Bit - ELF64
+            { bytes: [0x7F, 0x45, 0x4C, 0x46, 0x02],                                                                                                      platform: "Linux 64 Bit",             format: "ELF64 Executable" },
+            // ARM 32 Bit - ELF32 ARM Little Endian
+            { bytes: [0x7F,0x45,0x4C,0x46,0x01,0x01,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x00,0x28,0x00],                               platform: "ARM 32 Bit",               format: "ELF32 ARM Executable" },
+            // ARM 64 Bit - ELF64 AArch64 Little Endian
+            { bytes: [0x7F,0x45,0x4C,0x46,0x02,0x01,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x00,0xB7,0x00],                               platform: "ARM 64 Bit (AArch64)",     format: "ELF64 AArch64 Executable" },
+            // macOS 32 Bit - Mach-O Little Endian
+            { bytes: [0xCE, 0xFA, 0xED, 0xFE],                                                                                                             platform: "macOS 32 Bit",             format: "Mach-O 32 Bit Executable" },
+            // macOS 64 Bit - Mach-O Little Endian
+            { bytes: [0xCF, 0xFA, 0xED, 0xFE],                                                                                                             platform: "macOS 64 Bit",             format: "Mach-O 64 Bit Executable" },
+            // macOS Universal Binary (Fat Binary - mehrere Architekturen)
+            { bytes: [0xCA, 0xFE, 0xBA, 0xBE],                                                                                                             platform: "macOS Universal Binary",   format: "Mach-O Fat Binary" },
+            // macOS/iOS ARM 32 Bit - Mach-O Big Endian
+            { bytes: [0xFE, 0xED, 0xFA, 0xCE],                                                                                                             platform: "macOS/iOS ARM 32 Bit",     format: "Mach-O 32 Bit Big Endian" },
+            // macOS/iOS ARM 64 Bit - Mach-O Big Endian
+            { bytes: [0xFE, 0xED, 0xFA, 0xCF],                                                                                                             platform: "macOS/iOS ARM 64 Bit",     format: "Mach-O 64 Bit Big Endian" },
+            // Shell Scripts - Shebang (#!)
+            { bytes: [0x23, 0x21],                                                                                                                         platform: "Linux/macOS/Unix",         format: "Shell Script (#!)" },
+            // Python Compiled Bytecode (.pyc) Python 3.8+
+            { bytes: [0x55, 0x0D, 0x0D, 0x0A],                                                                                                            platform: "Python (plattformunabh.)", format: "Python Bytecode (.pyc)" },
+        ];
+
+        async function checkMagicBytes(file) {
+            // Liest die ersten 20 Bytes der Datei und prueft gegen alle Signaturen
+            const buffer = await file.slice(0, 20).arrayBuffer();
+            const bytes = new Uint8Array(buffer);
+            for (const sig of EXECUTABLE_SIGNATURES) {
+                const sigLen = sig.bytes.length;
+                if (bytes.length < sigLen) continue;
+                let match = true;
+                for (let i = 0; i < sigLen; i++) {
+                    if (bytes[i] !== sig.bytes[i]) { match = false; break; }
+                }
+                if (match) return sig; // Treffer: gibt Signatur-Objekt zurueck
+            }
+            return null; // Kein Treffer: Datei ist sicher
+        }
+
         async function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1820,6 +1868,15 @@
             const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
             if (!ACCEPTED_FILE_FORMATS.includes(fileExtension)) {
                 fileInfo.innerHTML = `<div class="pdf-error">Format nicht unterstuetzt: ${fileExtension}. Unterstuetzte Formate: ${ACCEPTED_FILE_FORMATS.join(', ')}</div>`;
+                fileInfo.classList.add('visible');
+                selectedFile = null;
+                fileUpload.value = '';
+                return;
+            }
+            // Magic Bytes Pruefung - erkennt umbenannte ausfuehrbare Dateien
+            const execSig = await checkMagicBytes(file);
+            if (execSig) {
+                fileInfo.innerHTML = `<div class="pdf-error">Sicherheitsfehler: Ausfuehrbare Datei erkannt!<br>Datei: ${file.name}<br>Plattform: ${execSig.platform}<br>Format: ${execSig.format}<br>Upload wurde blockiert.</div>`;
                 fileInfo.classList.add('visible');
                 selectedFile = null;
                 fileUpload.value = '';
@@ -1971,5 +2028,4 @@
     </script>
 </body>
 </html>
-
 
