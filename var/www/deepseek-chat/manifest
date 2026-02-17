@@ -545,5 +545,18 @@
         - Standalone Python-Script detect-executable.py fuer Server-seitige Pruefung erstellt
         - Git: 301880c (index.html mit Magic Bytes Pruefung)
 
+
+        38. [17.02.2026 23:30] - STREAMING RESPONSES IMPLEMENTIERT:
+        - AI-Antworten erscheinen jetzt Token-fuer-Token (wie ChatGPT/Claude)
+        - Server-Sent Events (SSE) statt blocking JSON response
+        - deepseek-api.py: stream: True aktiviert, text/event-stream Header
+        - index.html: sendMessage() komplett umgebaut fuer Streaming-Empfang
+        - ReadableStream API mit TextDecoder fuer Token-Parsing
+        - Auto-Scroll waehrend Streaming fuer bessere UX
+        - Psychologischer Effekt: Antwort startet nach 0.3s statt 8s "Denkt..."
+        - handleRegenerate() noch OHNE Streaming (TODO fuer naechste Version)
+        - Git: aa4ecf7 (deepseek-api.py) + 0963081 (index.html mit Streaming)
+        - Deutlich bessere User Experience bei langen Antworten
+
     ============================================================================
 
