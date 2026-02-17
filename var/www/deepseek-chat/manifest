@@ -515,5 +515,18 @@
         - PDF Einzel-Export ueber bestehendes export-pdf.py (nur eine Nachricht)
         - Git: 01e0fb3 (index.html) + da8282c (export-txt.py) + 5aa5213 (export-rtf.py) + 7d038c1 (files-directorys)
 
+
+        36. [17.02.2026 17:00] - FEEDBACK-BUTTONS FUER AI-ANTWORTEN IMPLEMENTIERT:
+        - 4 neue Buttons bei jeder AI-Antwort (erscheinen beim Hover, links unten)
+        - [Copy] - Kopiert Nachrichtentext in die Zwischenablage, zeigt kurz "Copied!"
+        - [Like] - Gruen markiert, schreibt LIKE-Eintrag in deepseek-chat.log
+        - [Dislike] - Rot markiert, schreibt DISLIKE-Eintrag in deepseek-chat.log
+        - [Regen] - Loescht alte AI-Antwort, generiert neue Antwort auf dieselbe User-Frage
+        - Like/Dislike gegenseitig ausschliessend (Klick auf Like deaktiviert Dislike und umgekehrt)
+        - Feedback-Buttons nur bei AI-Antworten, nicht bei User-Nachrichten
+        - Neues CGI-Script feedback-log.py schreibt ins bestehende deepseek-chat.log
+        - Log-Format: YYYY-MM-DD HH:MM:SS | IP | FEEDBACK | LIKE/DISLIKE | msgId | "Preview"
+        - Git: a2e371b (index.html) + e3ba685 (feedback-log.py)
+
     ============================================================================
 
