@@ -488,5 +488,14 @@
           * PDF-Download funktioniert jetzt korrekt im Browser
           * Log-Anzeige wieder vollständig funktionsfähig
 
+        33. [17.02.2026 09:00] - GITHUB RAW-URL CACHE VERHALTEN DOKUMENTIERT:
+        - raw.githubusercontent.com URLs werden von GitHub bis zu 10 Minuten gecacht
+        - Nach einem git push ist die neue Version NICHT sofort über Raw-URLs sichtbar
+        - Dies betrifft alle GitHub-Accounts (Gratis und bezahlt)
+        - Lösung: Nach git push einfach 5-10 Minuten warten
+        - Die Dateien sind korrekt auf GitHub sobald git push erfolgreich war
+        - Prüfung ob Upload korrekt war: git log --oneline und git show --name-only
+        - Lokale Kontrolle: grep -c "schlüsselwort" /pfad/zur/datei
+
     ============================================================================
 
