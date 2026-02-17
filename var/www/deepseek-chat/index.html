@@ -63,9 +63,10 @@
         .message-container {
             position: relative;
             margin-bottom: 5px;
-            padding-right: 30px;
+            padding-right: 60px;
         }
-        .message-container:hover .delete-message-btn {
+        .message-container:hover .delete-message-btn,
+        .message-container:hover .download-message-btn {
             display: block;
         }
         .delete-message-btn {
@@ -77,9 +78,9 @@
             color: white;
             border: none;
             border-radius: 3px;
-            width: 20px;
+            width: 24px;
             height: 20px;
-            font-size: 12px;
+            font-size: 11px;
             cursor: pointer;
             padding: 0;
             line-height: 20px;
@@ -87,6 +88,55 @@
         }
         .delete-message-btn:hover {
             background: #c82333;
+        }
+        .download-message-btn {
+            display: none;
+            position: absolute;
+            right: 32px;
+            top: 5px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            width: 24px;
+            height: 20px;
+            font-size: 11px;
+            cursor: pointer;
+            padding: 0;
+            line-height: 20px;
+            text-align: center;
+        }
+        .download-message-btn:hover {
+            background: #218838;
+        }
+        .single-export-dropdown {
+            display: none;
+            position: absolute;
+            right: 5px;
+            top: 28px;
+            background: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 4px;
+            z-index: 2000;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            min-width: 120px;
+        }
+        .single-export-dropdown.show {
+            display: block;
+        }
+        .single-export-item {
+            padding: 8px 14px;
+            color: #f0f0f0;
+            cursor: pointer;
+            font-size: 12px;
+            border-bottom: 1px solid #444;
+            white-space: nowrap;
+        }
+        .single-export-item:last-child {
+            border-bottom: none;
+        }
+        .single-export-item:hover {
+            background: #3d3d3d;
         }
         .user-message {
             color: #4dabf7;
@@ -635,11 +685,13 @@
         <div class="dropdown-container">
             <button id="exportButton" class="dropdown-button">
                 Exportieren
-                <span class="dropdown-arrow">▼</span>
+                <span class="dropdown-arrow">&#9660;</span>
             </button>
             <div id="exportMenu" class="dropdown-menu">
                 <div class="dropdown-item" id="exportPdfBtn">Als PDF herunterladen</div>
                 <div class="dropdown-item" id="exportMarkdownBtn">Als Markdown herunterladen</div>
+                <div class="dropdown-item" id="exportTxtBtn">Als TXT herunterladen</div>
+                <div class="dropdown-item" id="exportRtfBtn">Als RTF herunterladen</div>
                 <div class="dropdown-item" id="loadSessionBtn">Chat-Verlauf laden</div>
             </div>
         </div>
@@ -774,6 +826,8 @@
         const DELETE_SESSION_URL = '/cgi-bin/delete-session.py';
         const EXPORT_PDF_URL = '/cgi-bin/export-pdf.py';
         const EXPORT_MARKDOWN_URL = '/cgi-bin/export-markdown.py';
+        const EXPORT_TXT_URL = '/cgi-bin/export-txt.py';
+        const EXPORT_RTF_URL = '/cgi-bin/export-rtf.py';
         const GET_LOG_URL = '/cgi-bin/get-log.py';
         
         const SERVER_NAME = 'DeepSeek Chat Server';
@@ -790,6 +844,7 @@
         let isSending = false;
         let currentSessionId = null;
         let messageIdCounter = 0;
+        let activeSingleExportDropdown = null;
         
         function generateSessionId() {
             const now = new Date();
@@ -802,8 +857,8 @@
         function replaceGermanUmlauts(text) {
             if (!text) return text;
             return text
-                 .replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
-                 .replace(/Ä/g, "Ae").replace(/Ö/g, "Oe").replace(/Ü/g, "Ue");
+                 .replace(/ae/g, "ae").replace(/oe/g, "oe").replace(/ue/g, "ue").replace(/ss/g, "ss")
+                 .replace(/Ae/g, "Ae").replace(/Oe/g, "Oe").replace(/Ue/g, "Ue");
         }
         
         async function loadPDFJSWorker() {
@@ -1034,6 +1089,10 @@
             }
         }
         
+        // =====================================================================
+        // GESAMT-EXPORT FUNKTIONEN
+        // =====================================================================
+        
         async function exportPDF() {
             try {
                 const chatData = {
@@ -1050,14 +1109,7 @@
                 });
                 if (!response.ok) throw new Error('PDF-Export fehlgeschlagen');
                 const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `deepseek-chat-${currentSessionId || 'export'}.pdf`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
+                triggerDownload(blob, `deepseek-chat-${currentSessionId || 'export'}.pdf`);
             } catch (error) {
                 alert('Fehler beim PDF-Export: ' + error.message);
             }
@@ -1079,17 +1131,172 @@
                 });
                 if (!response.ok) throw new Error('Markdown-Export fehlgeschlagen');
                 const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `deepseek-chat-${currentSessionId || 'export'}.md`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
+                triggerDownload(blob, `deepseek-chat-${currentSessionId || 'export'}.md`);
             } catch (error) {
                 alert('Fehler beim Markdown-Export: ' + error.message);
             }
+        }
+        
+        async function exportTxt() {
+            try {
+                const chatData = {
+                    version: "1.0",
+                    timestamp: new Date().toISOString(),
+                    serverInfo: { name: SERVER_NAME, ip: getServerIP() },
+                    settings: settings,
+                    messages: contextHistory.messages
+                };
+                const response = await fetch(EXPORT_TXT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chatData })
+                });
+                if (!response.ok) throw new Error('TXT-Export fehlgeschlagen');
+                const blob = await response.blob();
+                triggerDownload(blob, `deepseek-chat-${currentSessionId || 'export'}.txt`);
+            } catch (error) {
+                alert('Fehler beim TXT-Export: ' + error.message);
+            }
+        }
+        
+        async function exportRtf() {
+            try {
+                const chatData = {
+                    version: "1.0",
+                    timestamp: new Date().toISOString(),
+                    serverInfo: { name: SERVER_NAME, ip: getServerIP() },
+                    settings: settings,
+                    messages: contextHistory.messages
+                };
+                const response = await fetch(EXPORT_RTF_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chatData })
+                });
+                if (!response.ok) throw new Error('RTF-Export fehlgeschlagen');
+                const blob = await response.blob();
+                triggerDownload(blob, `deepseek-chat-${currentSessionId || 'export'}.rtf`);
+            } catch (error) {
+                alert('Fehler beim RTF-Export: ' + error.message);
+            }
+        }
+        
+        // =====================================================================
+        // EINZEL-EXPORT FUNKTIONEN (direkt im Browser, kein Server noetig)
+        // =====================================================================
+        
+        function triggerDownload(blob, filename) {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+        
+        function getMsgText(msgId) {
+            const msg = contextHistory.messages.find(m => m.id === msgId);
+            return msg ? msg.content : '';
+        }
+        
+        function getMsgRole(msgId) {
+            const msg = contextHistory.messages.find(m => m.id === msgId);
+            return msg ? msg.role : 'unknown';
+        }
+        
+        function exportSingleAsTxt(msgId) {
+            const text = getMsgText(msgId);
+            const role = getMsgRole(msgId) === 'user' ? 'User' : 'DeepSeek AI';
+            const timestamp = new Date().toLocaleString('de-DE');
+            const content = `DeepSeek Chat - Einzelnachricht\nExportiert am: ${timestamp}\n\n${role}:\n${'='.repeat(40)}\n${text}\n`;
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            triggerDownload(blob, `nachricht-${msgId}.txt`);
+        }
+        
+        function exportSingleAsMarkdown(msgId) {
+            const text = getMsgText(msgId);
+            const role = getMsgRole(msgId) === 'user' ? 'User' : 'DeepSeek AI';
+            const timestamp = new Date().toLocaleString('de-DE');
+            const content = `# DeepSeek Chat - Einzelnachricht\n\n**Exportiert am:** ${timestamp}\n\n## ${role}\n\n${text}\n`;
+            const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+            triggerDownload(blob, `nachricht-${msgId}.md`);
+        }
+        
+        function exportSingleAsRtf(msgId) {
+            const text = getMsgText(msgId);
+            const role = getMsgRole(msgId) === 'user' ? 'User' : 'DeepSeek AI';
+            const timestamp = new Date().toLocaleString('de-DE');
+            // RTF direkt generieren ohne externe Library
+            const escapedText = text
+                .replace(/\\/g, '\\\\')
+                .replace(/\{/g, '\\{')
+                .replace(/\}/g, '\\}')
+                .replace(/\n/g, '\\par\n');
+            const escapedRole = role.replace(/\\/g, '\\\\');
+            const rtfContent = `{\\rtf1\\ansi\\deff0\n{\\fonttbl{\\f0 Arial;}}\n{\\colortbl;\\red0\\green86\\blue179;\\red40\\green40\\blue40;}\n\\f0\\fs24\n{\\b\\cf1 DeepSeek Chat - Einzelnachricht}\\par\n{\\cf2 Exportiert am: ${timestamp}}\\par\n\\par\n{\\b\\cf1 ${escapedRole}:}\\par\n${'_'.repeat(40)}\\par\n\\par\n${escapedText}\\par\n}`;
+            const blob = new Blob([rtfContent], { type: 'application/rtf' });
+            triggerDownload(blob, `nachricht-${msgId}.rtf`);
+        }
+        
+        async function exportSingleAsPdf(msgId) {
+            try {
+                const msg = contextHistory.messages.find(m => m.id === msgId);
+                if (!msg) return;
+                const singleChatData = {
+                    version: "1.0",
+                    timestamp: new Date().toISOString(),
+                    serverInfo: { name: SERVER_NAME, ip: getServerIP() },
+                    settings: settings,
+                    messages: [msg]
+                };
+                const response = await fetch(EXPORT_PDF_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chatData: singleChatData })
+                });
+                if (!response.ok) throw new Error('PDF-Export fehlgeschlagen');
+                const blob = await response.blob();
+                triggerDownload(blob, `nachricht-${msgId}.pdf`);
+            } catch (error) {
+                alert('Fehler beim PDF-Export: ' + error.message);
+            }
+        }
+        
+        function showSingleExportDropdown(msgId, btnElement) {
+            // Vorheriges Dropdown schliessen
+            if (activeSingleExportDropdown) {
+                activeSingleExportDropdown.classList.remove('show');
+                activeSingleExportDropdown = null;
+            }
+            const container = btnElement.closest('.message-container');
+            let dropdown = container.querySelector('.single-export-dropdown');
+            if (!dropdown) {
+                dropdown = document.createElement('div');
+                dropdown.className = 'single-export-dropdown';
+                dropdown.innerHTML = `
+                    <div class="single-export-item" data-format="txt">Als TXT</div>
+                    <div class="single-export-item" data-format="md">Als Markdown</div>
+                    <div class="single-export-item" data-format="rtf">Als RTF</div>
+                    <div class="single-export-item" data-format="pdf">Als PDF</div>
+                `;
+                dropdown.querySelectorAll('.single-export-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const format = item.getAttribute('data-format');
+                        dropdown.classList.remove('show');
+                        activeSingleExportDropdown = null;
+                        if (format === 'txt') exportSingleAsTxt(msgId);
+                        else if (format === 'md') exportSingleAsMarkdown(msgId);
+                        else if (format === 'rtf') exportSingleAsRtf(msgId);
+                        else if (format === 'pdf') exportSingleAsPdf(msgId);
+                    });
+                });
+                container.appendChild(dropdown);
+            }
+            dropdown.classList.toggle('show');
+            activeSingleExportDropdown = dropdown.classList.contains('show') ? dropdown : null;
         }
         
         async function fetchLog() {
@@ -1107,20 +1314,13 @@
         
         async function deleteMessage(msgId) {
             if (!confirm('Diese Nachricht und alle nachfolgenden Nachrichten loeschen?')) return;
-            
-            // Position der Nachricht in contextHistory finden
             const msgIndex = contextHistory.messages.findIndex(m => m.id === msgId);
-            
-            // Alle Nachrichten ab dieser Position aus contextHistory entfernen
             if (msgIndex !== -1) {
                 contextHistory.messages = contextHistory.messages.slice(0, msgIndex);
             }
             updateContextEstimation();
-            
-            // Im DOM: Container der Nachricht und alle nachfolgenden Elemente entfernen
             const container = document.querySelector(`[data-msg-id="${msgId}"]`);
             if (container) {
-                // Alle nachfolgenden Geschwister-Elemente sammeln und entfernen
                 const elementsToRemove = [];
                 let current = container;
                 while (current) {
@@ -1129,7 +1329,6 @@
                 }
                 elementsToRemove.forEach(el => el.remove());
             }
-            
             await saveSession();
         }
         
@@ -1166,6 +1365,8 @@
         const exportMenu = document.getElementById('exportMenu');
         const exportPdfBtn = document.getElementById('exportPdfBtn');
         const exportMarkdownBtn = document.getElementById('exportMarkdownBtn');
+        const exportTxtBtn = document.getElementById('exportTxtBtn');
+        const exportRtfBtn = document.getElementById('exportRtfBtn');
         const loadSessionBtn = document.getElementById('loadSessionBtn');
         const sessionsOverlay = document.getElementById('sessionsOverlay');
         const closeSessions = document.getElementById('closeSessions');
@@ -1303,6 +1504,13 @@
                 thinkingDiv.textContent = aiResponse;
                 thinkingDiv.setAttribute('data-msg-id', aiMsgId);
                 thinkingDiv.classList.add('message-container');
+                // DL-Button
+                const dlBtn = document.createElement('button');
+                dlBtn.className = 'download-message-btn';
+                dlBtn.textContent = 'DL';
+                dlBtn.onclick = (e) => { e.stopPropagation(); showSingleExportDropdown(aiMsgId, dlBtn); };
+                thinkingDiv.appendChild(dlBtn);
+                // X-Button
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'delete-message-btn';
                 deleteBtn.textContent = 'X';
@@ -1335,6 +1543,13 @@
             messageDiv.className = isUser ? 'user-message' : 'ai-message';
             messageDiv.textContent = text;
             messageContainer.appendChild(messageDiv);
+            // DL-Button
+            const dlBtn = document.createElement('button');
+            dlBtn.className = 'download-message-btn';
+            dlBtn.textContent = 'DL';
+            dlBtn.onclick = (e) => { e.stopPropagation(); showSingleExportDropdown(msgId, dlBtn); };
+            messageContainer.appendChild(dlBtn);
+            // X-Button
             const deleteBtn = document.createElement('button');
             deleteBtn.className = 'delete-message-btn';
             deleteBtn.textContent = 'X';
@@ -1420,6 +1635,8 @@
             addEventListenerWithCleanup(exportButton, 'click', () => exportMenu.classList.toggle('show'));
             addEventListenerWithCleanup(exportPdfBtn, 'click', () => { exportMenu.classList.remove('show'); exportPDF(); });
             addEventListenerWithCleanup(exportMarkdownBtn, 'click', () => { exportMenu.classList.remove('show'); exportMarkdown(); });
+            addEventListenerWithCleanup(exportTxtBtn, 'click', () => { exportMenu.classList.remove('show'); exportTxt(); });
+            addEventListenerWithCleanup(exportRtfBtn, 'click', () => { exportMenu.classList.remove('show'); exportRtf(); });
             addEventListenerWithCleanup(loadSessionBtn, 'click', async () => {
                 exportMenu.classList.remove('show');
                 await loadSessionsList();
@@ -1436,6 +1653,11 @@
                 if (!exportButton.contains(e.target) && !exportMenu.contains(e.target)) {
                     exportMenu.classList.remove('show');
                 }
+                // Einzel-Export Dropdown schliessen bei Klick ausserhalb
+                if (activeSingleExportDropdown && !activeSingleExportDropdown.contains(e.target)) {
+                    activeSingleExportDropdown.classList.remove('show');
+                    activeSingleExportDropdown = null;
+                }
             });
             addEventListenerWithCleanup(document, 'keydown', (e) => {
                 if (e.key === 'Escape') {
@@ -1443,6 +1665,10 @@
                     sessionsOverlay.style.display = 'none';
                     settingsOverlay.style.display = 'none';
                     exportMenu.classList.remove('show');
+                    if (activeSingleExportDropdown) {
+                        activeSingleExportDropdown.classList.remove('show');
+                        activeSingleExportDropdown = null;
+                    }
                 }
             });
             const saveHandler = function() {
