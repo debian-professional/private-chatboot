@@ -64,6 +64,7 @@
             position: relative;
             margin-bottom: 5px;
             padding-right: 60px;
+            padding-bottom: 28px;
         }
         .message-container:hover .delete-message-btn,
         .message-container:hover .download-message-btn {
@@ -108,6 +109,48 @@
         }
         .download-message-btn:hover {
             background: #218838;
+        }
+        .feedback-buttons {
+            display: none;
+            position: absolute;
+            left: 5px;
+            bottom: 5px;
+            gap: 4px;
+            flex-direction: row;
+        }
+        .message-container:hover .feedback-buttons {
+            display: flex;
+        }
+        .feedback-btn {
+            background: #2d2d2d;
+            color: #aaa;
+            border: 1px solid #444;
+            border-radius: 3px;
+            padding: 2px 6px;
+            font-size: 11px;
+            cursor: pointer;
+            line-height: 18px;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .feedback-btn:hover {
+            background: #3d3d3d;
+            color: #f0f0f0;
+        }
+        .feedback-btn.liked {
+            background: #155724;
+            color: #90ee90;
+            border-color: #28a745;
+        }
+        .feedback-btn.disliked {
+            background: #721c24;
+            color: #f8d7da;
+            border-color: #dc3545;
+        }
+        .feedback-btn.copied {
+            background: #0d3a6e;
+            color: #4dabf7;
+            border-color: #0056b3;
         }
         .single-export-dropdown {
             display: none;
@@ -829,6 +872,7 @@
         const EXPORT_TXT_URL = '/cgi-bin/export-txt.py';
         const EXPORT_RTF_URL = '/cgi-bin/export-rtf.py';
         const GET_LOG_URL = '/cgi-bin/get-log.py';
+        const FEEDBACK_LOG_URL = '/cgi-bin/feedback-log.py';
         
         const SERVER_NAME = 'DeepSeek Chat Server';
         const MAX_CONTEXT_TOKENS = 16000;
@@ -1299,6 +1343,209 @@
             activeSingleExportDropdown = dropdown.classList.contains('show') ? dropdown : null;
         }
         
+        // =====================================================================
+        // FEEDBACK UND REGENERIEREN FUNKTIONEN
+        // =====================================================================
+
+        async function sendFeedbackLog(type, msgId, preview) {
+            try {
+                await fetch(FEEDBACK_LOG_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type, msgId, preview })
+                });
+            } catch (error) {
+                console.error('Fehler beim Feedback-Logging:', error);
+            }
+        }
+
+        function handleLike(msgId, likeBtn, dislikeBtn) {
+            const isLiked = likeBtn.classList.contains('liked');
+            // Beide zuruecksetzen
+            likeBtn.classList.remove('liked');
+            dislikeBtn.classList.remove('disliked');
+            likeBtn.textContent = 'Like';
+            dislikeBtn.textContent = 'Dislike';
+            if (!isLiked) {
+                likeBtn.classList.add('liked');
+                likeBtn.textContent = 'Liked';
+                const preview = getMsgText(msgId).substring(0, 60);
+                sendFeedbackLog('LIKE', msgId, preview);
+            }
+        }
+
+        function handleDislike(msgId, likeBtn, dislikeBtn) {
+            const isDisliked = dislikeBtn.classList.contains('disliked');
+            // Beide zuruecksetzen
+            likeBtn.classList.remove('liked');
+            dislikeBtn.classList.remove('disliked');
+            likeBtn.textContent = 'Like';
+            dislikeBtn.textContent = 'Dislike';
+            if (!isDisliked) {
+                dislikeBtn.classList.add('disliked');
+                dislikeBtn.textContent = 'Disliked';
+                const preview = getMsgText(msgId).substring(0, 60);
+                sendFeedbackLog('DISLIKE', msgId, preview);
+            }
+        }
+
+        function handleCopy(msgId, copyBtn) {
+            const text = getMsgText(msgId);
+            navigator.clipboard.writeText(text).then(() => {
+                copyBtn.classList.add('copied');
+                copyBtn.textContent = 'Copied!';
+                setTimeout(() => {
+                    copyBtn.classList.remove('copied');
+                    copyBtn.textContent = 'Copy';
+                }, 2000);
+            }).catch(() => {
+                // Fallback fuer aeltere Browser
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                copyBtn.classList.add('copied');
+                copyBtn.textContent = 'Copied!';
+                setTimeout(() => {
+                    copyBtn.classList.remove('copied');
+                    copyBtn.textContent = 'Copy';
+                }, 2000);
+            });
+        }
+
+        async function handleRegenerate(msgId) {
+            if (isSending) return;
+
+            // AI-Nachricht in contextHistory finden
+            const msgIndex = contextHistory.messages.findIndex(m => m.id === msgId);
+            if (msgIndex === -1) return;
+
+            // User-Nachricht davor finden
+            const userMsg = contextHistory.messages[msgIndex - 1];
+            if (!userMsg || userMsg.role !== 'user') return;
+
+            // AI-Nachricht aus contextHistory entfernen
+            contextHistory.messages = contextHistory.messages.slice(0, msgIndex);
+            updateContextEstimation();
+
+            // AI-Nachricht aus DOM entfernen (Container + nachfolgende Trennlinie)
+            const container = document.querySelector(`[data-msg-id="${msgId}"]`);
+            if (container) {
+                const nextSibling = container.nextElementSibling;
+                if (nextSibling && nextSibling.classList.contains('message-divider')) {
+                    nextSibling.remove();
+                }
+                container.remove();
+            }
+
+            // Neu senden mit derselben User-Nachricht
+            isSending = true;
+            sendButton.disabled = true;
+            sendButton.textContent = 'Wird gesendet...';
+            inputField.disabled = true;
+
+            let systemPrompt = settings.addressForm === 'sie' ?
+                'Sie sind ein hilfreicher Assistent. Verwenden Sie in allen Antworten konsequent die Sie-Form.' :
+                'Du bist ein hilfreicher Assistent. Verwende in allen Antworten konsequent die Du-Form.';
+            if (userMsg.mode === 'deepthink') systemPrompt += ' Bitte geben Sie eine tiefgehende Analyse mit detaillierten Ueberlegungen.';
+            else if (userMsg.mode === 'search') systemPrompt += ' Bitte geben Sie eine recherchierte Antwort mit aktuellen Informationen.';
+            updateSystemPromptTokens(systemPrompt);
+            const processedSystem = replaceGermanUmlauts(systemPrompt);
+
+            const thinkingDiv = document.createElement('div');
+            thinkingDiv.className = 'ai-message';
+            thinkingDiv.textContent = 'Denkt...';
+            chat.appendChild(thinkingDiv);
+            chat.scrollTop = chat.scrollHeight;
+
+            try {
+                const messages = [{ role: 'system', content: processedSystem }];
+                contextHistory.messages.forEach(msg => {
+                    messages.push({ role: msg.role, content: replaceGermanUmlauts(msg.content) });
+                });
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model: 'deepseek-chat', messages, max_tokens: 2000 })
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`API-Fehler (${response.status}): ${errorText}`);
+                }
+                const data = await response.json();
+                if (!data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
+                    throw new Error('Ungueltige API-Antwort-Struktur erhalten');
+                }
+                const aiResponse = data.choices[0].message.content;
+                const aiMsgId = addAIResponseToContext(aiResponse, userMsg.mode);
+                thinkingDiv.textContent = aiResponse;
+                thinkingDiv.setAttribute('data-msg-id', aiMsgId);
+                thinkingDiv.classList.add('message-container');
+                addFeedbackButtons(thinkingDiv, aiMsgId);
+                const dlBtn = document.createElement('button');
+                dlBtn.className = 'download-message-btn';
+                dlBtn.textContent = 'DL';
+                dlBtn.onclick = (e) => { e.stopPropagation(); showSingleExportDropdown(aiMsgId, dlBtn); };
+                thinkingDiv.appendChild(dlBtn);
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-message-btn';
+                deleteBtn.textContent = 'X';
+                deleteBtn.onclick = () => deleteMessage(aiMsgId);
+                thinkingDiv.appendChild(deleteBtn);
+                chat.appendChild(document.createElement('div')).className = 'message-divider';
+                await saveSession();
+            } catch (error) {
+                thinkingDiv.remove();
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'ai-message';
+                errorDiv.textContent = `Fehler: ${replaceGermanUmlauts(error.message)}`;
+                chat.appendChild(errorDiv);
+                chat.appendChild(document.createElement('div')).className = 'message-divider';
+                console.error('Fehler beim Regenerieren:', error);
+            } finally {
+                isSending = false;
+                sendButton.disabled = false;
+                sendButton.textContent = 'Senden';
+                inputField.disabled = false;
+                chat.scrollTop = chat.scrollHeight;
+            }
+        }
+
+        function addFeedbackButtons(container, msgId) {
+            const feedbackDiv = document.createElement('div');
+            feedbackDiv.className = 'feedback-buttons';
+
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'feedback-btn';
+            copyBtn.textContent = 'Copy';
+            copyBtn.onclick = (e) => { e.stopPropagation(); handleCopy(msgId, copyBtn); };
+
+            const likeBtn = document.createElement('button');
+            likeBtn.className = 'feedback-btn';
+            likeBtn.textContent = 'Like';
+
+            const dislikeBtn = document.createElement('button');
+            dislikeBtn.className = 'feedback-btn';
+            dislikeBtn.textContent = 'Dislike';
+
+            likeBtn.onclick = (e) => { e.stopPropagation(); handleLike(msgId, likeBtn, dislikeBtn); };
+            dislikeBtn.onclick = (e) => { e.stopPropagation(); handleDislike(msgId, likeBtn, dislikeBtn); };
+
+            const regenBtn = document.createElement('button');
+            regenBtn.className = 'feedback-btn';
+            regenBtn.textContent = 'Regen';
+            regenBtn.onclick = (e) => { e.stopPropagation(); handleRegenerate(msgId); };
+
+            feedbackDiv.appendChild(copyBtn);
+            feedbackDiv.appendChild(likeBtn);
+            feedbackDiv.appendChild(dislikeBtn);
+            feedbackDiv.appendChild(regenBtn);
+            container.appendChild(feedbackDiv);
+        }
+
         async function fetchLog() {
             const logContent = document.getElementById('logContent');
             logContent.textContent = 'Lade Log-Dateien...';
@@ -1504,6 +1751,7 @@
                 thinkingDiv.textContent = aiResponse;
                 thinkingDiv.setAttribute('data-msg-id', aiMsgId);
                 thinkingDiv.classList.add('message-container');
+                addFeedbackButtons(thinkingDiv, aiMsgId);
                 // DL-Button
                 const dlBtn = document.createElement('button');
                 dlBtn.className = 'download-message-btn';
@@ -1543,6 +1791,10 @@
             messageDiv.className = isUser ? 'user-message' : 'ai-message';
             messageDiv.textContent = text;
             messageContainer.appendChild(messageDiv);
+            // Feedback-Buttons nur fuer AI-Nachrichten
+            if (!isUser) {
+                addFeedbackButtons(messageContainer, msgId);
+            }
             // DL-Button
             const dlBtn = document.createElement('button');
             dlBtn.className = 'download-message-btn';
@@ -1719,4 +1971,5 @@
     </script>
 </body>
 </html>
+
 
