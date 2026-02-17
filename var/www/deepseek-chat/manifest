@@ -505,5 +505,15 @@
         - contextHistory: messages.slice(0, msgIndex) - alles ab Position entfernt
         - Git: a591bce
 
+        35. [17.02.2026 11:00] - TXT/RTF EXPORT + DL-BUTTON EINZELNACHRICHTEN:
+        - Gesamt-Export Dropdown um 2 Formate erweitert: TXT und RTF
+        - export-txt.py: neues CGI-Script fuer TXT-Export des gesamten Chats
+        - export-rtf.py: neues CGI-Script fuer RTF-Export (ohne externe Library, Umlaute als RTF-Codes)
+        - DL-Button [DL] gruen bei Hover neben X-Button fuer jede Nachricht
+        - DL-Button oeffnet Dropdown: Als TXT / Als Markdown / Als RTF / Als PDF
+        - TXT, Markdown, RTF Einzel-Export direkt im Browser (JavaScript Blob, kein Server)
+        - PDF Einzel-Export ueber bestehendes export-pdf.py (nur eine Nachricht)
+        - Git: 01e0fb3 (index.html) + da8282c (export-txt.py) + 5aa5213 (export-rtf.py) + 7d038c1 (files-directorys)
+
     ============================================================================
 
