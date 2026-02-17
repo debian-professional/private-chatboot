@@ -572,6 +572,39 @@
             color: #aaa;
             font-size: 14px;
         }
+        #logOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1001;
+            align-items: center;
+            justify-content: center;
+        }
+        #logPanel {
+            background: #1e1e1e;
+            border: 2px solid #0056b3;
+            border-radius: 10px;
+            padding: 25px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        #logContent {
+            font-family: Consolas, Monaco, monospace;
+            font-size: 12px;
+            color: #f0f0f0;
+            white-space: pre-wrap;
+            background: #121212;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
@@ -723,6 +756,17 @@
         </div>
     </div>
 
+    <div id="logOverlay">
+        <div id="logPanel">
+            <div class="settings-header">
+                <div class="settings-title">Log-Dateien</div>
+                <button class="close-settings" id="closeLog" title="Schliessen">&times;</button>
+            </div>
+            <button class="action-button" id="refreshLog" style="width:auto; flex:none; padding: 8px 20px;">Aktualisieren</button>
+            <div id="logContent">Lade Log-Dateien...</div>
+        </div>
+    </div>
+
     <script>
         const API_URL = '/cgi-bin/deepseek-api.py';
         const SAVE_SESSION_URL = '/cgi-bin/save-session.py';
@@ -730,6 +774,7 @@
         const DELETE_SESSION_URL = '/cgi-bin/delete-session.py';
         const EXPORT_PDF_URL = '/cgi-bin/export-pdf.py';
         const EXPORT_MARKDOWN_URL = '/cgi-bin/export-markdown.py';
+        const GET_LOG_URL = '/cgi-bin/get-log.py';
         
         const SERVER_NAME = 'DeepSeek Chat Server';
         const MAX_CONTEXT_TOKENS = 16000;
@@ -766,61 +811,46 @@
                 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
                 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js'
             ];
-            
             for (const url of cdnUrls) {
                 try {
                     const response = await fetch(url, { method: 'HEAD' });
-                    if (response.ok) {
-                        return url;
-                    }
+                    if (response.ok) return url;
                 } catch (error) {
-                    console.log(`CDN ${url} nicht erreichbar, versuche nächste...`);
+                    console.log(`CDN ${url} nicht erreichbar, versuche naechste...`);
                 }
             }
-            
-            console.warn('Kein PDF.js Worker verfügbar, PDF-Extraktion wird eingeschränkt funktionieren');
+            console.warn('Kein PDF.js Worker verfuegbar');
             return null;
         }
         
         async function extractTextFromPDF(file) {
             return new Promise(async (resolve, reject) => {
                 let timeoutId;
-                
                 try {
                     if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-                        throw new Error(`Datei zu groß. Maximale Größe: ${MAX_FILE_SIZE_MB} MB`);
+                        throw new Error(`Datei zu gross. Maximale Groesse: ${MAX_FILE_SIZE_MB} MB`);
                     }
-                    
                     const workerUrl = await loadPDFJSWorker();
-                    if (workerUrl) {
-                        pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
-                    }
-                    
+                    if (workerUrl) pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
                     const loadingTask = pdfjsLib.getDocument({ data: await file.arrayBuffer() });
                     const pdf = await loadingTask.promise;
                     let fullText = '';
                     const totalPages = pdf.numPages;
                     const progressInfo = document.getElementById('fileInfo');
-                    
                     timeoutId = setTimeout(() => {
-                        reject(new Error('PDF-Extraktion hat zu lange gedauert. Bitte versuchen Sie eine kleinere Datei.'));
+                        reject(new Error('PDF-Extraktion hat zu lange gedauert.'));
                     }, PDF_EXTRACTION_TIMEOUT);
-                    
                     for (let i = 1; i <= totalPages && fullText.length < MAX_FILE_CONTENT_LENGTH; i++) {
                         const page = await pdf.getPage(i);
                         const textContent = await page.getTextContent();
                         const pageText = textContent.items.map(item => item.str).join(' ') + '\n\n';
-                        
                         if (fullText.length + pageText.length > MAX_FILE_CONTENT_LENGTH) {
                             const remainingChars = MAX_FILE_CONTENT_LENGTH - fullText.length;
-                            if (remainingChars > 0) {
-                                fullText += pageText.substring(0, remainingChars);
-                            }
+                            if (remainingChars > 0) fullText += pageText.substring(0, remainingChars);
                             break;
                         } else {
                             fullText += pageText;
                         }
-                        
                         if (progressInfo) {
                             const progress = Math.round((i / totalPages) * 100);
                             progressInfo.innerHTML = `
@@ -832,13 +862,8 @@
                                 </div>`;
                         }
                     }
-                    
                     clearTimeout(timeoutId);
-                    
-                    if (fullText.length > MAX_FILE_CONTENT_LENGTH) {
-                        fullText = fullText.substring(0, MAX_FILE_CONTENT_LENGTH);
-                    }
-                    
+                    if (fullText.length > MAX_FILE_CONTENT_LENGTH) fullText = fullText.substring(0, MAX_FILE_CONTENT_LENGTH);
                     resolve(fullText);
                 } catch (error) {
                     if (timeoutId) clearTimeout(timeoutId);
@@ -853,7 +878,6 @@
                 if (!hostname || hostname === 'localhost' || hostname === '127.0.0.1') return 'localhost';
                 return hostname;
             } catch (error) {
-                console.error('Fehler beim Ermitteln der Server-IP:', error);
                 return 'Unbekannt';
             }
         }
@@ -884,17 +908,10 @@
             const msgId = ++messageIdCounter;
             const timestamp = new Date().toISOString();
             contextHistory.messages.push({
-                id: msgId,
-                role: "user",
-                content,
-                mode,
-                hasFile,
-                timestamp,
-                estimatedTokens: estimateTokens(content)
+                id: msgId, role: "user", content, mode, hasFile,
+                timestamp, estimatedTokens: estimateTokens(content)
             });
-            while (contextHistory.messages.length > MAX_CONTEXT_MESSAGES * 2) {
-                contextHistory.messages.shift();
-            }
+            while (contextHistory.messages.length > MAX_CONTEXT_MESSAGES * 2) contextHistory.messages.shift();
             updateContextEstimation();
             return msgId;
         }
@@ -903,16 +920,10 @@
             const msgId = ++messageIdCounter;
             const timestamp = new Date().toISOString();
             contextHistory.messages.push({
-                id: msgId,
-                role: "assistant",
-                content,
-                mode,
-                timestamp,
-                estimatedTokens: estimateTokens(content)
+                id: msgId, role: "assistant", content, mode,
+                timestamp, estimatedTokens: estimateTokens(content)
             });
-            while (contextHistory.messages.length > MAX_CONTEXT_MESSAGES * 2) {
-                contextHistory.messages.shift();
-            }
+            while (contextHistory.messages.length > MAX_CONTEXT_MESSAGES * 2) contextHistory.messages.shift();
             updateContextEstimation();
             return msgId;
         }
@@ -923,34 +934,21 @@
         }
         
         async function saveSession() {
-            if (!currentSessionId) {
-                currentSessionId = generateSessionId();
-            }
-            
+            if (!currentSessionId) currentSessionId = generateSessionId();
             try {
                 const chatData = {
                     version: "1.0",
                     timestamp: new Date().toISOString(),
-                    serverInfo: {
-                        name: SERVER_NAME,
-                        ip: getServerIP()
-                    },
+                    serverInfo: { name: SERVER_NAME, ip: getServerIP() },
                     settings: settings,
                     messages: contextHistory.messages
                 };
-                
                 const response = await fetch(SAVE_SESSION_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        sessionId: currentSessionId,
-                        chatData: chatData
-                    })
+                    body: JSON.stringify({ sessionId: currentSessionId, chatData })
                 });
-                
-                if (!response.ok) {
-                    console.error('Session-Speicherung fehlgeschlagen:', response.status);
-                }
+                if (!response.ok) console.error('Session-Speicherung fehlgeschlagen:', response.status);
             } catch (error) {
                 console.error('Fehler beim Speichern der Session:', error);
             }
@@ -960,17 +958,13 @@
             try {
                 const response = await fetch(LOAD_SESSION_URL, { method: 'GET' });
                 if (!response.ok) throw new Error('Laden fehlgeschlagen');
-                
                 const data = await response.json();
                 const sessions = data.sessions || [];
-                
                 const sessionsList = document.getElementById('sessionsList');
-                
                 if (sessions.length === 0) {
                     sessionsList.innerHTML = '<div class="no-sessions">Keine gespeicherten Chats vorhanden</div>';
                     return;
                 }
-                
                 sessionsList.innerHTML = sessions.map(session => `
                     <div class="session-item" data-session-id="${session.sessionId}">
                         <div class="session-header">
@@ -985,7 +979,6 @@
                         </div>
                     </div>
                 `).join('');
-                
             } catch (error) {
                 console.error('Fehler beim Laden der Sessions:', error);
                 document.getElementById('sessionsList').innerHTML = '<div class="no-sessions">Fehler beim Laden der Sessions</div>';
@@ -995,49 +988,30 @@
         async function loadSpecificSession(sessionId) {
             if (confirm('Aktueller Chat wird gespeichert und die ausgewaehlte Session wird geladen. Fortfahren?')) {
                 await saveSession();
-                
                 try {
                     const response = await fetch(LOAD_SESSION_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ sessionId })
                     });
-                    
                     if (!response.ok) throw new Error('Laden fehlgeschlagen');
-                    
                     const data = await response.json();
                     const chatData = data.chatData;
-                    
-                    // Chat leeren
                     document.getElementById('chat').innerHTML = '';
-                    
-                    // Neue Session-ID setzen
                     currentSessionId = sessionId;
-                    
-                    // Context History wiederherstellen
                     contextHistory.messages = chatData.messages || [];
                     messageIdCounter = Math.max(...contextHistory.messages.map(m => m.id || 0), 0);
-                    
-                    // Nachrichten anzeigen
                     chatData.messages.forEach(msg => {
-                        if (msg.role === 'user') {
-                            addMessageToChat(msg.content, true, msg.id, msg.mode);
-                        } else {
-                            addMessageToChat(msg.content, false, msg.id, msg.mode);
-                        }
+                        if (msg.role === 'user') addMessageToChat(msg.content, true, msg.id, msg.mode);
+                        else addMessageToChat(msg.content, false, msg.id, msg.mode);
                     });
-                    
-                    // Settings laden
                     if (chatData.settings) {
                         settings = chatData.settings;
                         updateSettingsUI();
                         setMode(settings.defaultMode);
                         updateInputPlaceholder();
                     }
-                    
-                    // Overlay schließen
                     document.getElementById('sessionsOverlay').style.display = 'none';
-                    
                 } catch (error) {
                     alert('Fehler beim Laden der Session: ' + error.message);
                 }
@@ -1052,14 +1026,10 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ sessionId })
                     });
-                    
-                    if (!response.ok) throw new Error('Löschen fehlgeschlagen');
-                    
-                    // Liste neu laden
+                    if (!response.ok) throw new Error('Loeschen fehlgeschlagen');
                     await loadSessionsList();
-                    
                 } catch (error) {
-                    alert('Fehler beim Löschen der Session: ' + error.message);
+                    alert('Fehler beim Loeschen der Session: ' + error.message);
                 }
             }
         }
@@ -1069,22 +1039,16 @@
                 const chatData = {
                     version: "1.0",
                     timestamp: new Date().toISOString(),
-                    serverInfo: {
-                        name: SERVER_NAME,
-                        ip: getServerIP()
-                    },
+                    serverInfo: { name: SERVER_NAME, ip: getServerIP() },
                     settings: settings,
                     messages: contextHistory.messages
                 };
-                
                 const response = await fetch(EXPORT_PDF_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chatData })
                 });
-                
                 if (!response.ok) throw new Error('PDF-Export fehlgeschlagen');
-                
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -1094,7 +1058,6 @@
                 a.click();
                 document.body.removeChild(a);
                 window.URL.revokeObjectURL(url);
-                
             } catch (error) {
                 alert('Fehler beim PDF-Export: ' + error.message);
             }
@@ -1105,22 +1068,16 @@
                 const chatData = {
                     version: "1.0",
                     timestamp: new Date().toISOString(),
-                    serverInfo: {
-                        name: SERVER_NAME,
-                        ip: getServerIP()
-                    },
+                    serverInfo: { name: SERVER_NAME, ip: getServerIP() },
                     settings: settings,
                     messages: contextHistory.messages
                 };
-                
                 const response = await fetch(EXPORT_MARKDOWN_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chatData })
                 });
-                
                 if (!response.ok) throw new Error('Markdown-Export fehlgeschlagen');
-                
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -1130,42 +1087,41 @@
                 a.click();
                 document.body.removeChild(a);
                 window.URL.revokeObjectURL(url);
-                
             } catch (error) {
                 alert('Fehler beim Markdown-Export: ' + error.message);
             }
         }
         
+        async function fetchLog() {
+            const logContent = document.getElementById('logContent');
+            logContent.textContent = 'Lade Log-Dateien...';
+            try {
+                const response = await fetch(GET_LOG_URL);
+                if (!response.ok) throw new Error('Fehler beim Laden');
+                const text = await response.text();
+                logContent.textContent = text || 'Keine Log-Eintraege vorhanden';
+            } catch (error) {
+                logContent.textContent = 'Fehler beim Laden der Log-Datei: ' + error.message;
+            }
+        }
+        
         async function deleteMessage(msgId) {
             if (!confirm('Nachricht wirklich loeschen?')) return;
-            
-            // Nachricht aus DOM entfernen
             const container = document.querySelector(`[data-msg-id="${msgId}"]`);
             if (container) {
                 const divider = container.nextElementSibling;
-                if (divider && divider.classList.contains('message-divider')) {
-                    divider.remove();
-                }
+                if (divider && divider.classList.contains('message-divider')) divider.remove();
                 container.remove();
             }
-            
-            // Nachricht aus Context entfernen
             contextHistory.messages = contextHistory.messages.filter(m => m.id !== msgId);
             updateContextEstimation();
-            
-            // Session aktualisieren
             await saveSession();
         }
         
         function migrateSettings(oldSettings) {
             if (!oldSettings || typeof oldSettings !== 'object') {
-                return {
-                    version: SETTINGS_VERSION,
-                    addressForm: 'sie',
-                    defaultMode: 'chat'
-                };
+                return { version: SETTINGS_VERSION, addressForm: 'sie', defaultMode: 'chat' };
             }
-            
             return {
                 version: SETTINGS_VERSION,
                 addressForm: oldSettings.addressForm || 'sie',
@@ -1173,13 +1129,9 @@
             };
         }
         
-        let settings = { 
-            version: SETTINGS_VERSION,
-            addressForm: 'sie', 
-            defaultMode: 'chat' 
-        };
-        
+        let settings = { version: SETTINGS_VERSION, addressForm: 'sie', defaultMode: 'chat' };
         let currentMode = 'chat';
+        
         const sendButton = document.getElementById('sendButton');
         const settingsButton = document.getElementById('settingsButton');
         const deepThinkButton = document.getElementById('deepThinkButton');
@@ -1202,6 +1154,10 @@
         const loadSessionBtn = document.getElementById('loadSessionBtn');
         const sessionsOverlay = document.getElementById('sessionsOverlay');
         const closeSessions = document.getElementById('closeSessions');
+        const logButton = document.getElementById('logButton');
+        const logOverlay = document.getElementById('logOverlay');
+        const closeLog = document.getElementById('closeLog');
+        const refreshLog = document.getElementById('refreshLog');
         
         let selectedFile = null;
         let fileTextContent = null;
@@ -1220,7 +1176,7 @@
         }
         
         function updateInputPlaceholder() {
-            inputField.placeholder = settings.addressForm === 'sie' ? 
+            inputField.placeholder = settings.addressForm === 'sie' ?
                 'Ihre Nachricht hier eingeben...' : 'Deine Nachricht hier eingeben...';
         }
         
@@ -1231,7 +1187,6 @@
             deepThinkIndicator.classList.remove('mode-active');
             searchIndicator.classList.remove('mode-active');
             chat.classList.remove('thinking-mode', 'search-mode');
-            
             if (mode === 'deepthink') {
                 deepThinkButton.classList.add('active');
                 deepThinkIndicator.classList.add('mode-active');
@@ -1240,9 +1195,6 @@
                 searchButton.classList.add('active');
                 searchIndicator.classList.add('mode-active');
                 chat.classList.add('search-mode');
-            } else {
-                deepThinkButton.classList.remove('active');
-                searchButton.classList.remove('active');
             }
         }
         
@@ -1258,11 +1210,7 @@
                 }
             } catch (e) {
                 console.error('Fehler beim Laden der Einstellungen:', e);
-                settings = { 
-                    version: SETTINGS_VERSION,
-                    addressForm: 'sie', 
-                    defaultMode: 'chat' 
-                };
+                settings = { version: SETTINGS_VERSION, addressForm: 'sie', defaultMode: 'chat' };
             }
         }
         
@@ -1279,16 +1227,13 @@
             document.getElementById('chatMode').checked = (settings.defaultMode === 'chat');
             document.getElementById('deepthinkMode').checked = (settings.defaultMode === 'deepthink');
             document.getElementById('searchMode').checked = (settings.defaultMode === 'search');
-            
             addressFormStatus.textContent = settings.addressForm === 'sie' ? 'Sie-Form' : 'Du-Form';
-            defaultModeStatus.textContent = 
+            defaultModeStatus.textContent =
                 settings.defaultMode === 'chat' ? 'Normaler Chat' :
                 settings.defaultMode === 'deepthink' ? 'DeepThink Modus' : 'Search Modus';
-            
             document.querySelectorAll('.setting-item').forEach(item => item.classList.remove('active'));
             if (settings.addressForm === 'sie') document.getElementById('sieFormItem').classList.add('active');
             else document.getElementById('duFormItem').classList.add('active');
-            
             if (settings.defaultMode === 'chat') document.getElementById('chatModeItem').classList.add('active');
             else if (settings.defaultMode === 'deepthink') document.getElementById('deepthinkModeItem').classList.add('active');
             else document.getElementById('searchModeItem').classList.add('active');
@@ -1298,92 +1243,58 @@
             if (isSending) return;
             const message = inputField.value.trim();
             if (!message && !fileTextContent) return;
-            
             isSending = true;
             sendButton.disabled = true;
             sendButton.textContent = 'Wird gesendet...';
             inputField.disabled = true;
-            
             let userMessage = message;
-            if (fileTextContent) {
-                userMessage = `Datei-Inhalt:\n${fileTextContent}\n\nFrage: ${message}`;
-            }
-            
+            if (fileTextContent) userMessage = `Datei-Inhalt:\n${fileTextContent}\n\nFrage: ${message}`;
             const hasFile = !!fileTextContent;
             const msgId = addUserMessageToContext(userMessage, currentMode, hasFile);
-            
             addMessageToChat(message, true, msgId, currentMode);
             inputField.value = '';
-            
             let systemPrompt = settings.addressForm === 'sie' ?
                 'Sie sind ein hilfreicher Assistent. Verwenden Sie in allen Antworten konsequent die Sie-Form.' :
                 'Du bist ein hilfreicher Assistent. Verwende in allen Antworten konsequent die Du-Form.';
-            
             if (currentMode === 'deepthink') systemPrompt += ' Bitte geben Sie eine tiefgehende Analyse mit detaillierten Ueberlegungen.';
             else if (currentMode === 'search') systemPrompt += ' Bitte geben Sie eine recherchierte Antwort mit aktuellen Informationen.';
-            
             updateSystemPromptTokens(systemPrompt);
-            
             const processedSystem = replaceGermanUmlauts(systemPrompt);
-            const processedUser = replaceGermanUmlauts(userMessage);
-            
             const thinkingDiv = document.createElement('div');
             thinkingDiv.className = 'ai-message';
             thinkingDiv.textContent = 'Denkt...';
             chat.appendChild(thinkingDiv);
             chat.scrollTop = chat.scrollHeight;
-            
             try {
                 const messages = [{ role: 'system', content: processedSystem }];
-                
                 contextHistory.messages.forEach(msg => {
-                    messages.push({
-                        role: msg.role,
-                        content: replaceGermanUmlauts(msg.content)
-                    });
+                    messages.push({ role: msg.role, content: replaceGermanUmlauts(msg.content) });
                 });
-                
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        model: 'deepseek-chat',
-                        messages: messages,
-                        max_tokens: 2000
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model: 'deepseek-chat', messages, max_tokens: 2000 })
                 });
-                
                 if (!response.ok) {
                     const errorText = await response.text();
                     throw new Error(`API-Fehler (${response.status}): ${errorText}`);
                 }
-                
                 const data = await response.json();
-                
                 if (!data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
-                    throw new Error('Ungültige API-Antwort-Struktur erhalten');
+                    throw new Error('Ungueltige API-Antwort-Struktur erhalten');
                 }
-                
                 const aiResponse = data.choices[0].message.content;
                 const aiMsgId = addAIResponseToContext(aiResponse, currentMode);
-                
                 thinkingDiv.textContent = aiResponse;
                 thinkingDiv.setAttribute('data-msg-id', aiMsgId);
                 thinkingDiv.classList.add('message-container');
-                
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'delete-message-btn';
                 deleteBtn.textContent = 'X';
                 deleteBtn.onclick = () => deleteMessage(aiMsgId);
                 thinkingDiv.appendChild(deleteBtn);
-                
                 chat.appendChild(document.createElement('div')).className = 'message-divider';
-                
-                // Session speichern
                 await saveSession();
-                
             } catch (error) {
                 thinkingDiv.remove();
                 const errorDiv = document.createElement('div');
@@ -1405,23 +1316,16 @@
             const messageContainer = document.createElement('div');
             messageContainer.className = 'message-container';
             messageContainer.setAttribute('data-msg-id', msgId);
-            
             const messageDiv = document.createElement('div');
             messageDiv.className = isUser ? 'user-message' : 'ai-message';
             messageDiv.textContent = text;
-            
             messageContainer.appendChild(messageDiv);
-            
-            if (isUser || msgId) {
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'delete-message-btn';
-                deleteBtn.textContent = 'X';
-                deleteBtn.onclick = () => deleteMessage(msgId);
-                messageContainer.appendChild(deleteBtn);
-            }
-            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-message-btn';
+            deleteBtn.textContent = 'X';
+            deleteBtn.onclick = () => deleteMessage(msgId);
+            messageContainer.appendChild(deleteBtn);
             chat.appendChild(messageContainer);
-            
             if (isUser) chat.appendChild(document.createElement('div')).className = 'message-divider';
             chat.scrollTop = chat.scrollHeight;
         }
@@ -1429,11 +1333,9 @@
         async function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
-            
             selectedFile = file;
             fileTextContent = null;
             const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
-            
             if (!ACCEPTED_FILE_FORMATS.includes(fileExtension)) {
                 fileInfo.innerHTML = `<div class="pdf-error">Format nicht unterstuetzt: ${fileExtension}. Unterstuetzte Formate: ${ACCEPTED_FILE_FORMATS.join(', ')}</div>`;
                 fileInfo.classList.add('visible');
@@ -1441,31 +1343,24 @@
                 fileUpload.value = '';
                 return;
             }
-            
             const isProcessable = SUPPORTED_FILE_FORMATS.includes(fileExtension);
-            
             if (!isProcessable) {
-                fileInfo.innerHTML = `<div class="pdf-processing">Datei: ${file.name} - Format wird akzeptiert, aber nicht verarbeitet. Nur Dateiname wird gespeichert.</div><button id="removeFile">Entfernen</button>`;
+                fileInfo.innerHTML = `<div class="pdf-processing">Datei: ${file.name} - Format wird akzeptiert, aber nicht verarbeitet.</div><button id="removeFile">Entfernen</button>`;
                 fileInfo.classList.add('visible');
                 const removeBtn = document.getElementById('removeFile');
                 if (removeBtn) {
                     const removeHandler = function() {
-                        selectedFile = null;
-                        fileTextContent = null;
-                        fileInfo.innerHTML = '';
-                        fileInfo.classList.remove('visible');
-                        fileUpload.value = '';
-                        removeBtn.removeEventListener('click', removeHandler);
+                        selectedFile = null; fileTextContent = null;
+                        fileInfo.innerHTML = ''; fileInfo.classList.remove('visible');
+                        fileUpload.value = ''; removeBtn.removeEventListener('click', removeHandler);
                     };
                     removeBtn.addEventListener('click', removeHandler);
                     eventListeners.push({ element: removeBtn, event: 'click', handler: removeHandler });
                 }
                 return;
             }
-            
             fileInfo.innerHTML = `Datei: ${file.name} (${(file.size / 1024).toFixed(2)} KB) <button id="removeFile">Entfernen</button>`;
             fileInfo.classList.add('visible');
-            
             try {
                 if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
                     fileTextContent = await extractTextFromPDF(file);
@@ -1474,9 +1369,7 @@
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         fileTextContent = e.target.result;
-                        if (fileTextContent.length > MAX_FILE_CONTENT_LENGTH) {
-                            fileTextContent = fileTextContent.substring(0, MAX_FILE_CONTENT_LENGTH);
-                        }
+                        if (fileTextContent.length > MAX_FILE_CONTENT_LENGTH) fileTextContent = fileTextContent.substring(0, MAX_FILE_CONTENT_LENGTH);
                         fileInfo.innerHTML = `Datei: ${file.name} - Textdatei geladen (${fileTextContent.length} Zeichen) <button id="removeFile">Entfernen</button>`;
                     };
                     reader.readAsText(file);
@@ -1484,16 +1377,12 @@
             } catch (error) {
                 fileInfo.innerHTML = `<div class="pdf-error">Fehler: ${replaceGermanUmlauts(error.message)}</div>`;
             }
-            
             const removeBtn = document.getElementById('removeFile');
             if (removeBtn) {
                 const removeHandler = function() {
-                    selectedFile = null;
-                    fileTextContent = null;
-                    fileInfo.innerHTML = '';
-                    fileInfo.classList.remove('visible');
-                    fileUpload.value = '';
-                    removeBtn.removeEventListener('click', removeHandler);
+                    selectedFile = null; fileTextContent = null;
+                    fileInfo.innerHTML = ''; fileInfo.classList.remove('visible');
+                    fileUpload.value = ''; removeBtn.removeEventListener('click', removeHandler);
                 };
                 removeBtn.addEventListener('click', removeHandler);
                 eventListeners.push({ element: removeBtn, event: 'click', handler: removeHandler });
@@ -1502,54 +1391,45 @@
         
         function initializeEventListeners() {
             cleanupEventListeners();
-            
             addEventListenerWithCleanup(sendButton, 'click', sendMessage);
-            addEventListenerWithCleanup(inputField, 'keydown', e => { 
+            addEventListenerWithCleanup(inputField, 'keydown', e => {
                 if (e.key === 'Enter') {
-                    if (isSending) {
-                        e.preventDefault();
-                        return;
-                    }
+                    if (isSending) { e.preventDefault(); return; }
                     e.preventDefault();
-                    sendMessage(); 
+                    sendMessage();
                 }
             });
             addEventListenerWithCleanup(fileUpload, 'change', handleFileUpload);
             addEventListenerWithCleanup(settingsButton, 'click', () => settingsOverlay.style.display = 'flex');
             addEventListenerWithCleanup(closeSettings, 'click', () => settingsOverlay.style.display = 'none');
-            
-            // Dropdown Export
-            addEventListenerWithCleanup(exportButton, 'click', () => {
-                exportMenu.classList.toggle('show');
-            });
-            
-            addEventListenerWithCleanup(exportPdfBtn, 'click', () => {
-                exportMenu.classList.remove('show');
-                exportPDF();
-            });
-            
-            addEventListenerWithCleanup(exportMarkdownBtn, 'click', () => {
-                exportMenu.classList.remove('show');
-                exportMarkdown();
-            });
-            
+            addEventListenerWithCleanup(exportButton, 'click', () => exportMenu.classList.toggle('show'));
+            addEventListenerWithCleanup(exportPdfBtn, 'click', () => { exportMenu.classList.remove('show'); exportPDF(); });
+            addEventListenerWithCleanup(exportMarkdownBtn, 'click', () => { exportMenu.classList.remove('show'); exportMarkdown(); });
             addEventListenerWithCleanup(loadSessionBtn, 'click', async () => {
                 exportMenu.classList.remove('show');
                 await loadSessionsList();
                 sessionsOverlay.style.display = 'flex';
             });
-            
-            addEventListenerWithCleanup(closeSessions, 'click', () => {
-                sessionsOverlay.style.display = 'none';
+            addEventListenerWithCleanup(closeSessions, 'click', () => sessionsOverlay.style.display = 'none');
+            addEventListenerWithCleanup(logButton, 'click', async () => {
+                logOverlay.style.display = 'flex';
+                await fetchLog();
             });
-            
-            // Dropdown schließen bei Klick außerhalb
+            addEventListenerWithCleanup(closeLog, 'click', () => logOverlay.style.display = 'none');
+            addEventListenerWithCleanup(refreshLog, 'click', fetchLog);
             addEventListenerWithCleanup(document, 'click', (e) => {
                 if (!exportButton.contains(e.target) && !exportMenu.contains(e.target)) {
                     exportMenu.classList.remove('show');
                 }
             });
-            
+            addEventListenerWithCleanup(document, 'keydown', (e) => {
+                if (e.key === 'Escape') {
+                    logOverlay.style.display = 'none';
+                    sessionsOverlay.style.display = 'none';
+                    settingsOverlay.style.display = 'none';
+                    exportMenu.classList.remove('show');
+                }
+            });
             const saveHandler = function() {
                 settings.addressForm = document.querySelector('input[name="addressForm"]:checked').value;
                 settings.defaultMode = document.querySelector('input[name="defaultMode"]:checked').value;
@@ -1559,13 +1439,10 @@
                 settingsOverlay.style.display = 'none';
             };
             addEventListenerWithCleanup(saveSettingsButton, 'click', saveHandler);
-            
             const deepThinkHandler = () => setMode(currentMode === 'deepthink' ? 'chat' : 'deepthink');
             const searchHandler = () => setMode(currentMode === 'search' ? 'chat' : 'search');
-            
             addEventListenerWithCleanup(deepThinkButton, 'click', deepThinkHandler);
             addEventListenerWithCleanup(searchButton, 'click', searchHandler);
-            
             document.querySelectorAll('.setting-item').forEach(item => {
                 const clickHandler = function() {
                     const radioInput = this.querySelector('input[type="radio"]');
@@ -1577,7 +1454,6 @@
                 };
                 addEventListenerWithCleanup(item, 'click', clickHandler);
             });
-            
             document.querySelectorAll('input[type="radio"]').forEach(radio => {
                 const changeHandler = function() {
                     document.querySelectorAll('.setting-item').forEach(item => item.classList.remove('active'));
@@ -1593,8 +1469,6 @@
             loadSettings();
             initializeEventListeners();
             updateSettingsUI();
-            
-            // Neue Session initialisieren
             currentSessionId = generateSessionId();
         });
         
@@ -1604,10 +1478,6 @@
     </script>
 </body>
 </html>
-
-
-
-
 
 
 

@@ -16,19 +16,29 @@ from reportlab.pdfbase.ttfonts import TTFont
 
 def send_response(status_code, data, content_type='application/json'):
     """Sendet HTTP-Response zurück."""
-    print(f"Status: {status_code}")
-    print(f"Content-Type: {content_type}")
-    print("Access-Control-Allow-Origin: *")
-    print("Access-Control-Allow-Methods: POST, OPTIONS")
-    print("Access-Control-Allow-Headers: Content-Type")
-    if content_type == 'application/pdf':
-        print(f"Content-Disposition: attachment; filename=\"deepseek-chat-export.pdf\"")
-    print()
     if isinstance(data, bytes):
+        # Für Binärdaten: alles über stdout.buffer schreiben
+        headers = f"Status: {status_code}\r\n"
+        headers += f"Content-Type: {content_type}\r\n"
+        headers += "Access-Control-Allow-Origin: *\r\n"
+        headers += "Access-Control-Allow-Methods: POST, OPTIONS\r\n"
+        headers += "Access-Control-Allow-Headers: Content-Type\r\n"
+        headers += f"Content-Disposition: attachment; filename=\"deepseek-chat-export.pdf\"\r\n"
+        headers += f"Content-Length: {len(data)}\r\n"
+        headers += "\r\n"
+        sys.stdout.buffer.write(headers.encode('utf-8'))
         sys.stdout.buffer.write(data)
+        sys.stdout.buffer.flush()
     else:
+        # Für JSON-Daten: normale print Ausgabe
+        print(f"Status: {status_code}")
+        print(f"Content-Type: {content_type}")
+        print("Access-Control-Allow-Origin: *")
+        print("Access-Control-Allow-Methods: POST, OPTIONS")
+        print("Access-Control-Allow-Headers: Content-Type")
+        print()
         print(json.dumps(data, ensure_ascii=False))
-    sys.stdout.flush()
+        sys.stdout.flush()
 
 def calculate_statistics(messages):
     """Berechnet Statistiken aus den Nachrichten."""
