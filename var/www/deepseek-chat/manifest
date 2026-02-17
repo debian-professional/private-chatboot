@@ -1,3 +1,4 @@
+
 ============================================================================
     DEEPSEEK CHAT - DESIGN-MANIFEST & KONVENTIONEN
     ============================================================================
@@ -496,6 +497,13 @@
         - Die Dateien sind korrekt auf GitHub sobald git push erfolgreich war
         - Prüfung ob Upload korrekt war: git log --oneline und git show --name-only
         - Lokale Kontrolle: grep -c "schlüsselwort" /pfad/zur/datei
+
+        34. [17.02.2026 10:00] - BUG-FIX deleteMessage() - Option A implementiert:
+        - deleteMessage() löscht jetzt angeklickte Nachricht + ALLE nachfolgenden
+        - Bestätigungsdialog: "Diese Nachricht und alle nachfolgenden Nachrichten löschen?"
+        - DOM: Nachricht-Container + alle Geschwister-Elemente (inkl. Trennlinien) entfernt
+        - contextHistory: messages.slice(0, msgIndex) - alles ab Position entfernt
+        - Git: a591bce
 
     ============================================================================
 
