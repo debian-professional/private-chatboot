@@ -528,5 +528,22 @@
         - Log-Format: YYYY-MM-DD HH:MM:SS | IP | FEEDBACK | LIKE/DISLIKE | msgId | "Preview"
         - Git: a2e371b (index.html) + e3ba685 (feedback-log.py)
 
+        37. [17.02.2026 18:30] - MAGIC BYTES PRUEFUNG GEGEN AUSFUEHRBARE DATEIEN:
+        - Sicherheits-Feature: Erkennung ausfuehrbarer Dateien anhand Magic Bytes
+        - Schuetzt vor umbenannten EXE/ELF/Mach-O Dateien (z.B. virus.exe -> virus.jpg)
+        - Erkannte Plattformen:
+          * Windows 32/64 Bit (PE/MZ Header - EXE, DLL, SYS)
+          * Linux 32/64 Bit (ELF32/ELF64 Header)
+          * macOS 32/64 Bit (Mach-O Little/Big Endian)
+          * macOS Universal Binary (Fat Binary - mehrere Architekturen)
+          * ARM 32 Bit (ELF32 ARM Little Endian)
+          * ARM 64 Bit (ELF64 AArch64 Little Endian)
+          * Shell Scripts (Shebang #! Header)
+          * Python Bytecode (.pyc Dateien Python 3.8+)
+        - Pruefung erfolgt VOR der Dateiverarbeitung durch Lesen der ersten 20 Bytes
+        - Bei Treffer: Upload wird blockiert mit detaillierter Fehlermeldung
+        - Standalone Python-Script detect-executable.py fuer Server-seitige Pruefung erstellt
+        - Git: 301880c (index.html mit Magic Bytes Pruefung)
+
     ============================================================================
 
