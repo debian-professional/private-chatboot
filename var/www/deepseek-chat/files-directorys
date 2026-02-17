@@ -22,3 +22,4 @@ Dateien:
 /var/www/deepseek-chat/cgi-bin/deepseek-chat.log
 /var/www/deepseek-chat/cgi-bin/export-txt.py
 /var/www/deepseek-chat/cgi-bin/export-rtf.py
+/var/www/deepseek-chat/cgi-bin/feedback-log.py
