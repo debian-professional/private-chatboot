@@ -1106,15 +1106,30 @@
         }
         
         async function deleteMessage(msgId) {
-            if (!confirm('Nachricht wirklich loeschen?')) return;
+            if (!confirm('Diese Nachricht und alle nachfolgenden Nachrichten loeschen?')) return;
+            
+            // Position der Nachricht in contextHistory finden
+            const msgIndex = contextHistory.messages.findIndex(m => m.id === msgId);
+            
+            // Alle Nachrichten ab dieser Position aus contextHistory entfernen
+            if (msgIndex !== -1) {
+                contextHistory.messages = contextHistory.messages.slice(0, msgIndex);
+            }
+            updateContextEstimation();
+            
+            // Im DOM: Container der Nachricht und alle nachfolgenden Elemente entfernen
             const container = document.querySelector(`[data-msg-id="${msgId}"]`);
             if (container) {
-                const divider = container.nextElementSibling;
-                if (divider && divider.classList.contains('message-divider')) divider.remove();
-                container.remove();
+                // Alle nachfolgenden Geschwister-Elemente sammeln und entfernen
+                const elementsToRemove = [];
+                let current = container;
+                while (current) {
+                    elementsToRemove.push(current);
+                    current = current.nextElementSibling;
+                }
+                elementsToRemove.forEach(el => el.remove());
             }
-            contextHistory.messages = contextHistory.messages.filter(m => m.id !== msgId);
-            updateContextEstimation();
+            
             await saveSession();
         }
         
@@ -1478,6 +1493,4 @@
     </script>
 </body>
 </html>
-
-
 
