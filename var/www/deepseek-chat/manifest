@@ -1,6 +1,3 @@
-
-
-
 ============================================================================
     DEEPSEEK CHAT - DESIGN-MANIFEST & KONVENTIONEN
     ============================================================================
@@ -145,7 +142,7 @@
        - Dunkler Hintergrund (#2d2d2d)
        - Border und Shadow für Abhebung
        - Hover-Effekt bei Items (#3d3d3d)
-       - Schließt automatisch bei Klick außerhalb
+       - Schließt automatisch bei Klick außerhalb oder Escape-Taste
     
     D) TECHNISCHE KONVENTIONEN:
     ----------------------------
@@ -157,7 +154,7 @@
        - System-Prompt basierend auf Anredeform und Modus
        - API-KEY SPEICHERUNG: Der API-Key wird NICHT im Client-Code gespeichert
        - SICHERHEITSVERBESSERUNG (13.02.2026): API-Key wurde in serverseitige Umgebungsvariable ausgelagert
-       - Ein Python CGI-Script unter /cgi-bin/deepseek-api.py verwaltet die sichere Kommunikation mit der DeepSeek API
+       - Ein Python CGI-Script unter /cgi-bin/deepseek-api.py verwaltet die sichere Kommunikation
        - Der Client sendet Anfragen an den lokalen Proxy, niemals direkt an die externe API
     
     2. DATENSPEICHERUNG:
@@ -187,7 +184,7 @@
        - Alle Pfade und Dateien sind genau definiert in /var/www/deepseek-chat/files-directorys
        - Bei erfolgreichem Abruf: Anzeige im Log-Overlay
        - Bei Fehler: Anzeige einer benutzerfreundlichen Fehlermeldung
-       - Bei leerem Log: Hinweis "Keine Log-Einträge vorhanden"
+       - Bei leerem Log: Hinweis "Keine Log-Eintraege vorhanden"
        - Overlay schliesst mit Escape-Taste oder Klick auf Schliessen-Button
     
     6. SESSION-MANAGEMENT-FUNKTIONEN:
@@ -205,10 +202,19 @@
          * Inhaltsverzeichnis mit Page-Referenzen
          * Farbcodierung nach Modi
          * UTF-8 Support für Umlaute
+         * Binäre Ausgabe über sys.stdout.buffer (korrigiert 17.02.2026)
        - /cgi-bin/export-markdown.py - Generiert Markdown-Datei
          * Identische Struktur wie PDF
          * Markdown-Anchors für Inhaltsverzeichnis
        - Sessions-Verzeichnis: /var/www/deepseek-chat/sessions/ (Rechte 700, auto-create)
+    
+    7. APACHE-KONFIGURATION:
+       - Aktive Konfigurationsdatei: /etc/apache2/sites-available/deepseek-chat-ssl.conf
+       - Inaktive (deaktivierte) Datei: deepseek-chat.conf (redundant, via a2dissite deaktiviert)
+       - CGI-Konfiguration: ScriptAlias /cgi-bin/ /var/www/deepseek-chat/cgi-bin/
+       - Alle CGI-Scripts werden über /cgi-bin/ Pfad erreichbar gemacht
+       - KEIN einzelner ScriptAlias pro Script notwendig
+       - Bei neuen Scripts: Keine Apache-Konfigurationsänderung nötig
     
     E) ERWEITERUNGSRICHTLINIEN:
     ----------------------------
@@ -244,8 +250,8 @@
        - Nur explizit angeforderten Code implementieren
        - Keine eigenmächtigen Erweiterungen oder "Verbesserungen"
        - Die bereits vorhandenen Formatierungen und Einrückungen im HTML Code
-         dürfen unter gar keinen Umständen geändert werden. Dies ist verbindlich und 
-         ultamtiv !!!!  
+         dürfen unter gar keinen Umständen geändert werden. Dies ist verbindlich und
+         ultamtiv !!!!
     
     3. AUSGABE-FORMAT:
        - Bei Code-Anfragen muss der gesamte Code als ein einziger zusammenhängender Markdown-Codeblock zurückgegeben werden
@@ -254,7 +260,7 @@
     
     4. API-KEY BEHANDLUNG:
        - Der API-Key wird NICHT im Client-Code gespeichert
-       - SICHERHEITSARCHITEKTUR (13.02.2026): 
+       - SICHERHEITSARCHITEKTUR (13.02.2026):
          * API-Key wird als Umgebungsvariable auf dem Server gespeichert
          * Python CGI-Script verwaltet die Authentifizierung
          * Client hat keinen direkten Zugriff auf den API-Key
@@ -264,36 +270,36 @@
     ============================================================================
 
     ZU BEACHTEN : ALLE ZUKÜNFTIGEN ÄNDERUNGEN AN DIESEM MANIFEST MÜSSEN
-    MIT DEM AKTUELLEN DATUM UND UHRZEIT VERSEHEN WERDEN !!! 
-    
+    MIT DEM AKTUELLEN DATUM UND UHRZEIT VERSEHEN WERDEN !!!
+
 
     ÄNDERUNGEN:
-    1. [08.02.2026 00:15] - Titel-Anzeige geändert: 
+    1. [08.02.2026 00:15] - Titel-Anzeige geändert:
        - Vorher: "DeepSeek Chat" (zentriert)
        - Nachher: "Server-Name (IP: xxx.xxx.xxx.xxx)" (linksbündig)
        - Grund: Anzeige von Server-Informationen für bessere Übersicht
-    
+
     2. [08.02.2026 00:15] - System-Prompt verstärkt für konsequente Anredeform:
        - Vorher: "Sie sind ein hilfreicher Assistent." / "Du bist ein hilfreicher Assistent."
        - Nachher: "Sie sind ein hilfreicher Assistent. Verwenden Sie in allen Antworten konsequent die Sie-Form."
                   "Du bist ein hilfreicher Assistent. Verwende in allen Antworten konsequent die Du-Form."
        - Grund: Sicherstellen, dass DeepSeek in allen Antworten die gewählte Anredeform strikt einhält
-    
+
     3. [08.02.2026 00:15] - Manifest um ANREDEFORM-KONSISTENZ erweitert:
        - Neuer Abschnitt B.5 hinzugefügt
        - Klare, unumstößliche Regeln für Anredeform-Konsistenz definiert
        - Endgültige Festlegung: Diese Einstellung ist nicht verhandelbar
        - Alle zukünftigen Entwicklungen müssen diese Regel strikt einhalten
-    
+
     4. [08.02.2026 00:15] - CPU-Monitoring-Graph und andere Graphen entfernt:
        - Abschnitte C.2, D.4 und alle Bezüge zu Monitoring entfernt
        - Grund: Die Graphen funktionierten nicht und wurden entfernt
-    
+
     5. [08.02.2026 00:15] - WICHTIGE ANWEISUNG FÜR DIE AUSGABE:
        - Alle Code-Ausgaben müssen als einzelner zusammenhängender Markdown-Codeblock erfolgen
        - Diese Anweisung ist permanent und muss immer befolgt werden
        - Keine Unterbrechungen, keine Aufteilung, kein Weglassen von Code
-    
+
     6. [08.02.2026 00:15] - MANIFEST-ERWEITERUNG MIT VERBOTEN:
        - Neuer Abschnitt F hinzugefügt
        - Strikte Regeln zum Schutz des Manifests und der Code-Integrität
@@ -305,7 +311,7 @@
        - Abschnitt F.4 hinzugefügt mit klarer Regelung zur API-Key Behandlung
        - Diese Design-Entscheidung ist bewusst und final
 
-    8. [08.02.2026 00:15] - KONEXT-HISTORIE UND TOKEN-ZÄHLUNG KORRIGIERT:
+    8. [08.02.2026 00:15] - KONTEXT-HISTORIE UND TOKEN-ZÄHLUNG KORRIGIERT:
        - Fehler 8 behoben: Inkonsistente Token-Zählung in der Kontexthistorie
        - Funktionen `addUserMessageToContext` und `addAIResponseToContext` aktualisieren jetzt automatisch die Token-Zählung
        - `updateContextEstimation()` wird bei jeder Nachricht automatisch aufgerufen
@@ -376,7 +382,7 @@
         - Button-Textänderung zu „Wird gesendet..." während Verarbeitung
         - Enter-Taste blockiert während laufender Anfrage
         - `finally`-Block stellt immer Reset sicher (auch bei Fehlern)
-        - Grund: Verhinderung unbeabsichtigter Mehrfach-Anfragen durch schnelles Klicken/Enter-Drücken, Kostenersparnis und bessere UX bei Solo-Nutzung
+        - Grund: Verhinderung unbeabsichtigter Mehrfach-Anfragen durch schnelles Klicken/Enter-Drücken
 
     21. [11.02.2026 13:05] - Echter Multi-Turn-Kontext implementiert:
         - messages-Array enthält nun System-Prompt + abwechselnd die letzten User- und AI-Nachrichten (bis MAX_CONTEXT_MESSAGES)
@@ -399,7 +405,7 @@
     25. [11.02.2026 13:45] - Einheitliche Datei-Inhaltsbehandlung:
         - fullUserMessage verwendet nun denselben vollen Text wie userMessage (bis MAX_FILE_CONTENT_LENGTH)
         - 500-Zeichen-Kürzung entfernt
-        - Grund: Konsistenz zwischen Kontext-History und aktueller API-Nachricht → vermeidet Verwirrung beim Modell
+        - Grund: Konsistenz zwischen Kontext-History und aktueller API-Nachricht
 
     26. [13.02.2026 12:00] - SICHERHEITSUPGRADE: API-Key in serverseitige Umgebungsvariable ausgelagert:
         - API-Key wird NICHT mehr im Client-Code gespeichert
@@ -425,10 +431,10 @@
         - Neu: Eigene Button-Reihe unter den Modi mit Button "Log-Dateien"
         - Button-Design: 40px Höhe, Farbe Blau (#0056b3) wie Haupt-Buttons
         - Manifest aktualisiert: Abschnitt C.2 um Zeile 3 ergänzt
-        - Grund: Tastenkombinationen funktionierten nicht zuverlässig in Firefox, Button ist einfacher und zuverlässiger
+        - Grund: Tastenkombinationen funktionierten nicht zuverlässig in Firefox
 
     30. [16.02.2026 01:30] - TOKEN-ZÄHLUNG VERBESSERT:
-        - Token-Zählung massiv verbessert inklusive einer Warnung beim Erreichen 
+        - Token-Zählung massiv verbessert inklusive einer Warnung beim Erreichen
           der maximalen Größe des Kontext Windows
 
     31. [16.02.2026 02:00] - SESSION-MANAGEMENT UND EXPORT-FUNKTIONALITÄT IMPLEMENTIERT:
@@ -446,61 +452,41 @@
         - SESSION-ID FORMAT:
           * Format: YYYY-MM-DD_HHMMSS_random (z.B. 2026-02-16_143045_abc123)
           * Client erzeugt ID, Server validiert
-          * Eindeutige Identifikation jeder Chat-Session
-        - AUTOMATISCHES SPEICHERN:
-          * Nach jeder gesendeten Nachricht (User + AI)
-          * JSON-Struktur: version, timestamp, serverInfo, settings, messages
-          * Jede Nachricht mit: id, role, content, mode, hasFile, timestamp, estimatedTokens
         - DROPDOWN-BUTTON "EXPORTIEREN":
           * Platzierung: Zeile 1 (neben Senden, Datei hochladen, Einstellungen)
           * Drei Optionen: PDF herunterladen, Markdown herunterladen, Chat-Verlauf laden
-          * Dropdown schließt automatisch bei Klick außerhalb
-        - SESSION-LADE-MODAL:
-          * Overlay-Design konsistent mit Einstellungen und Log-Anzeige
-          * Liste aller Sessions mit: Session-ID, Datum, erste Nachricht (Vorschau), Anzahl Nachrichten
-          * Buttons pro Session: [Laden] (grün) und [Löschen] (rot)
-          * Beim Laden: Automatisches Speichern des aktuellen Chats, dann neue Session laden
-          * Beim Löschen: Bestätigung erforderlich, dann Liste aktualisieren
-        - HOVER-BUTTONS ZUM LÖSCHEN:
-          * Kleines [X] rechts oben bei jeder Nachricht
-          * Erscheint nur beim Hover über Nachricht
-          * Löschen mit Bestätigung
-          * Sofortige Server-Synchronisation (Session wird aktualisiert)
-        - PDF-EXPORT MIT REPORTLAB:
-          * Professionelles Layout mit A4-Format
-          * Header: Titel, Server-Info, Datum, Einstellungen
-          * Statistiken: Nachrichtenanzahl, Modi-Verwendung, Dateien, Token, Chat-Dauer
-          * Inhaltsverzeichnis: Alle Nachrichten mit Vorschau
-          * Vollständiger Chat-Verlauf mit Farbcodierung nach Modi
-          * UTF-8 Support für Umlaute
-          * Automatischer Download als .pdf Datei
-        - MARKDOWN-EXPORT:
-          * Identische Struktur wie PDF
-          * Markdown-Anchors für Inhaltsverzeichnis
-          * Automatischer Download als .md Datei
-        - NACHRICHT-IDs:
-          * Jede Nachricht erhält eindeutige ID (messageIdCounter)
-          * Referenzierung für Löschen und Session-Speicherung
-          * data-msg-id Attribut in DOM-Containern
-        - MANIFEST-AKTUALISIERUNGEN:
-          * Abschnitt B.6: SESSION-MANAGEMENT hinzugefügt
-          * Abschnitt B.7: EXPORT-FUNKTIONALITÄT hinzugefügt
-          * Abschnitt C.2: Button-Zeile 1 um Dropdown erweitert
-          * Abschnitt C.4: Hover-Buttons dokumentiert
-          * Abschnitt C.6: SESSION-LADE-MODAL hinzugefügt
-          * Abschnitt C.7: DROPDOWN-MENU hinzugefügt
-          * Abschnitt D.2: Server-seitige Session-Speicherung dokumentiert
-          * Abschnitt D.6: Alle neuen Python-Scripts und Funktionen dokumentiert
-          * Abschnitt F.1: Klarstellung dass Manifest separate Datei ist
+          * Dropdown schließt automatisch bei Klick außerhalb oder Escape-Taste
+        - SESSION-LADE-MODAL und HOVER-BUTTONS implementiert
+        - Grund: Dauerhafte Speicherung, professioneller Export, Multi-Chat-Verwaltung
+
+    32. [17.02.2026 07:30] - APACHE-KONFIGURATION KORRIGIERT UND PDF-BUG BEHOBEN:
+        - APACHE SCRIPTALIA VEREINFACHT:
+          * Vorher: Einzelne ScriptAlias Einträge pro Script (/api/chat, /api/get-log)
+          * Nachher: ScriptAlias /cgi-bin/ /var/www/deepseek-chat/cgi-bin/
+          * Vorteil: Keine Apache-Änderung bei neuen Scripts notwendig
+          * Aktive Konfigurationsdatei: deepseek-chat-ssl.conf
+          * Redundante Datei deepseek-chat.conf via a2dissite deaktiviert
+          * Neuer Abschnitt D.7 im Manifest dokumentiert Apache-Konfiguration
+        - API-ENDPOINT AKTUALISIERT:
+          * Vorher: const API_URL = '/api/chat'
+          * Nachher: const API_URL = '/cgi-bin/deepseek-api.py'
+          * Alle URLs auf /cgi-bin/ Pfad umgestellt
+        - LOG-URL KORRIGIERT:
+          * GET_LOG_URL = '/cgi-bin/get-log.py' in index.html ergänzt
+          * Log-Overlay CSS und HTML in index.html ergänzt
+          * fetchLog() Funktion und Event-Listener in index.html ergänzt
+          * Grund: Log-Funktion fehlte in neuer index.html Version
+        - PDF-EXPORT BUG BEHOBEN:
+          * Problem: "malformed header from script: Bad header: %PDF-1.4"
+          * Ursache: Konflikt zwischen print() (Text-Modus) und sys.stdout.buffer (Binary-Modus)
+          * Lösung: send_response() Funktion in export-pdf.py komplett überarbeitet
+          * Binäre PDF-Daten werden nun ausschließlich über sys.stdout.buffer geschrieben
+          * HTTP-Header werden als bytes encoded vor den PDF-Daten geschrieben
+          * Content-Length Header hinzugefügt für korrekte Browser-Verarbeitung
         - GRUND:
-          * Dauerhafte Speicherung von Chat-Verläufen über Browser-Sessions hinweg
-          * Professioneller Export für Dokumentation und Weitergabe
-          * Verwaltung mehrerer Chats gleichzeitig
-          * Schutz vor Datenverlust
-          * Serverbasierte Architektur für maximale Datensicherheit
-    
+          * 404-Fehler bei allen CGI-Scripts behoben
+          * PDF-Download funktioniert jetzt korrekt im Browser
+          * Log-Anzeige wieder vollständig funktionsfähig
+
     ============================================================================
-
-
-
 
