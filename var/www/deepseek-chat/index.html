@@ -74,7 +74,7 @@
             display: none;
             position: absolute;
             right: 5px;
-            top: 2px;               /* leicht nach oben verschoben */
+            top: 2px;
             background: #dc3545;
             color: white;
             border: none;
@@ -94,8 +94,8 @@
             display: none;
             position: absolute;
             right: 32px;
-            top: 2px;                /* leicht nach oben verschoben */
-            background: #0056b3;      /* Blau wie Einstellungen-Button */
+            top: 2px;
+            background: #0056b3;
             color: white;
             border: none;
             border-radius: 3px;
@@ -109,7 +109,7 @@
             text-align: center;
         }
         .download-message-btn:hover {
-            background: #003d82;      /* dunkleres Blau für Hover */
+            background: #003d82;
         }
         .feedback-buttons {
             display: none;
@@ -123,34 +123,34 @@
             display: flex;
         }
         .feedback-btn {
-            background: #2d2d2d;
-            color: #aaa;
-            border: 1px solid #444;
+            background: #0056b3;
+            color: white;
+            border: 1px solid #0056b3;
             border-radius: 3px;
-            padding: 2px 6px;
+            padding: 4px 10px;          /* mehr Platz für längere Texte */
             font-size: 11px;
             cursor: pointer;
-            line-height: 18px;
+            line-height: 1.2;
             white-space: nowrap;
             transition: all 0.2s;
         }
         .feedback-btn:hover {
-            background: #3d3d3d;
-            color: #f0f0f0;
+            background: #003d82;
+            border-color: #003d82;
         }
         .feedback-btn.liked {
-            background: #155724;
-            color: #90ee90;
-            border-color: #28a745;
+            background: #0a2f44;
+            color: #9ac7ff;
+            border-color: #007bff;
         }
         .feedback-btn.disliked {
-            background: #721c24;
-            color: #f8d7da;
+            background: #5a1e1e;
+            color: #ffb3b3;
             border-color: #dc3545;
         }
         .feedback-btn.copied {
-            background: #0d3a6e;
-            color: #4dabf7;
+            background: #003366;
+            color: #99ccff;
             border-color: #0056b3;
         }
         .single-export-dropdown {
@@ -1437,11 +1437,11 @@
             const isLiked = likeBtn.classList.contains('liked');
             likeBtn.classList.remove('liked');
             dislikeBtn.classList.remove('disliked');
-            likeBtn.textContent = 'Like';
-            dislikeBtn.textContent = 'Dislike';
+            likeBtn.textContent = 'Mag ich';
+            dislikeBtn.textContent = 'Mag ich gar nicht';
             if (!isLiked) {
                 likeBtn.classList.add('liked');
-                likeBtn.textContent = 'Liked';
+                likeBtn.textContent = 'Mag ich';
                 const preview = getMsgText(msgId).substring(0, 60);
                 sendFeedbackLog('LIKE', msgId, preview);
             }
@@ -1451,11 +1451,11 @@
             const isDisliked = dislikeBtn.classList.contains('disliked');
             likeBtn.classList.remove('liked');
             dislikeBtn.classList.remove('disliked');
-            likeBtn.textContent = 'Like';
-            dislikeBtn.textContent = 'Dislike';
+            likeBtn.textContent = 'Mag ich';
+            dislikeBtn.textContent = 'Mag ich gar nicht';
             if (!isDisliked) {
                 dislikeBtn.classList.add('disliked');
-                dislikeBtn.textContent = 'Disliked';
+                dislikeBtn.textContent = 'Mag ich gar nicht';
                 const preview = getMsgText(msgId).substring(0, 60);
                 sendFeedbackLog('DISLIKE', msgId, preview);
             }
@@ -1465,10 +1465,10 @@
             const text = getMsgText(msgId);
             navigator.clipboard.writeText(text).then(() => {
                 copyBtn.classList.add('copied');
-                copyBtn.textContent = 'Copied!';
+                copyBtn.textContent = 'Kopiert!';
                 setTimeout(() => {
                     copyBtn.classList.remove('copied');
-                    copyBtn.textContent = 'Copy';
+                    copyBtn.textContent = 'Kopieren';
                 }, 2000);
             }).catch(() => {
                 const textarea = document.createElement('textarea');
@@ -1478,10 +1478,10 @@
                 document.execCommand('copy');
                 document.body.removeChild(textarea);
                 copyBtn.classList.add('copied');
-                copyBtn.textContent = 'Copied!';
+                copyBtn.textContent = 'Kopiert!';
                 setTimeout(() => {
                     copyBtn.classList.remove('copied');
-                    copyBtn.textContent = 'Copy';
+                    copyBtn.textContent = 'Kopieren';
                 }, 2000);
             });
         }
@@ -1591,23 +1591,23 @@
 
             const copyBtn = document.createElement('button');
             copyBtn.className = 'feedback-btn';
-            copyBtn.textContent = 'Copy';
+            copyBtn.textContent = 'Kopieren';
             copyBtn.onclick = (e) => { e.stopPropagation(); handleCopy(msgId, copyBtn); };
 
             const likeBtn = document.createElement('button');
             likeBtn.className = 'feedback-btn';
-            likeBtn.textContent = 'Like';
+            likeBtn.textContent = 'Mag ich';
 
             const dislikeBtn = document.createElement('button');
             dislikeBtn.className = 'feedback-btn';
-            dislikeBtn.textContent = 'Dislike';
+            dislikeBtn.textContent = 'Mag ich gar nicht';
 
             likeBtn.onclick = (e) => { e.stopPropagation(); handleLike(msgId, likeBtn, dislikeBtn); };
             dislikeBtn.onclick = (e) => { e.stopPropagation(); handleDislike(msgId, likeBtn, dislikeBtn); };
 
             const regenBtn = document.createElement('button');
             regenBtn.className = 'feedback-btn';
-            regenBtn.textContent = 'Regen';
+            regenBtn.textContent = 'Regenerieren';   // geändert
             regenBtn.onclick = (e) => { e.stopPropagation(); handleRegenerate(msgId); };
 
             feedbackDiv.appendChild(copyBtn);

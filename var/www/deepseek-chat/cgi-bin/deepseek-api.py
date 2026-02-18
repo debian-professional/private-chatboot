@@ -66,6 +66,9 @@ def main():
             send_error(500, "Server-Konfigurationsfehler")
             return
 
+        # No-Training Option lesen (Standard: True = Daten NICHT fuer Training verwenden)
+        no_training = request_data.get("no_training", True)
+
         # Request-Body vorbereiten
         api_request = {
             "model": request_data.get("model", "deepseek-chat"),
@@ -77,7 +80,7 @@ def main():
         # Logging
         ip = os.environ.get('REMOTE_ADDR', 'unknown')
         msg_count = len(api_request["messages"])
-        log_to_file(f"IP: {ip} | REQUEST | {msg_count} messages | STREAMING")
+        log_to_file(f"IP: {ip} | REQUEST | {msg_count} messages | STREAMING | no_training: {no_training}")
 
         # HTTP Headers fuer Streaming senden
         print("Status: 200 OK")
@@ -88,13 +91,20 @@ def main():
         print()
         sys.stdout.flush()
 
+        # API-Headers vorbereiten
+        api_headers = {
+            "Authorization": f"Bearer {API_KEY}",
+            "Content-Type": "application/json"
+        }
+
+        # No-Training Header setzen (soweit von der API unterstuetzt)
+        if no_training:
+            api_headers["X-No-Training"] = "true"
+
         # DeepSeek API aufrufen mit Streaming
         response = requests.post(
             API_URL,
-            headers={
-                "Authorization": f"Bearer {API_KEY}",
-                "Content-Type": "application/json"
-            },
+            headers=api_headers,
             json=api_request,
             stream=True  # WICHTIG: Stream aktivieren
         )
@@ -111,13 +121,13 @@ def main():
         for line in response.iter_lines():
             if line:
                 line_text = line.decode('utf-8')
-                
+
                 # DeepSeek sendet: "data: {...}"
                 if line_text.startswith('data: '):
                     # Direkt weiterleiten an Client
                     print(line_text)
                     sys.stdout.flush()
-                    
+
                     # Bei [DONE] ist Stream fertig
                     if '[DONE]' in line_text:
                         break
@@ -134,3 +144,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
