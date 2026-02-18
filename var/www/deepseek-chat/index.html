@@ -1557,7 +1557,7 @@
                 addFeedbackButtons(thinkingDiv, aiMsgId);
                 const dlBtn = document.createElement('button');
                 dlBtn.className = 'download-message-btn';
-                dlBtn.textContent = 'DL';
+                dlBtn.textContent = 'Exportieren';
                 dlBtn.onclick = (e) => { e.stopPropagation(); showSingleExportDropdown(aiMsgId, dlBtn); };
                 thinkingDiv.appendChild(dlBtn);
                 const deleteBtn = document.createElement('button');
@@ -1886,7 +1886,7 @@
                 
                 const dlBtn = document.createElement('button');
                 dlBtn.className = 'download-message-btn';
-                dlBtn.textContent = 'DL';
+                dlBtn.textContent = ' Exportieren';
                 dlBtn.onclick = (e) => { e.stopPropagation(); showSingleExportDropdown(aiMsgId, dlBtn); };
                 aiContainer.appendChild(dlBtn);
                 
@@ -1929,7 +1929,7 @@
             }
             const dlBtn = document.createElement('button');
             dlBtn.className = 'download-message-btn';
-            dlBtn.textContent = 'DL';
+            dlBtn.textContent = ' Exportieren ';
             dlBtn.onclick = (e) => { e.stopPropagation(); showSingleExportDropdown(msgId, dlBtn); };
             messageContainer.appendChild(dlBtn);
             const deleteBtn = document.createElement('button');
