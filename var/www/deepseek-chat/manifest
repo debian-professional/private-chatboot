@@ -558,5 +558,22 @@
         - Git: aa4ecf7 (deepseek-api.py) + 0963081 (index.html mit Streaming)
         - Deutlich bessere User Experience bei langen Antworten
 
+        39. [18.02.2026 08:56] - index.html synchronisiert und ins Git-Repository uebernommen:
+        - Alte index.html (Eigentuemer: root) im source-Repo geloescht und neu erstellt
+        - Eigentuemer auf source:source gesetzt (chown source:source index.html)
+        - Neue index.html (90093 Bytes) committed und nach GitHub gepusht (Commit: 9c2503e)
+        - GitHub, source-Repo und Produktionsverzeichnis sind nun synchron
+
+        40. [18.02.2026 08:56] - SICHERHEITSHINWEIS FUER MANIFEST-EINTRAEGE (VERBINDLICH):
+        - Im Manifest duerfen NIEMALS vertrauliche Server-Interna eingetragen werden
+        - Verboten sind insbesondere: IP-Adressen, Hostnamen, Benutzernamen,
+          Passwörter, API-Keys, SSH-Schluessel, interne Netzwerk-Informationen,
+          Zertifikate oder sonstige Informationen die die Sicherheit gefaehrden
+        - Diese Regel gilt fuer alle aktuellen und zukuenftigen Eintraege
+        - Datum und Uhrzeit aller Aenderungen sind zwingend anzugeben
+ 
+   ============================================================================
+
+
     ============================================================================
 
