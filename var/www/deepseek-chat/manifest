@@ -607,6 +607,16 @@
         - BUGFIX 3: saveHandler rief updateSettingsUI() nicht auf
           Datenschutz-Beschreibung aktualisierte Anredeform nicht sofort
           Korrigiert: updateSettingsUI() am Ende von saveHandler ergaenzt
+
+        45. [18.02.2026 21:15] - Bugfix: Fehlermeldung ungueltige Dateiformat als alert():
+        - Fehlermeldung bei nicht unterstuetztem Dateiformat war nicht sichtbar
+        - Grund: #fileInfo Box verschwindet zu schnell / wird uebersehen
+        - Loesung: alert() Popup statt stiller Fehlermeldung in der Box
+
+
+
+
+
     ============================================================================
 
 
