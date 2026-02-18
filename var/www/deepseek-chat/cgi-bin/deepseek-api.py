@@ -1,146 +1,173 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-"""
-deepseek-api.py - Proxy fuer DeepSeek API mit STREAMING Support
-/var/www/deepseek-chat/cgi-bin/deepseek-api.py
-"""
 
-import sys
 import json
+import sys
 import os
-import requests
-from datetime import datetime
+import traceback
+import urllib.request
+import urllib.error
+import datetime
 
-API_KEY = os.environ.get('DEEPSEEK_API_KEY', '')
-API_URL = 'https://api.deepseek.com/v1/chat/completions'
-LOG_PATH = '/var/www/deepseek-chat/cgi-bin/deepseek-chat.log'
-
-def log_to_file(message):
-    """Schreibt eine Nachricht ins Log"""
+def log_to_file(status_code, response_data):
+    """Schreibt ausgewählte Informationen in die Log-Datei (ohne API-Key)."""
     try:
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        with open(LOG_PATH, 'a', encoding='utf-8') as f:
-            f.write(f"{timestamp} | {message}\n")
-    except Exception as e:
-        print(f"Log-Fehler: {e}", file=sys.stderr)
+        if os.environ.get('REQUEST_METHOD') == 'OPTIONS':
+            return
+        log_path = '/var/www/deepseek-chat/cgi-bin/deepseek-chat.log'
+        ip = os.environ.get('REMOTE_ADDR', 'unknown')
+        method = os.environ.get('REQUEST_METHOD', 'unknown')
+        path = os.environ.get('REQUEST_URI', 'unknown')
+        timestamp = datetime.datetime.now().isoformat()
+        error_msg = None
+        if isinstance(response_data, dict):
+            error_msg = response_data.get('error')
+        log_line = f"{timestamp} | IP: {ip} | {method} {path} | Status: {status_code}"
+        if error_msg:
+            log_line += f" | Error: {error_msg}"
+        log_line += "\n"
+        with open(log_path, 'a') as f:
+            f.write(log_line)
+    except Exception:
+        pass
 
-def send_error(status_code, message):
-    """Sendet Fehlerantwort"""
+def send_error(status_code, data):
+    """Sendet Fehler-Response als JSON (vor dem Streaming-Start)."""
     print(f"Status: {status_code}")
     print("Content-Type: application/json")
     print("Access-Control-Allow-Origin: *")
+    print("Access-Control-Allow-Methods: POST, OPTIONS")
+    print("Access-Control-Allow-Headers: Content-Type")
     print()
-    print(json.dumps({"error": message}, ensure_ascii=False))
+    print(json.dumps(data, ensure_ascii=False))
     sys.stdout.flush()
+    log_to_file(status_code, data)
 
 def main():
-    """Hauptfunktion - handhabt Streaming von DeepSeek API"""
     try:
-        # CORS Preflight
-        if os.environ.get('REQUEST_METHOD') == 'OPTIONS':
-            print("Status: 200 OK")
-            print("Access-Control-Allow-Origin: *")
-            print("Access-Control-Allow-Methods: POST, OPTIONS")
-            print("Access-Control-Allow-Headers: Content-Type")
-            print()
-            sys.stdout.flush()
+        # API-Key aus Umgebungsvariable laden
+        api_key = os.environ.get('DEEPSEEK_API_KEY')
+        if not api_key:
+            send_error(500, {
+                'error': 'API-Key nicht konfiguriert. Bitte DEEPSEEK_API_KEY in /etc/apache2/envvars setzen.'
+            })
+            return
+
+        request_method = os.environ.get('REQUEST_METHOD', '')
+
+        # OPTIONS Request (CORS Preflight)
+        if request_method == 'OPTIONS':
+            send_error(200, {'status': 'ok'})
             return
 
         # Nur POST erlaubt
-        if os.environ.get('REQUEST_METHOD') != 'POST':
-            send_error(405, "Nur POST erlaubt")
+        if request_method != 'POST':
+            send_error(405, {
+                'error': f'Methode nicht erlaubt: {request_method}. Nur POST ist erlaubt.'
+            })
             return
 
-        # Request-Daten lesen
+        # Content-Length lesen
         content_length = int(os.environ.get('CONTENT_LENGTH', 0))
         if content_length == 0:
-            send_error(400, "Keine Daten empfangen")
+            send_error(400, {
+                'error': 'Leere Anfrage. Bitte model, messages und max_tokens senden.'
+            })
             return
 
-        raw_data = sys.stdin.buffer.read(content_length)
-        request_data = json.loads(raw_data.decode('utf-8'))
+        # POST-Daten lesen
+        post_data = sys.stdin.read(content_length)
+        request_data = json.loads(post_data)
 
-        # API-Key pruefen
-        if not API_KEY:
-            log_to_file("ERROR | API-Key fehlt in Umgebungsvariablen")
-            send_error(500, "Server-Konfigurationsfehler")
+        # Validierung
+        model = request_data.get('model', 'deepseek-chat')
+        messages = request_data.get('messages', [])
+        max_tokens = request_data.get('max_tokens', 2000)
+        no_training = request_data.get('no_training', True)
+
+        if not messages or not isinstance(messages, list):
+            send_error(400, {
+                'error': 'Ungueltige Anfrage: messages Array erforderlich'
+            })
             return
 
-        # No-Training Option lesen (Standard: True = Daten NICHT fuer Training verwenden)
-        no_training = request_data.get("no_training", True)
+        # DeepSeek API Request vorbereiten (mit Streaming)
+        api_url = 'https://api.deepseek.com/v1/chat/completions'
 
-        # Request-Body vorbereiten
-        api_request = {
-            "model": request_data.get("model", "deepseek-chat"),
-            "messages": request_data.get("messages", []),
-            "max_tokens": request_data.get("max_tokens", 2000),
-            "stream": True  # STREAMING AKTIVIEREN
+        api_request_data = {
+            'model': model,
+            'messages': messages,
+            'max_tokens': max_tokens,
+            'stream': True
         }
 
-        # Logging
-        ip = os.environ.get('REMOTE_ADDR', 'unknown')
-        msg_count = len(api_request["messages"])
-        log_to_file(f"IP: {ip} | REQUEST | {msg_count} messages | STREAMING | no_training: {no_training}")
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {api_key}'
+        }
 
-        # HTTP Headers fuer Streaming senden
-        print("Status: 200 OK")
+        # X-No-Training Header setzen falls aktiviert
+        if no_training:
+            headers['X-No-Training'] = 'true'
+
+        req = urllib.request.Request(
+            api_url,
+            data=json.dumps(api_request_data).encode('utf-8'),
+            headers=headers,
+            method='POST'
+        )
+
+        # API-Verbindung herstellen (VOR dem Senden der SSE-Header)
+        # So können bei Verbindungsfehlern noch JSON-Fehler gesendet werden
+        try:
+            response = urllib.request.urlopen(req, timeout=60)
+        except urllib.error.HTTPError as e:
+            error_body = e.read().decode('utf-8')
+            send_error(e.code, {
+                'error': f'DeepSeek API Fehler: {e.code}',
+                'details': error_body
+            })
+            return
+        except urllib.error.URLError as e:
+            send_error(500, {
+                'error': 'Verbindung zur DeepSeek API fehlgeschlagen',
+                'details': str(e.reason)
+            })
+            return
+
+        # SSE-Header senden (erst nach erfolgreicher API-Verbindung)
+        print("Status: 200")
         print("Content-Type: text/event-stream")
-        print("Cache-Control: no-cache")
-        print("Connection: keep-alive")
         print("Access-Control-Allow-Origin: *")
+        print("Access-Control-Allow-Methods: POST, OPTIONS")
+        print("Access-Control-Allow-Headers: Content-Type")
+        print("Cache-Control: no-cache")
+        print("X-Accel-Buffering: no")
         print()
         sys.stdout.flush()
 
-        # API-Headers vorbereiten
-        api_headers = {
-            "Authorization": f"Bearer {API_KEY}",
-            "Content-Type": "application/json"
-        }
+        # Stream von DeepSeek direkt an den Client weiterleiten
+        with response:
+            for line in response:
+                decoded = line.decode('utf-8')
+                sys.stdout.write(decoded)
+                sys.stdout.flush()
 
-        # No-Training Header setzen (soweit von der API unterstuetzt)
-        if no_training:
-            api_headers["X-No-Training"] = "true"
+        log_to_file(200, {})
 
-        # DeepSeek API aufrufen mit Streaming
-        response = requests.post(
-            API_URL,
-            headers=api_headers,
-            json=api_request,
-            stream=True  # WICHTIG: Stream aktivieren
-        )
+    except json.JSONDecodeError as e:
+        send_error(400, {
+            'error': 'Ungültiges JSON',
+            'details': str(e)
+        })
 
-        if response.status_code != 200:
-            error_text = response.text
-            log_to_file(f"ERROR | DeepSeek API | Status {response.status_code} | {error_text}")
-            # Fehler als Stream senden
-            print(f"data: {json.dumps({'error': f'API-Fehler {response.status_code}'})}\n\n")
-            sys.stdout.flush()
-            return
-
-        # Tokens streamen
-        for line in response.iter_lines():
-            if line:
-                line_text = line.decode('utf-8')
-
-                # DeepSeek sendet: "data: {...}"
-                if line_text.startswith('data: '):
-                    # Direkt weiterleiten an Client
-                    print(line_text)
-                    sys.stdout.flush()
-
-                    # Bei [DONE] ist Stream fertig
-                    if '[DONE]' in line_text:
-                        break
-
-        # Stream abschliessen
-        log_to_file(f"IP: {ip} | RESPONSE | Stream completed")
-
-    except json.JSONDecodeError:
-        log_to_file("ERROR | Ungueltige JSON-Daten empfangen")
-        send_error(400, "Ungueltige JSON-Daten")
     except Exception as e:
-        log_to_file(f"ERROR | {str(e)}")
-        send_error(500, f"Interner Fehler: {str(e)}")
+        error_details = traceback.format_exc()
+        send_error(500, {
+            'error': 'Interner Serverfehler',
+            'message': str(e),
+            'details': error_details
+        })
 
 if __name__ == '__main__':
     main()
