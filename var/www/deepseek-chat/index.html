@@ -1,4 +1,6 @@
-root@swtor10-server:/var/www/deepseek-chat# cat index.html
+
+
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -536,6 +538,55 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
             background: white;
             border-radius: 50%;
         }
+        /* =====================================================================
+           TOGGLE SWITCH - Datenschutz
+           ===================================================================== */
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+        .toggle-switch {
+            position: relative;
+            width: 46px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+        .toggle-switch input[type="checkbox"] {
+            display: none;
+        }
+        .toggle-slider {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #444;
+            border-radius: 24px;
+            transition: background 0.3s;
+            cursor: pointer;
+        }
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            left: 3px;
+            top: 3px;
+            background: #aaa;
+            border-radius: 50%;
+            transition: transform 0.3s, background 0.3s;
+        }
+        .toggle-switch input[type="checkbox"]:checked + .toggle-slider {
+            background: #155724;
+        }
+        .toggle-switch input[type="checkbox"]:checked + .toggle-slider::before {
+            transform: translateX(22px);
+            background: #90ee90;
+        }
+        .setting-item.toggle-active {
+            background: #1a2e1a;
+            border-color: #28a745;
+        }
+        /* ===================================================================== */
         .settings-info {
             margin-top: 20px;
             padding: 15px;
@@ -828,6 +879,32 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
                     </div>
                 </div>
             </div>
+
+            <!-- ================================================================
+                 DATENSCHUTZ - Kein Training
+                 ================================================================ -->
+            <div class="settings-group">
+                <div class="group-header">
+                    <div class="group-title">Datenschutz</div>
+                    <div class="group-status" id="noTrainingStatus">Aktiv</div>
+                </div>
+
+                <div class="setting-item" id="noTrainingItem">
+                    <label class="toggle-label" for="noTrainingToggle">
+                        <span class="setting-name">Daten nicht fuer Training verwenden</span>
+                        <span class="toggle-switch">
+                            <input type="checkbox" id="noTrainingToggle" checked>
+                            <span class="toggle-slider"></span>
+                        </span>
+                    </label>
+                    <div class="setting-description">
+                        Sendet den Header X-No-Training: true an die API.<br>
+                        Soweit von der API unterstuetzt werden Ihre Daten nicht fuer das Training verwendet.<br>
+                        Standard: Eingeschaltet (Opt-Out aktiv).
+                    </div>
+                </div>
+            </div>
+            <!-- ================================================================ -->
             
             <div class="settings-info">
                 <div class="info-title">Einstellungen werden automatisch gespeichert</div>
@@ -882,7 +959,7 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
         const MAX_FILE_CONTENT_LENGTH = 15000;
         const MAX_FILE_SIZE_MB = 10;
         const PDF_EXTRACTION_TIMEOUT = 30000;
-        const SETTINGS_VERSION = '1.0';
+        const SETTINGS_VERSION = '1.1';
         const SUPPORTED_FILE_FORMATS = ['.txt', '.pdf'];
         const ACCEPTED_FILE_FORMATS = ['.txt', '.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png', '.csv', '.xlsx', '.pptx'];
         
@@ -1273,7 +1350,6 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
             const text = getMsgText(msgId);
             const role = getMsgRole(msgId) === 'user' ? 'User' : 'DeepSeek AI';
             const timestamp = new Date().toLocaleString('de-DE');
-            // RTF direkt generieren ohne externe Library
             const escapedText = text
                 .replace(/\\/g, '\\\\')
                 .replace(/\{/g, '\\{')
@@ -1310,7 +1386,6 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
         }
         
         function showSingleExportDropdown(msgId, btnElement) {
-            // Vorheriges Dropdown schliessen
             if (activeSingleExportDropdown) {
                 activeSingleExportDropdown.classList.remove('show');
                 activeSingleExportDropdown = null;
@@ -1362,7 +1437,6 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
 
         function handleLike(msgId, likeBtn, dislikeBtn) {
             const isLiked = likeBtn.classList.contains('liked');
-            // Beide zuruecksetzen
             likeBtn.classList.remove('liked');
             dislikeBtn.classList.remove('disliked');
             likeBtn.textContent = 'Like';
@@ -1377,7 +1451,6 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
 
         function handleDislike(msgId, likeBtn, dislikeBtn) {
             const isDisliked = dislikeBtn.classList.contains('disliked');
-            // Beide zuruecksetzen
             likeBtn.classList.remove('liked');
             dislikeBtn.classList.remove('disliked');
             likeBtn.textContent = 'Like';
@@ -1400,7 +1473,6 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
                     copyBtn.textContent = 'Copy';
                 }, 2000);
             }).catch(() => {
-                // Fallback fuer aeltere Browser
                 const textarea = document.createElement('textarea');
                 textarea.value = text;
                 document.body.appendChild(textarea);
@@ -1419,19 +1491,15 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
         async function handleRegenerate(msgId) {
             if (isSending) return;
 
-            // AI-Nachricht in contextHistory finden
             const msgIndex = contextHistory.messages.findIndex(m => m.id === msgId);
             if (msgIndex === -1) return;
 
-            // User-Nachricht davor finden
             const userMsg = contextHistory.messages[msgIndex - 1];
             if (!userMsg || userMsg.role !== 'user') return;
 
-            // AI-Nachricht aus contextHistory entfernen
             contextHistory.messages = contextHistory.messages.slice(0, msgIndex);
             updateContextEstimation();
 
-            // AI-Nachricht aus DOM entfernen (Container + nachfolgende Trennlinie)
             const container = document.querySelector(`[data-msg-id="${msgId}"]`);
             if (container) {
                 const nextSibling = container.nextElementSibling;
@@ -1441,7 +1509,6 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
                 container.remove();
             }
 
-            // Neu senden mit derselben User-Nachricht
             isSending = true;
             sendButton.disabled = true;
             sendButton.textContent = 'Wird gesendet...';
@@ -1470,7 +1537,12 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ model: 'deepseek-chat', messages, max_tokens: 2000 })
+                    body: JSON.stringify({
+                        model: 'deepseek-chat',
+                        messages,
+                        max_tokens: 2000,
+                        no_training: settings.noTraining
+                    })
                 });
                 if (!response.ok) {
                     const errorText = await response.text();
@@ -1582,16 +1654,17 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
         
         function migrateSettings(oldSettings) {
             if (!oldSettings || typeof oldSettings !== 'object') {
-                return { version: SETTINGS_VERSION, addressForm: 'sie', defaultMode: 'chat' };
+                return { version: SETTINGS_VERSION, addressForm: 'sie', defaultMode: 'chat', noTraining: true };
             }
             return {
                 version: SETTINGS_VERSION,
                 addressForm: oldSettings.addressForm || 'sie',
-                defaultMode: oldSettings.defaultMode || 'chat'
+                defaultMode: oldSettings.defaultMode || 'chat',
+                noTraining: oldSettings.noTraining !== undefined ? oldSettings.noTraining : true
             };
         }
         
-        let settings = { version: SETTINGS_VERSION, addressForm: 'sie', defaultMode: 'chat' };
+        let settings = { version: SETTINGS_VERSION, addressForm: 'sie', defaultMode: 'chat', noTraining: true };
         let currentMode = 'chat';
         
         const sendButton = document.getElementById('sendButton');
@@ -1605,6 +1678,7 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
         const searchIndicator = document.getElementById('searchIndicator');
         const addressFormStatus = document.getElementById('addressFormStatus');
         const defaultModeStatus = document.getElementById('defaultModeStatus');
+        const noTrainingStatus = document.getElementById('noTrainingStatus');
         const inputField = document.getElementById('input');
         const fileUpload = document.getElementById('fileUpload');
         const fileInfo = document.getElementById('fileInfo');
@@ -1622,6 +1696,8 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
         const logOverlay = document.getElementById('logOverlay');
         const closeLog = document.getElementById('closeLog');
         const refreshLog = document.getElementById('refreshLog');
+        const noTrainingToggle = document.getElementById('noTrainingToggle');
+        const noTrainingItem = document.getElementById('noTrainingItem');
         
         let selectedFile = null;
         let fileTextContent = null;
@@ -1674,7 +1750,7 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
                 }
             } catch (e) {
                 console.error('Fehler beim Laden der Einstellungen:', e);
-                settings = { version: SETTINGS_VERSION, addressForm: 'sie', defaultMode: 'chat' };
+                settings = { version: SETTINGS_VERSION, addressForm: 'sie', defaultMode: 'chat', noTraining: true };
             }
         }
         
@@ -1691,16 +1767,24 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
             document.getElementById('chatMode').checked = (settings.defaultMode === 'chat');
             document.getElementById('deepthinkMode').checked = (settings.defaultMode === 'deepthink');
             document.getElementById('searchMode').checked = (settings.defaultMode === 'search');
+            noTrainingToggle.checked = (settings.noTraining !== false);
             addressFormStatus.textContent = settings.addressForm === 'sie' ? 'Sie-Form' : 'Du-Form';
             defaultModeStatus.textContent =
                 settings.defaultMode === 'chat' ? 'Normaler Chat' :
                 settings.defaultMode === 'deepthink' ? 'DeepThink Modus' : 'Search Modus';
+            noTrainingStatus.textContent = settings.noTraining !== false ? 'Aktiv' : 'Inaktiv';
             document.querySelectorAll('.setting-item').forEach(item => item.classList.remove('active'));
             if (settings.addressForm === 'sie') document.getElementById('sieFormItem').classList.add('active');
             else document.getElementById('duFormItem').classList.add('active');
             if (settings.defaultMode === 'chat') document.getElementById('chatModeItem').classList.add('active');
             else if (settings.defaultMode === 'deepthink') document.getElementById('deepthinkModeItem').classList.add('active');
             else document.getElementById('searchModeItem').classList.add('active');
+            // Toggle-Item hervorheben wenn aktiv
+            if (settings.noTraining !== false) {
+                noTrainingItem.classList.add('toggle-active');
+            } else {
+                noTrainingItem.classList.remove('toggle-active');
+            }
         }
         
         async function sendMessage() {
@@ -1728,7 +1812,6 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
             updateSystemPromptTokens(systemPrompt);
             const processedSystem = replaceGermanUmlauts(systemPrompt);
             
-            // AI-Antwort Container erstellen
             const aiContainer = document.createElement('div');
             aiContainer.className = 'message-container';
             const aiText = document.createElement('div');
@@ -1744,14 +1827,15 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
                     messages.push({ role: msg.role, content: replaceGermanUmlauts(msg.content) });
                 });
                 
-                // STREAMING REQUEST
+                // STREAMING REQUEST - inkl. no_training Parameter
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         model: 'deepseek-chat', 
                         messages, 
-                        max_tokens: 2000
+                        max_tokens: 2000,
+                        no_training: settings.noTraining
                     })
                 });
                 
@@ -1759,7 +1843,6 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
                     throw new Error(`API-Fehler (${response.status})`);
                 }
                 
-                // Server-Sent Events (SSE) empfangen
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 let fullText = '';
@@ -1774,9 +1857,7 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
                     for (const line of lines) {
                         if (line.startsWith('data: ')) {
                             const dataStr = line.substring(6).trim();
-                            
                             if (dataStr === '[DONE]') break;
-                            
                             try {
                                 const data = JSON.parse(dataStr);
                                 if (data.choices && data.choices[0] && data.choices[0].delta) {
@@ -1794,7 +1875,6 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
                     }
                 }
                 
-                // Stream fertig
                 const aiMsgId = addAIResponseToContext(fullText, currentMode);
                 aiContainer.setAttribute('data-msg-id', aiMsgId);
                 addFeedbackButtons(aiContainer, aiMsgId);
@@ -1839,17 +1919,14 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
             messageDiv.className = isUser ? 'user-message' : 'ai-message';
             messageDiv.textContent = text;
             messageContainer.appendChild(messageDiv);
-            // Feedback-Buttons nur fuer AI-Nachrichten
             if (!isUser) {
                 addFeedbackButtons(messageContainer, msgId);
             }
-            // DL-Button
             const dlBtn = document.createElement('button');
             dlBtn.className = 'download-message-btn';
             dlBtn.textContent = 'DL';
             dlBtn.onclick = (e) => { e.stopPropagation(); showSingleExportDropdown(msgId, dlBtn); };
             messageContainer.appendChild(dlBtn);
-            // X-Button
             const deleteBtn = document.createElement('button');
             deleteBtn.className = 'delete-message-btn';
             deleteBtn.textContent = 'X';
@@ -1866,34 +1943,21 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
         //          ARM 32/64 Bit, Shell Scripts, Java Bytecode, Python Bytecode
         // =====================================================================
         const EXECUTABLE_SIGNATURES = [
-            // Windows 32/64 Bit - PE/MZ Header (EXE, DLL, SYS, SCR)
             { bytes: [0x4D, 0x5A],                                                                                                                         platform: "Windows 32/64 Bit",        format: "PE/MZ Executable" },
-            // Linux 32 Bit - ELF32
             { bytes: [0x7F, 0x45, 0x4C, 0x46, 0x01],                                                                                                      platform: "Linux 32 Bit",             format: "ELF32 Executable" },
-            // Linux 64 Bit - ELF64
             { bytes: [0x7F, 0x45, 0x4C, 0x46, 0x02],                                                                                                      platform: "Linux 64 Bit",             format: "ELF64 Executable" },
-            // ARM 32 Bit - ELF32 ARM Little Endian
             { bytes: [0x7F,0x45,0x4C,0x46,0x01,0x01,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x00,0x28,0x00],                               platform: "ARM 32 Bit",               format: "ELF32 ARM Executable" },
-            // ARM 64 Bit - ELF64 AArch64 Little Endian
             { bytes: [0x7F,0x45,0x4C,0x46,0x02,0x01,0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x00,0xB7,0x00],                               platform: "ARM 64 Bit (AArch64)",     format: "ELF64 AArch64 Executable" },
-            // macOS 32 Bit - Mach-O Little Endian
             { bytes: [0xCE, 0xFA, 0xED, 0xFE],                                                                                                             platform: "macOS 32 Bit",             format: "Mach-O 32 Bit Executable" },
-            // macOS 64 Bit - Mach-O Little Endian
             { bytes: [0xCF, 0xFA, 0xED, 0xFE],                                                                                                             platform: "macOS 64 Bit",             format: "Mach-O 64 Bit Executable" },
-            // macOS Universal Binary (Fat Binary - mehrere Architekturen)
             { bytes: [0xCA, 0xFE, 0xBA, 0xBE],                                                                                                             platform: "macOS Universal Binary",   format: "Mach-O Fat Binary" },
-            // macOS/iOS ARM 32 Bit - Mach-O Big Endian
             { bytes: [0xFE, 0xED, 0xFA, 0xCE],                                                                                                             platform: "macOS/iOS ARM 32 Bit",     format: "Mach-O 32 Bit Big Endian" },
-            // macOS/iOS ARM 64 Bit - Mach-O Big Endian
             { bytes: [0xFE, 0xED, 0xFA, 0xCF],                                                                                                             platform: "macOS/iOS ARM 64 Bit",     format: "Mach-O 64 Bit Big Endian" },
-            // Shell Scripts - Shebang (#!)
             { bytes: [0x23, 0x21],                                                                                                                         platform: "Linux/macOS/Unix",         format: "Shell Script (#!)" },
-            // Python Compiled Bytecode (.pyc) Python 3.8+
             { bytes: [0x55, 0x0D, 0x0D, 0x0A],                                                                                                            platform: "Python (plattformunabh.)", format: "Python Bytecode (.pyc)" },
         ];
 
         async function checkMagicBytes(file) {
-            // Liest die ersten 20 Bytes der Datei und prueft gegen alle Signaturen
             const buffer = await file.slice(0, 20).arrayBuffer();
             const bytes = new Uint8Array(buffer);
             for (const sig of EXECUTABLE_SIGNATURES) {
@@ -1903,9 +1967,9 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
                 for (let i = 0; i < sigLen; i++) {
                     if (bytes[i] !== sig.bytes[i]) { match = false; break; }
                 }
-                if (match) return sig; // Treffer: gibt Signatur-Objekt zurueck
+                if (match) return sig;
             }
-            return null; // Kein Treffer: Datei ist sicher
+            return null;
         }
 
         async function handleFileUpload(event) {
@@ -1921,7 +1985,6 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
                 fileUpload.value = '';
                 return;
             }
-            // Magic Bytes Pruefung - erkennt umbenannte ausfuehrbare Dateien
             const execSig = await checkMagicBytes(file);
             if (execSig) {
                 fileInfo.innerHTML = `<div class="pdf-error">Sicherheitsfehler: Ausfuehrbare Datei erkannt!<br>Datei: ${file.name}<br>Plattform: ${execSig.platform}<br>Format: ${execSig.format}<br>Upload wurde blockiert.</div>`;
@@ -2010,7 +2073,6 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
                 if (!exportButton.contains(e.target) && !exportMenu.contains(e.target)) {
                     exportMenu.classList.remove('show');
                 }
-                // Einzel-Export Dropdown schliessen bei Klick ausserhalb
                 if (activeSingleExportDropdown && !activeSingleExportDropdown.contains(e.target)) {
                     activeSingleExportDropdown.classList.remove('show');
                     activeSingleExportDropdown = null;
@@ -2028,9 +2090,19 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
                     }
                 }
             });
+            // Toggle no-training live aktualisieren
+            addEventListenerWithCleanup(noTrainingToggle, 'change', () => {
+                noTrainingStatus.textContent = noTrainingToggle.checked ? 'Aktiv' : 'Inaktiv';
+                if (noTrainingToggle.checked) {
+                    noTrainingItem.classList.add('toggle-active');
+                } else {
+                    noTrainingItem.classList.remove('toggle-active');
+                }
+            });
             const saveHandler = function() {
                 settings.addressForm = document.querySelector('input[name="addressForm"]:checked').value;
                 settings.defaultMode = document.querySelector('input[name="defaultMode"]:checked').value;
+                settings.noTraining = noTrainingToggle.checked;
                 saveSettings();
                 setMode(settings.defaultMode);
                 updateInputPlaceholder();
@@ -2076,6 +2148,4 @@ root@swtor10-server:/var/www/deepseek-chat# cat index.html
     </script>
 </body>
 </html>
-
-
 
