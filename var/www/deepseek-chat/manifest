@@ -589,6 +589,24 @@
         42. [18.02.2026 18:45] - Bereinigung GUI:
         - Textänderung Buttons  
 
+        43. [18.02.2026 20:00] - Bugfix deepseek-api.py: Streaming-Implementierung:
+        - stream: True in API-Request ergaenzt (Hauptursache fuer fehlende AI-Antworten)
+        - Content-Type text/event-stream Header hinzugefuegt
+        - X-Accel-Buffering: no Header fuer Apache-Proxy ergaenzt
+        - Cache-Control: no-cache Header ergaenzt
+        - X-No-Training Header implementiert (wird gesendet wenn noTraining aktiv)
+        - API-Verbindung wird VOR SSE-Header-Ausgabe aufgebaut
+          (Verbindungsfehler koennen so noch als JSON zurueckgegeben werden)
+
+        44. [18.02.2026 20:10] - Bugfix index.html: 3 kritische Fehler behoben:
+        - BUGFIX 1: replaceGermanUmlauts() war komplett wirkungslos
+          (ae->ae statt ae statt ae->ae, identische No-Op Ersetzung)
+          Korrigiert: ae/oe/ue/ss/Ae/Oe/Ue korrekt auf Umlaute gemappt
+        - BUGFIX 2: handleRegenerate() hatte kein Streaming
+          Nachgeruestet: identischer SSE-Reader wie in sendMessage()
+        - BUGFIX 3: saveHandler rief updateSettingsUI() nicht auf
+          Datenschutz-Beschreibung aktualisierte Anredeform nicht sofort
+          Korrigiert: updateSettingsUI() am Ende von saveHandler ergaenzt
     ============================================================================
 
 
