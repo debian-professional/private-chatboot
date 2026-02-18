@@ -585,6 +585,11 @@
         - Apache: ServerName 172.29.255.1 in beide VirtualHost-Konfigurationen eingetragen
         - Apache laeuft ohne Warnungen nach systemctl restart apache2
         - Git: 406e70a (index.html) + vorherige Commits fuer deepseek-api.py und manifest
+
+        42. [18.02.2026 18:45] - Bereinigung GUI:
+
+
+
     ============================================================================
 
 
