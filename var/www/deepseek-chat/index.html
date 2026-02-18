@@ -2014,8 +2014,7 @@
             fileTextContent = null;
             const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
             if (!ACCEPTED_FILE_FORMATS.includes(fileExtension)) {
-                fileInfo.innerHTML = `<div class="pdf-error">Format nicht unterstuetzt: ${fileExtension}. Unterstuetzte Formate: ${ACCEPTED_FILE_FORMATS.join(', ')}</div>`;
-                fileInfo.classList.add('visible');
+                alert(`Format nicht unterstuetzt: ${fileExtension}\n\nUnterstuetzte Formate:\n${ACCEPTED_FILE_FORMATS.join(', ')}`);
                 selectedFile = null;
                 fileUpload.value = '';
                 return;
