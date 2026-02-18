@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
 """
 feedback-log.py - Schreibt Like/Dislike Feedback in deepseek-chat.log
 /var/www/deepseek-chat/cgi-bin/feedback-log.py
