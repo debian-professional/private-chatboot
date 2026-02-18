@@ -461,7 +461,7 @@
         - Grund: Dauerhafte Speicherung, professioneller Export, Multi-Chat-Verwaltung
 
     32. [17.02.2026 07:30] - APACHE-KONFIGURATION KORRIGIERT UND PDF-BUG BEHOBEN:
-        - APACHE SCRIPTALIA VEREINFACHT:
+        - APACHE SCRIPTALIAS VEREINFACHT:
           * Vorher: Einzelne ScriptAlias Einträge pro Script (/api/chat, /api/get-log)
           * Nachher: ScriptAlias /cgi-bin/ /var/www/deepseek-chat/cgi-bin/
           * Vorteil: Keine Apache-Änderung bei neuen Scripts notwendig
@@ -572,8 +572,19 @@
         - Diese Regel gilt fuer alle aktuellen und zukuenftigen Eintraege
         - Datum und Uhrzeit aller Aenderungen sind zwingend anzugeben
  
-   ============================================================================
-
-
+        41. [18.02.2026 10:45] - DATENSCHUTZ-TOGGLE UND APACHE-BEREINIGUNG:
+        - index.html: Neuer Toggle "Daten nicht fuer Training verwenden" in Einstellungen
+        - Toggle Standard: Eingeschaltet (Opt-Out aktiv)
+        - Sendet Header X-No-Training: true an die API (soweit von API unterstuetzt)
+        - settings-Objekt um noTraining: true erweitert
+        - SETTINGS_VERSION auf 1.1 erhoeht (migrateSettings() rueckwaertskompatibel)
+        - deepseek-api.py: no_training Parameter ausgewertet, X-No-Training Header gesetzt
+        - Apache: API-Key aus deepseek-chat.conf und deepseek-chat-ssl.conf entfernt
+        - Apache: API-Key sicher in /etc/apache2/envvars ausgelagert
+        - Apache: SetEnv DEEPSEEK_API_KEY ${DEEPSEEK_API_KEY} in deepseek-chat-ssl.conf
+        - Apache: ServerName 172.29.255.1 in beide VirtualHost-Konfigurationen eingetragen
+        - Apache laeuft ohne Warnungen nach systemctl restart apache2
+        - Git: 406e70a (index.html) + vorherige Commits fuer deepseek-api.py und manifest
     ============================================================================
+
 
