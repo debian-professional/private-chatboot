@@ -74,32 +74,32 @@
             background: #dc3545;
             color: white;
             border: none;
-            border-radius: 3px;
-            width: 24px;
-            height: 20px;
+            border-radius: 20px;
+            width: 28px;
+            height: 24px;
             font-size: 11px;
             cursor: pointer;
             padding: 0;
-            line-height: 20px;
+            line-height: 24px;
             text-align: center;
         }
         .delete-message-btn:hover { background: #c82333; }
         .download-message-btn {
             display: none;
             position: absolute;
-            right: 32px;
+            right: 36px;
             top: 2px;
             background: #0056b3;
             color: white;
             border: none;
-            border-radius: 3px;
+            border-radius: 20px;
             width: auto;
             min-width: 24px;
-            padding: 0 6px;
-            height: 20px;
+            padding: 0 10px;
+            height: 24px;
             font-size: 11px;
             cursor: pointer;
-            line-height: 20px;
+            line-height: 24px;
             text-align: center;
         }
         .download-message-btn:hover { background: #003d82; }
@@ -108,26 +108,34 @@
             position: absolute;
             left: 5px;
             bottom: 5px;
-            gap: 4px;
+            gap: 6px;
             flex-direction: row;
         }
         .message-container:hover .feedback-buttons { display: flex; }
+
+        /* =====================================================================
+           FEEDBACK-BUTTONS: Pill-Style, Originalfarbe blau
+           Aktiv-Zustaende: liked (blau), disliked (rot), copied (dunkelblau)
+           ===================================================================== */
         .feedback-btn {
             background: #0056b3;
             color: white;
             border: 1px solid #0056b3;
-            border-radius: 3px;
-            padding: 4px 10px;
+            border-radius: 20px;
+            padding: 4px 12px;
             font-size: 11px;
             cursor: pointer;
-            line-height: 1.2;
+            line-height: 1.4;
             white-space: nowrap;
             transition: all 0.2s;
+            font-family: Arial;
         }
         .feedback-btn:hover { background: #003d82; border-color: #003d82; }
+        .feedback-btn:active { background: #002a5c; border-color: #002a5c; }
         .feedback-btn.liked { background: #0a2f44; color: #9ac7ff; border-color: #007bff; }
         .feedback-btn.disliked { background: #5a1e1e; color: #ffb3b3; border-color: #dc3545; }
         .feedback-btn.copied { background: #003366; color: #99ccff; border-color: #0056b3; }
+
         .single-export-dropdown {
             display: none;
             position: absolute;
@@ -135,7 +143,7 @@
             top: 28px;
             background: #2d2d2d;
             border: 1px solid #444;
-            border-radius: 4px;
+            border-radius: 8px;
             z-index: 2000;
             box-shadow: 0 4px 8px rgba(0,0,0,0.5);
             min-width: 120px;
@@ -189,13 +197,10 @@
         }
 
         /* =====================================================================
-           PILL-BUTTON: Einheitlicher Stil fuer ALLE Buttons
-           Gilt fuer: Senden, Datei hochladen, Exportieren, Einstellungen,
-                      Log-Dateien, DeepThink
-           Inaktiv:  #2d2d2d Hintergrund, #555 Rand, weisse Schrift
-           Aktiv:    #1e3a5f Hintergrund, #4dabf7 Rand, blaue Schrift (nur Toggle-Buttons)
-           Hover:    #3a3a3a Hintergrund, #888 Rand
-           Masse:    Hoehe 36px, border-radius 20px, padding 8px 16px
+           PILL-BUTTON: Aktions-Buttons (blau)
+           Senden, Datei hochladen, Exportieren, Einstellungen, Log-Dateien
+           Hoehe: 36px, border-radius: 20px, padding: 8px 16px
+           Farbe: #0056b3 (blau), Hover: #003d82, Active: #002a5c
            ===================================================================== */
         .buttons-row {
             display: flex;
@@ -204,7 +209,7 @@
             align-items: center;
             flex-wrap: wrap;
         }
-.pill-button {
+        .pill-button {
             flex: none;
             padding: 8px 16px;
             background: #0056b3;
@@ -224,7 +229,11 @@
         .pill-button:hover { background: #003d82; border-color: #003d82; }
         .pill-button:active { background: #002a5c; border-color: #002a5c; }
 
-        /* DeepThink: Toggle-Verhalten, dunkel/blau */
+        /* =====================================================================
+           PILL-BUTTON-MODE: DeepThink Toggle-Button (dunkel/blau)
+           Inaktiv: #2d2d2d Hintergrund, #555 Rand, weisse Schrift
+           Aktiv:   #1e3a5f Hintergrund, #4dabf7 Rand, blaue Schrift
+           ===================================================================== */
         .pill-button-mode {
             flex: none;
             padding: 8px 16px;
@@ -249,7 +258,7 @@
             color: #4dabf7;
         }
 
-        /* Exportieren-Dropdown Container */
+        /* Exportieren-Dropdown */
         .dropdown-container { position: relative; }
         .dropdown-arrow { margin-left: 6px; font-size: 11px; }
         .dropdown-menu {
@@ -259,7 +268,7 @@
             left: 0;
             background: #2d2d2d;
             border: 1px solid #444;
-            border-radius: 4px;
+            border-radius: 8px;
             z-index: 1000;
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
             min-width: 180px;
@@ -287,11 +296,10 @@
             cursor: pointer;
         }
 
-        /* ===================================================================== */
         .mode-indicator {
             padding: 5px 10px;
             margin: 5px 0;
-            border-radius: 4px;
+            border-radius: 20px;
             font-size: 12px;
             text-align: center;
             display: none;
@@ -307,17 +315,33 @@
             padding: 8px;
             background: #2d2d2d;
             border: 1px solid #444;
-            border-radius: 4px;
+            border-radius: 8px;
             display: none;
         }
         #fileInfo.visible { display: block; }
-        #removeFile { background: #dc3545; margin-left: 10px; padding: 4px 8px; font-size: 12px; cursor: pointer; border: none; color: white; border-radius: 3px; }
-        #removeFile:hover { background: #c82333; }
+
+        /* =====================================================================
+           REMOVE-FILE BUTTON: Pill-Style, rot
+           ===================================================================== */
+        #removeFile {
+            background: #dc3545;
+            color: white;
+            border: 1px solid #dc3545;
+            border-radius: 20px;
+            margin-left: 10px;
+            padding: 4px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            font-family: Arial;
+            transition: all 0.2s;
+        }
+        #removeFile:hover { background: #c82333; border-color: #c82333; }
+
         .pdf-processing {
             padding: 10px;
             background: #155724;
             color: #90ee90;
-            border-radius: 4px;
+            border-radius: 8px;
             margin: 10px 0;
             font-size: 14px;
         }
@@ -325,12 +349,13 @@
             padding: 10px;
             background: #721c24;
             color: #f8d7da;
-            border-radius: 4px;
+            border-radius: 8px;
             margin: 10px 0;
             font-size: 14px;
         }
         .pdf-progress { height: 4px; background: #444; border-radius: 2px; margin-top: 8px; overflow: hidden; }
         .pdf-progress-bar { height: 100%; background: #28a745; width: 0%; transition: width 0.3s; }
+
         #settingsOverlay {
             display: none;
             position: fixed;
@@ -361,19 +386,27 @@
             border-bottom: 2px solid #0056b3;
         }
         .settings-title { font-size: 22px; font-weight: bold; color: #4dabf7; }
+
+        /* =====================================================================
+           CLOSE-BUTTON: Pill-Style, rot, rund
+           ===================================================================== */
         .close-settings {
             background: #dc3545;
-            border: none;
+            border: 1px solid #dc3545;
             color: white;
             font-size: 18px;
-            width: 36px; height: 36px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.2s;
+            font-family: Arial;
         }
-        .close-settings:hover { background: #c82333; }
+        .close-settings:hover { background: #c82333; border-color: #c82333; }
+
         .settings-group { margin-bottom: 25px; padding: 0; background: transparent; border-radius: 0; border-left: none; }
         .group-header {
             display: flex;
@@ -398,7 +431,7 @@
         .setting-item.toggle-active { background: #1a2e1a; border-color: #28a745; }
         .setting-item.toggle-active-blue { background: #1e3a5f; border-color: #0056b3; }
         .setting-name { font-size: 15px; color: #f0f0f0; font-weight: normal; }
-        .setting-description { font-size: 12px; color: #aaa; margin-top: 5px; line-height: 1.4; padding-left: 0; }
+        .setting-description { font-size: 12px; color: #aaa; margin-top: 5px; line-height: 1.4; }
         .toggle-label { display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
         .toggle-switch { position: relative; width: 46px; height: 24px; flex-shrink: 0; }
         .toggle-switch input[type="checkbox"] { display: none; }
@@ -433,20 +466,27 @@
         }
         .info-title { font-size: 14px; color: #90ee90; margin-bottom: 5px; font-weight: bold; }
         .info-text { font-size: 12px; color: #aaa; line-height: 1.4; }
+
+        /* =====================================================================
+           SAVE-BUTTON: Pill-Style, blau (Einstellungen uebernehmen)
+           ===================================================================== */
         .save-button {
             width: 100%;
-            padding: 14px;
+            padding: 12px 20px;
             background: #0056b3;
             color: white;
-            border: none;
-            border-radius: 8px;
+            border: 1px solid #0056b3;
+            border-radius: 20px;
             font-size: 15px;
             font-weight: bold;
+            font-family: Arial;
             cursor: pointer;
             margin-top: 25px;
-            transition: background 0.3s;
+            transition: all 0.2s;
         }
-        .save-button:hover { background: #003d82; }
+        .save-button:hover { background: #003d82; border-color: #003d82; }
+        .save-button:active { background: #002a5c; border-color: #002a5c; }
+
         #sessionsOverlay {
             display: none;
             position: fixed;
@@ -483,10 +523,39 @@
         .session-preview { font-size: 12px; color: #f0f0f0; margin: 8px 0; font-style: italic; }
         .session-count { font-size: 11px; color: #aaa; margin-bottom: 10px; }
         .session-actions { display: flex; gap: 10px; }
-        .session-load-btn { flex: 1; padding: 8px 15px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; }
-        .session-load-btn:hover { background: #218838; }
-        .session-delete-btn { padding: 8px 15px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; }
-        .session-delete-btn:hover { background: #c82333; }
+
+        /* =====================================================================
+           SESSION-BUTTONS: Pill-Style
+           Laden: gruen (#28a745), Loeschen: rot (#dc3545)
+           ===================================================================== */
+        .session-load-btn {
+            flex: 1;
+            padding: 8px 16px;
+            background: #28a745;
+            color: white;
+            border: 1px solid #28a745;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-family: Arial;
+            transition: all 0.2s;
+        }
+        .session-load-btn:hover { background: #218838; border-color: #218838; }
+        .session-load-btn:active { background: #1a6b2e; border-color: #1a6b2e; }
+        .session-delete-btn {
+            padding: 8px 16px;
+            background: #dc3545;
+            color: white;
+            border: 1px solid #dc3545;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-family: Arial;
+            transition: all 0.2s;
+        }
+        .session-delete-btn:hover { background: #c82333; border-color: #c82333; }
+        .session-delete-btn:active { background: #a01c28; border-color: #a01c28; }
+
         .no-sessions { text-align: center; padding: 40px; color: #aaa; font-size: 14px; }
         #logOverlay {
             display: none;
@@ -531,12 +600,6 @@
     
     <div id="chat"></div>
     
-    <!-- ================================================================
-         EINGABEFELD: Textarea mit Focus-Animation
-         Inaktiv: 40px, einzeilig
-         Fokus:   120px, mehrzeilig, blauer Rand
-         Enter = Senden, Shift+Enter = neue Zeile
-         ================================================================ -->
     <textarea id="input" placeholder="Ihre Nachricht hier eingeben..." rows="1"></textarea>
     
     <div id="deepThinkIndicator" class="mode-indicator deepthink-indicator">
@@ -544,8 +607,8 @@
     </div>
 
     <!-- ================================================================
-         AKTIONS-BUTTONS: Pill-Style, gleiche Hoehe, gleiche Reihenfolge
-         Senden | Datei hochladen | Exportieren | Einstellungen | Log-Dateien
+         AKTIONS-BUTTONS: Pill-Style blau, gleiche Hoehe 36px
+         Reihenfolge: Senden | Datei hochladen | Exportieren | Einstellungen | Log-Dateien
          ================================================================ -->
     <div class="buttons-row">
         <button id="sendButton" class="pill-button">Senden</button>
@@ -573,9 +636,7 @@
     </div>
 
     <!-- ================================================================
-         MODUS-BUTTON: Pill-Style, nur DeepThink
-         deepseek-reasoner = thinking mode (API-seitig korrekt)
-         Search wurde entfernt (nicht in der API verfuegbar)
+         MODUS-BUTTON: Pill-Style, nur DeepThink (Toggle dunkel/blau)
          ================================================================ -->
     <div class="buttons-row">
         <button id="deepThinkButton" class="pill-button-mode">
@@ -1678,7 +1739,6 @@
         function initializeEventListeners() {
             cleanupEventListeners();
             addEventListenerWithCleanup(sendButton, 'click', sendMessage);
-            // Enter = Senden, Shift+Enter = neue Zeile
             addEventListenerWithCleanup(inputField, 'keydown', e => {
                 if (e.key === 'Enter' && !e.shiftKey) { if (isSending) { e.preventDefault(); return; } e.preventDefault(); sendMessage(); }
             });
