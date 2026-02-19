@@ -61,48 +61,57 @@
         .message-container {
             position: relative;
             margin-bottom: 5px;
-            padding-right: 60px;
-            padding-bottom: 52px;
+            padding-bottom: 42px;
         }
         .message-container:hover .delete-message-btn,
-        .message-container:hover .download-message-btn { display: block; }
+        .message-container:hover .download-message-btn { display: flex; }
+
+        /* =====================================================================
+           LÖSCHEN UND EXPORTIEREN: Pill-Style, rechts unten (gleiche Höhe wie Feedback)
+           ===================================================================== */
         .delete-message-btn {
             display: none;
             position: absolute;
             right: 5px;
-            top: 2px;
+            bottom: 5px;
             background: #dc3545;
             color: white;
-            border: none;
+            border: 1px solid #dc3545;
             border-radius: 20px;
-            width: 28px;
-            height: 24px;
-            font-size: 11px;
+            height: 36px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-family: Arial;
             cursor: pointer;
-            padding: 0;
-            line-height: 24px;
-            text-align: center;
+            align-items: center;
+            transition: all 0.2s;
+            white-space: nowrap;
         }
-        .delete-message-btn:hover { background: #c82333; }
+        .delete-message-btn:hover { background: #c82333; border-color: #c82333; }
+
         .download-message-btn {
             display: none;
             position: absolute;
-            right: 36px;
-            top: 2px;
+            right: 90px;
+            bottom: 5px;
             background: #0056b3;
             color: white;
-            border: none;
+            border: 1px solid #0056b3;
             border-radius: 20px;
-            width: auto;
-            min-width: 24px;
-            padding: 0 10px;
-            height: 24px;
-            font-size: 11px;
+            height: 36px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-family: Arial;
             cursor: pointer;
-            line-height: 24px;
-            text-align: center;
+            align-items: center;
+            transition: all 0.2s;
+            white-space: nowrap;
         }
-        .download-message-btn:hover { background: #003d82; }
+        .download-message-btn:hover { background: #003d82; border-color: #003d82; }
+
+        /* =====================================================================
+           FEEDBACK-BUTTONS: Pill-Style, links unten
+           ===================================================================== */
         .feedback-buttons {
             display: none;
             position: absolute;
@@ -113,21 +122,21 @@
         }
         .message-container:hover .feedback-buttons { display: flex; }
 
-        /* =====================================================================
-           FEEDBACK-BUTTONS: Pill-Style, Originalfarbe blau
-           ===================================================================== */
         .feedback-btn {
             background: #0056b3;
             color: white;
             border: 1px solid #0056b3;
             border-radius: 20px;
-            padding: 4px 12px;
-            font-size: 11px;
+            padding: 8px 16px;
+            font-size: 14px;
+            height: 36px;
             cursor: pointer;
-            line-height: 1.4;
+            line-height: 1;
             white-space: nowrap;
             transition: all 0.2s;
             font-family: Arial;
+            display: flex;
+            align-items: center;
         }
         .feedback-btn:hover { background: #003d82; border-color: #003d82; }
         .feedback-btn:active { background: #002a5c; border-color: #002a5c; }
@@ -138,8 +147,8 @@
         .single-export-dropdown {
             display: none;
             position: absolute;
-            right: 5px;
-            top: 28px;
+            right: 90px;
+            bottom: 46px;
             background: #2d2d2d;
             border: 1px solid #444;
             border-radius: 8px;
@@ -197,9 +206,6 @@
 
         /* =====================================================================
            PILL-BUTTON: Aktions-Buttons (blau)
-           Senden, Datei hochladen, Exportieren, Einstellungen, Log-Dateien
-           Hoehe: 36px, border-radius: 20px, padding: 8px 16px
-           Farbe: #0056b3 (blau), Hover: #003d82, Active: #002a5c
            ===================================================================== */
         .buttons-row {
             display: flex;
@@ -230,8 +236,6 @@
 
         /* =====================================================================
            PILL-BUTTON-MODE: DeepThink Toggle-Button (dunkel/blau)
-           Inaktiv: #2d2d2d Hintergrund, #555 Rand, weisse Schrift
-           Aktiv:   #1e3a5f Hintergrund, #4dabf7 Rand, blaue Schrift
            ===================================================================== */
         .pill-button-mode {
             flex: none;
@@ -525,7 +529,6 @@
 
         /* =====================================================================
            SESSION-BUTTONS: Pill-Style
-           Laden: gruen (#28a745), Loeschen: rot (#dc3545)
            ===================================================================== */
         .session-load-btn {
             flex: 1;
@@ -599,22 +602,12 @@
     
     <div id="chat"></div>
     
-    <!-- ================================================================
-         EINGABEFELD: Textarea mit Focus-Animation
-         Inaktiv: 40px, einzeilig
-         Fokus:   120px, mehrzeilig, blauer Rand
-         Enter = Senden, Shift+Enter = neue Zeile
-         ================================================================ -->
     <textarea id="input" placeholder="Ihre Nachricht hier eingeben..." rows="1"></textarea>
     
     <div id="deepThinkIndicator" class="mode-indicator deepthink-indicator">
         DeepThink Modus aktiv: Tiefgehende Analyse wird durchgeführt
     </div>
 
-    <!-- ================================================================
-         AKTIONS-BUTTONS: Pill-Style blau, gleiche Hoehe 36px
-         Reihenfolge: Senden | Datei hochladen | Exportieren | Einstellungen | Log-Dateien
-         ================================================================ -->
     <div class="buttons-row">
         <button id="sendButton" class="pill-button">Senden</button>
 
@@ -640,9 +633,6 @@
         <button id="logButton" class="pill-button">Log-Dateien</button>
     </div>
 
-    <!-- ================================================================
-         MODUS-BUTTON: Pill-Style, nur DeepThink (Toggle dunkel/blau)
-         ================================================================ -->
     <div class="buttons-row">
         <button id="deepThinkButton" class="pill-button-mode">
             <span class="mode-icon">&#10802;</span>DeepThink
@@ -796,27 +786,20 @@
         // =====================================================================
         const MODEL_CONFIG = {
             'deepseek-chat': {
-                // deepseek-chat = DeepSeek-V3.2, nicht-denkender Modus
-                // Kontext-Fenster: 128K Tokens total (Input + Output)
-                // Max Output:      8.192 Tokens
-                maxContextTokens:  100000,   // 128K - Reserve fuer Output
-                maxOutputTokens:   8192,     // Maximale Antwortlaenge
-                maxContextMessages: 50       // Nachrichten im Kontext
+                maxContextTokens:  100000,
+                maxOutputTokens:   8192,
+                maxContextMessages: 50
             },
             'deepseek-reasoner': {
-                // deepseek-reasoner = DeepSeek-V3.2, Reasoning-Modus (CoT)
-                // Kontext-Fenster: 128K Tokens total (Input + Output)
-                // Max Output:      64K Tokens (inkl. Chain-of-Thought)
-                // ACHTUNG: reasoning_content NICHT in naechste Anfrage einfuegen!
-                maxContextTokens:  65000,    // Weniger wegen grossem Output-Bedarf
-                maxOutputTokens:   32768,    // 32K fuer Antwort (Rest fuer CoT)
-                maxContextMessages: 30       // Weniger wegen groesseren Tokens pro Nachricht
+                maxContextTokens:  65000,
+                maxOutputTokens:   32768,
+                maxContextMessages: 30
             }
         };
         // =====================================================================
 
-        const TOKENS_PER_CHAR = 0.25;         // Schätzwert: 1 Token ≈ 4 Zeichen (Englisch/Deutsch)
-        const MAX_FILE_CONTENT_LENGTH = 50000; // Erhöht: passt nun zu grösserem Kontextfenster
+        const TOKENS_PER_CHAR = 0.25;
+        const MAX_FILE_CONTENT_LENGTH = 50000;
         const MAX_FILE_SIZE_MB = 10;
         const PDF_EXTRACTION_TIMEOUT = 30000;
         const SETTINGS_VERSION = '1.2';
@@ -937,7 +920,6 @@
             return total;
         }
 
-        // Gibt die Konfiguration fuer das aktuell aktive Modell zurueck
         function getCurrentModelConfig() {
             const modelName = (currentMode === 'deepthink') ? 'deepseek-reasoner' : 'deepseek-chat';
             return MODEL_CONFIG[modelName];
@@ -1317,10 +1299,6 @@
                 contextHistory.messages.forEach(msg => {
                     messages.push({ role: msg.role, content: replaceGermanUmlauts(msg.content) });
                 });
-                // =====================================================================
-                // MODELL UND MAX_TOKENS: abhaengig vom Modus der urspruenglichen Nachricht
-                // Konfiguration aus MODEL_CONFIG (oben) - bei Modellwechsel nur dort anpassen
-                // =====================================================================
                 const modelName = (userMsg.mode === 'deepthink') ? 'deepseek-reasoner' : 'deepseek-chat';
                 const maxTokens = MODEL_CONFIG[modelName].maxOutputTokens;
                 const response = await fetch(API_URL, {
@@ -1612,12 +1590,6 @@
                 contextHistory.messages.forEach(msg => {
                     messages.push({ role: msg.role, content: replaceGermanUmlauts(msg.content) });
                 });
-                // =====================================================================
-                // MODELL UND MAX_TOKENS: abhaengig vom aktuellen Modus
-                // Konfiguration aus MODEL_CONFIG (oben) - bei Modellwechsel nur dort anpassen
-                // deepthink -> deepseek-reasoner: 32768 max_tokens
-                // chat      -> deepseek-chat:     8192  max_tokens
-                // =====================================================================
                 const modelName = (currentMode === 'deepthink') ? 'deepseek-reasoner' : 'deepseek-chat';
                 const maxTokens = MODEL_CONFIG[modelName].maxOutputTokens;
                 const response = await fetch(API_URL, {
@@ -1651,7 +1623,7 @@
                 aiContainer.setAttribute('data-msg-id', aiMsgId);
                 addFeedbackButtons(aiContainer, aiMsgId);
                 const dlBtn = document.createElement('button');
-                dlBtn.className = 'download-message-btn'; dlBtn.textContent = ' Exportieren';
+                dlBtn.className = 'download-message-btn'; dlBtn.textContent = 'Exportieren';
                 dlBtn.onclick = (e) => { e.stopPropagation(); showSingleExportDropdown(aiMsgId, dlBtn); };
                 aiContainer.appendChild(dlBtn);
                 const deleteBtn = document.createElement('button');
@@ -1684,7 +1656,7 @@
             messageContainer.appendChild(messageDiv);
             if (!isUser) addFeedbackButtons(messageContainer, msgId);
             const dlBtn = document.createElement('button');
-            dlBtn.className = 'download-message-btn'; dlBtn.textContent = ' Exportieren ';
+            dlBtn.className = 'download-message-btn'; dlBtn.textContent = 'Exportieren';
             dlBtn.onclick = (e) => { e.stopPropagation(); showSingleExportDropdown(msgId, dlBtn); };
             messageContainer.appendChild(dlBtn);
             const deleteBtn = document.createElement('button');
@@ -1789,7 +1761,6 @@
         function initializeEventListeners() {
             cleanupEventListeners();
             addEventListenerWithCleanup(sendButton, 'click', sendMessage);
-            // Enter = Senden, Shift+Enter = neue Zeile
             addEventListenerWithCleanup(inputField, 'keydown', e => {
                 if (e.key === 'Enter' && !e.shiftKey) { if (isSending) { e.preventDefault(); return; } e.preventDefault(); sendMessage(); }
             });
