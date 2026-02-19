@@ -25,23 +25,69 @@
        - Keine Symbole/Emojis in Buttons oder Text
        - Nur reiner Text für alle Beschriftungen
     
-    3. BUTTON-DESIGN:
-       - Alle Buttons: 40px Höhe, konsistent
-       - Haupt-Buttons: Blau (#0056b3)
-       - Modus-Buttons: Grün (#28a745) und Türkis (#17a2b8)
-       - Hover-Effekt: Dunklere Variante der Grundfarbe
-       - Aktive Buttons: zusätzliche Markierung
-       - EINSTELLUNGS-TOGGLES (VERBINDLICH UND UNUMSTÖSSLICH):
-         * Alle Auswahlmöglichkeiten in den Einstellungen verwenden
-           ausschließlich Toggle-Switches (Links-nach-Rechts Schieberegler)
-         * Kein Radio-Button, Checkbox oder sonstiger Button-Typ erlaubt
-         * Toggle-Masse: Breite 46px, Höhe 24px, Knopf 18px
-         * Toggle-Farben: Inaktiv #444/grauer Knopf, Aktiv #155724/grüner Knopf
-         * Radio-Gruppen-Verhalten: bei mehreren Optionen (z.B. Modus)
-           wird beim Aktivieren eines Toggles der vorherige automatisch deaktiviert
-         * CSS-Klassen: .toggle-switch, .toggle-slider, .toggle-label
-         * Diese Konvention gilt für alle zukünftigen Einstellungen ohne Ausnahme
-    
+    3. BUTTON-DESIGN (VERBINDLICH, GILT FÜR ALLE BUTTONS IM GESAMTEN INTERFACE):
+    ============================================================================
+    DIESE BUTTON-DEFINITIONEN SIND ENDGÜLTIG, UNUMSTÖSSLICH UND GELTEN
+    FÜR ALLE BESTEHENDEN UND ZUKÜNFTIGEN BUTTONS OHNE AUSNAHME.
+    JEDER NEU EINGEFÜHRTE BUTTON MUSS EXAKT DIESER SPEZIFIKATION ENTSPRECHEN.
+    ============================================================================
+
+       PILL-STYLE (STANDARD FÜR ALLE BUTTONS):
+       - Form:        border-radius: 20px  (Pill-Form, keine eckigen Buttons)
+       - Höhe:        36px  (height: 36px)
+       - Padding:     8px 16px
+       - Schrift:     font-family: Arial, font-size: 14px
+       - Transition:  all 0.2s
+       - CSS-Klassen: .pill-button (Aktions), .pill-button-mode (Toggle)
+
+       A) AKTIONS-BUTTONS (blau) - CSS-Klasse: .pill-button
+          Verwendet für: Senden, Datei hochladen, Exportieren, Einstellungen,
+                         Log-Dateien, Einstellungen übernehmen, Aktualisieren
+          - Normal:  background #0056b3, border #0056b3, color #ffffff
+          - Hover:   background #003d82, border #003d82
+          - Active:  background #002a5c, border #002a5c
+
+       B) TOGGLE-MODUS-BUTTON (dunkel/blau) - CSS-Klasse: .pill-button-mode
+          Verwendet für: DeepThink (und alle zukünftigen Toggle-Modus-Buttons)
+          - Inaktiv: background #2d2d2d, border #555, color #f0f0f0
+          - Hover:   background #3a3a3a, border #888
+          - Aktiv:   background #1e3a5f, border #4dabf7, color #4dabf7
+
+       C) DESTRUKTIVE BUTTONS (rot) - Inline-Style oder eigene Klasse
+          Verwendet für: Schliessen-X, Löschen (Sessions), Entfernen (Datei),
+                         X (Nachricht löschen)
+          - Normal:  background #dc3545, border #dc3545, color #ffffff
+          - Hover:   background #c82333, border #c82333
+          - Active:  background #a01c28, border #a01c28
+          - Schliessen-X: zusätzlich border-radius: 50% (rund), 36x36px
+
+       D) KONSTRUKTIVE BUTTONS (grün)
+          Verwendet für: Laden (Sessions)
+          - Normal:  background #28a745, border #28a745, color #ffffff
+          - Hover:   background #218838, border #218838
+          - Active:  background #1a6b2e, border #1a6b2e
+
+       E) FEEDBACK-BUTTONS (blau, kleiner) - CSS-Klasse: .feedback-btn
+          Verwendet für: Kopieren, Mag ich, Mag ich gar nicht, Regenerieren
+          - Normal:  background #0056b3, border #0056b3, color #ffffff
+          - Hover:   background #003d82, border #003d82
+          - Active:  background #002a5c
+          - Liked:   background #0a2f44, color #9ac7ff, border #007bff
+          - Disliked:background #5a1e1e, color #ffb3b3, border #dc3545
+          - Copied:  background #003366, color #99ccff, border #0056b3
+          - Padding: 4px 12px, font-size: 11px
+
+       F) EINSTELLUNGS-TOGGLES (VERBINDLICH UND UNUMSTÖSSLICH):
+          * Alle Auswahlmöglichkeiten in den Einstellungen verwenden
+            ausschließlich Toggle-Switches (Links-nach-Rechts Schieberegler)
+          * Kein Radio-Button, Checkbox oder sonstiger Button-Typ erlaubt
+          * Toggle-Masse: Breite 46px, Höhe 24px, Knopf 18px
+          * Toggle-Farben: Inaktiv #444/grauer Knopf, Aktiv #155724/grüner Knopf
+          * Radio-Gruppen-Verhalten: bei mehreren Optionen wird beim Aktivieren
+            eines Toggles der vorherige automatisch deaktiviert
+          * CSS-Klassen: .toggle-switch, .toggle-slider, .toggle-label
+          * Diese Konvention gilt für alle zukünftigen Einstellungen ohne Ausnahme
+
     B) FUNKTIONALE KONVENTIONEN:
     -----------------------------
     1. DEUTSCHE UMLAUTE:
@@ -64,16 +110,16 @@
        - Hover-Buttons zum Löschen einzelner Nachrichten (kleines [X] rechts)
     
     4. MODUS-SYSTEM:
-       - Standard: Normaler Chat
-       - DeepThink: Grüne Markierung, tiefgehende Analyse
-       - Search: Türkise Markierung, recherchierte Antworten
+       - Standard: Normaler Chat (deepseek-chat)
+       - DeepThink: Blaue Pill-Markierung, echtes Reasoning (deepseek-reasoner)
        - Modus wird in jeder Nachricht gekennzeichnet
+       - Search wurde entfernt (nicht in der DeepSeek API verfügbar)
     
     5. ANREDEFORM-KONSISTENZ (ENDEUTIG UND UNUMSTÖSSLICH):
        - Die gewählte Anredeform (Sie/Du) wird im gesamten Interface konsequent angewendet
        - Gilt für: System-Prompts, Platzhaltertexte, Beschriftungen, KI-Antworten, Fehlermeldungen
        - System-Prompt muss strikte Anweisung enthalten: "Verwenden Sie/verwende in allen Antworten konsequent die Sie-/Du-Form."
-       - KI-Antworten müssen der gewählten Anredeform entsprechen (Bei "Hallo" -> "Wie kann ich Ihnen/dir helfen?")
+       - KI-Antworten müssen der gewählten Anredeform entsprechen
        - Platzhaltertexte müssen angepasst sein ("Ihre/Deine Nachricht hier eingeben...")
        - Einstellungsbeschreibungen müssen in der korrekten Anredeform formuliert sein
        - Diese Konvention ist endgültig und wird nicht weiter diskutiert oder in Frage gestellt
@@ -89,7 +135,7 @@
     
     7. EXPORT-FUNKTIONALITÄT:
        - Dropdown-Button "Exportieren" in Zeile 1
-       - Optionen: PDF herunterladen, Markdown herunterladen, Chat-Verlauf laden
+       - Optionen: PDF herunterladen, Markdown herunterladen, TXT, RTF, Chat-Verlauf laden
        - PDF: Server-seitig mit ReportLab (professionelles Layout)
        - Markdown: Server-seitig (identische Struktur wie PDF)
        - Beide Formate enthalten:
@@ -97,24 +143,31 @@
          * Statistiken-Bereich (Nachrichtenanzahl, Modi, Dateien, Token, Dauer)
          * Inhaltsverzeichnis mit allen Nachrichten
          * Vollständiger Chat-Verlauf mit Timestamps und Modi-Kennzeichnung
+
+    8. EINGABEFELD (TEXTAREA):
+       - Element: <textarea id="input" rows="1">
+       - Inaktiv: 40px hoch, einzeilig, grauer Rand (#444)
+       - Fokus: 120px hoch, mehrzeilig, blauer Rand (#0056b3)
+       - Animation: transition height 0.2s ease, border-color 0.2s ease
+       - resize: none
+       - Enter = Senden, Shift+Enter = neue Zeile
     
     C) LAYOUT-VORSCHRIFTEN:
     -----------------------
     1. TITEL-ANZEIGE:
        - Linksbündige Ausrichtung
        - Zeigt Server-Name und interne IP-Adresse
-       - Format: "Server-Name (IP: xxx.xxx.xxx.xxx)"
     
     2. BUTTON-ANORDNUNG:
-       - Zeile 1: Senden | Datei hochladen | Exportieren (Dropdown) | Einstellungen
-       - Zeile 2: DeepThink | Search (nebeneinander)
-       - Zeile 3: Log-Dateien (zentriert oder linksbündig)
-       - Alle Buttons gleiche Höhe (40px), unterschiedliche Breiten erlaubt
+       - Zeile 1: Senden | Datei hochladen | Exportieren (Dropdown) | Einstellungen | Log-Dateien
+       - Zeile 2: DeepThink (Pill-Toggle)
+       - Alle Buttons: Höhe 36px, Pill-Form (border-radius: 20px)
+       - Farben gemäss Abschnitt A.3 (verbindlich)
     
     3. EINSTELLUNGS-BEREICH:
        - Overlay-Design mit dunklem Hintergrund
        - Klare Gruppen-Trennung mit Überschriften
-       - Toggle-Switches als einziger Auswahltyp (siehe A.3)
+       - Toggle-Switches als einziger Auswahltyp (siehe A.3.F)
        - Status-Anzeige für aktive Einstellungen
     
     4. CHAT-BEREICH:
@@ -130,8 +183,8 @@
        - Monospace-Schriftart (Consolas, Monaco, monospace) für Log-Darstellung
        - Feste Breite: 90% des Viewports, maximale Höhe: 80vh
        - Integrierter Scrollbalken bei Überlauf
-       - Schliessen-Button oben rechts (rot, 36x36px)
-       - Aktualisieren-Button zum Neuladen des Logs
+       - Schliessen-Button oben rechts (rot, rund, 36x36px, border-radius: 50%)
+       - Aktualisieren-Button (blau, Pill-Style)
        - Zeilenumbrüche werden beibehalten (white-space: pre-wrap)
     
     6. SESSION-LADE-MODAL:
@@ -142,15 +195,16 @@
          * Datum/Uhrzeit (grau, klein)
          * Vorschau erste Nachricht (kursiv, max 50 Zeichen)
          * Nachrichtenanzahl
-       - Buttons pro Session: [Laden] (grün) [Löschen] (rot)
+       - Buttons pro Session: [Laden] (grün, Pill) [Löschen] (rot, Pill)
        - Beim Laden: Automatisches Speichern des aktuellen Chats, dann Session laden
-       - Beim Löschen: Bestätigung "Session wirklich löschen?", dann Liste neu laden
+       - Beim Löschen: Bestätigung, dann Liste neu laden
        - Bei keinen Sessions: Hinweis "Keine gespeicherten Chats vorhanden"
     
     7. DROPDOWN-MENU:
        - Erscheint unter Export-Button
        - Dunkler Hintergrund (#2d2d2d)
-       - Border und Shadow für Abhebung
+       - Border-radius: 8px
+       - Shadow für Abhebung
        - Hover-Effekt bei Items (#3d3d3d)
        - Schließt automatisch bei Klick außerhalb oder Escape-Taste
     
@@ -159,18 +213,19 @@
     1. API-KOMMUNIKATION:
        - Endpoint: /cgi-bin/deepseek-api.py (lokaler Proxy)
        - Backend: https://api.deepseek.com/v1/chat/completions (über Proxy)
-       - Modell: deepseek-chat
+       - Modell: deepseek-chat (Chat) / deepseek-reasoner (DeepThink)
        - Max Tokens: 2000
        - System-Prompt basierend auf Anredeform und Modus
        - API-KEY SPEICHERUNG: Der API-Key wird NICHT im Client-Code gespeichert
-       - SICHERHEITSVERBESSERUNG (13.02.2026): API-Key wurde in serverseitige Umgebungsvariable ausgelagert
+       - SICHERHEITSVERBESSERUNG (13.02.2026): API-Key in serverseitige Umgebungsvariable ausgelagert
        - Ein Python CGI-Script unter /cgi-bin/deepseek-api.py verwaltet die sichere Kommunikation
        - Der Client sendet Anfragen an den lokalen Proxy, niemals direkt an die externe API
     
     2. DATENSPEICHERUNG:
        - localStorage für Einstellungen
        - Key: 'deepseekSettings'
-       - Struktur: {version, addressForm, defaultMode}
+       - Struktur: {version, addressForm, defaultMode, noTraining}
+       - SETTINGS_VERSION: 1.2
        - Server-seitige Session-Speicherung in JSON-Format
        - Sessions-Verzeichnis: /var/www/deepseek-chat/sessions/
        - Session-Datei-Format: {sessionId}.json
@@ -188,34 +243,19 @@
        - Try-catch Blöcke in allen async-Funktionen
     
     5. LOG-ANZEIGE-FUNKTION:
-       - Button "Log-Dateien" in eigener Button-Reihe unter den Modi
+       - Button "Log-Dateien" in Zeile 1 (Pill-Style, blau)
        - Endpoint: /cgi-bin/get-log.py zum Abrufen der Log-Datei
        - Log-Datei-Pfad: /var/www/deepseek-chat/cgi-bin/deepseek-chat.log
        - Alle Pfade und Dateien sind genau definiert in /var/www/deepseek-chat/files-directorys
-       - Bei erfolgreichem Abruf: Anzeige im Log-Overlay
-       - Bei Fehler: Anzeige einer benutzerfreundlichen Fehlermeldung
-       - Bei leerem Log: Hinweis "Keine Log-Einträge vorhanden"
-       - Overlay schliesst mit Escape-Taste oder Klick auf Schliessen-Button
     
     6. SESSION-MANAGEMENT-FUNKTIONEN:
        - /cgi-bin/save-session.py - Speichert Chat-Verlauf nach jeder Nachricht
-         * Validiert Session-ID Format
-         * Erstellt Sessions-Verzeichnis falls nicht vorhanden (700 Rechte)
-         * Speichert JSON mit Rechten 600
        - /cgi-bin/load-session.py - Lädt Session-Liste (GET) oder spezifische Session (POST)
-         * GET: Gibt Array aller Sessions mit Vorschau zurück
-         * POST: Lädt vollständige Chat-Daten einer Session
        - /cgi-bin/delete-session.py - Löscht einzelne Session nach Bestätigung
-         * Entfernt JSON-Datei vom Server
        - /cgi-bin/export-pdf.py - Generiert professionelles PDF mit ReportLab
-         * Statistiken-Berechnung
-         * Inhaltsverzeichnis mit Page-Referenzen
-         * Farbcodierung nach Modi
-         * UTF-8 Support für Umlaute
-         * Binäre Ausgabe über sys.stdout.buffer (korrigiert 17.02.2026)
        - /cgi-bin/export-markdown.py - Generiert Markdown-Datei
-         * Identische Struktur wie PDF
-         * Markdown-Anchors für Inhaltsverzeichnis
+       - /cgi-bin/export-txt.py - Generiert TXT-Datei
+       - /cgi-bin/export-rtf.py - Generiert RTF-Datei
        - Sessions-Verzeichnis: /var/www/deepseek-chat/sessions/ (Rechte 700, auto-create)
     
     7. APACHE-KONFIGURATION:
@@ -230,11 +270,19 @@
     ----------------------------
     1. NEUE FUNKTIONEN:
        - Müssen mit Dark Mode kompatibel sein
-       - Keine Symbole einführen
+       - Keine Symbole einführen (Ausnahme: DeepThink Icon ✦)
        - Umlaut-Ersetzung für Eingaben beibehalten
-       - Konsistente Button-Höhe von 40px
-       - ANREDEFORM-KONSISTENZ EINHALTEN: Alle neuen Texte müssen der gewählten Anredeform entsprechen
-       - TOGGLE-KONVENTION EINHALTEN: Neue Einstellungen ausschließlich als Toggle-Switch (siehe A.3)
+       - BUTTON-KONVENTION EINHALTEN (ABSOLUT VERBINDLICH):
+         * JEDER neue Button MUSS Pill-Style verwenden (border-radius: 20px, height: 36px)
+         * Aktions-Buttons: .pill-button (blau, #0056b3)
+         * Toggle-Modus-Buttons: .pill-button-mode (dunkel/blau)
+         * Destruktive Buttons: rot (#dc3545)
+         * Konstruktive Buttons: grün (#28a745)
+         * Kein Button darf eckig sein (border-radius: 0 oder 4px ist verboten)
+         * Kein Button darf eine andere Höhe als 36px haben (ausser Feedback-Buttons 4px 12px)
+         * Kein Button darf eine andere Grundfarbe als die definierten verwenden
+       - ANREDEFORM-KONSISTENZ EINHALTEN
+       - TOGGLE-KONVENTION EINHALTEN: Neue Einstellungen ausschließlich als Toggle-Switch
     
     2. CODE-QUALITÄT:
        - Kommentare für komplexe Logik
@@ -262,7 +310,7 @@
        - Keine eigenmächtigen Erweiterungen oder "Verbesserungen"
        - Die bereits vorhandenen Formatierungen und Einrückungen im HTML Code
          dürfen unter gar keinen Umständen geändert werden. Dies ist verbindlich und
-         ultamtiv !!!!
+         ultimativ !!!!
     
     3. AUSGABE-FORMAT:
        - Bei Code-Anfragen muss der gesamte Code als ein einziger zusammenhängender Markdown-Codeblock zurückgegeben werden
@@ -276,6 +324,12 @@
          * Python CGI-Script verwaltet die Authentifizierung
          * Client hat keinen direkten Zugriff auf den API-Key
          * Diese Architektur entspricht modernen Sicherheitsstandards
+
+    5. BUTTON-VERBOT:
+       - Eckige Buttons (border-radius: 0 oder 4px) sind VERBOTEN
+       - Buttons mit anderen Grundfarben als in A.3 definiert sind VERBOTEN
+       - Buttons mit anderer Höhe als 36px (bzw. Feedback 4px 12px) sind VERBOTEN
+       - Diese Regel gilt für alle bestehenden und zukünftigen Buttons ohne Ausnahme
     
     WICHTIG: Jede Änderung an diesem Manifest muss hier dokumentiert werden!
     ============================================================================
@@ -300,405 +354,141 @@
        - Neuer Abschnitt B.5 hinzugefügt
        - Klare, unumstößliche Regeln für Anredeform-Konsistenz definiert
        - Endgültige Festlegung: Diese Einstellung ist nicht verhandelbar
-       - Alle zukünftigen Entwicklungen müssen diese Regel strikt einhalten
 
-    4. [08.02.2026 00:15] - CPU-Monitoring-Graph und andere Graphen entfernt:
-       - Abschnitte C.2, D.4 und alle Bezüge zu Monitoring entfernt
-       - Grund: Die Graphen funktionierten nicht und wurden entfernt
+    4. [08.02.2026 00:15] - CPU-Monitoring-Graph und andere Graphen entfernt
 
     5. [08.02.2026 00:15] - WICHTIGE ANWEISUNG FÜR DIE AUSGABE:
        - Alle Code-Ausgaben müssen als einzelner zusammenhängender Markdown-Codeblock erfolgen
-       - Diese Anweisung ist permanent und muss immer befolgt werden
-       - Keine Unterbrechungen, keine Aufteilung, kein Weglassen von Code
 
     6. [08.02.2026 00:15] - MANIFEST-ERWEITERUNG MIT VERBOTEN:
        - Neuer Abschnitt F hinzugefügt
-       - Strikte Regeln zum Schutz des Manifests und der Code-Integrität
-       - Verbot von ungewünschten Funktionen und eigenmächtigen Erweiterungen
-       - Festlegung des Ausgabeformats als unumstößliche Regel
 
-    7. [08.02.2026 00:15] - API-KEY KONVENTION FESTGELEGT:
-       - Abschnitt D.1 erweitert um API-Key Speicherung
-       - Abschnitt F.4 hinzugefügt mit klarer Regelung zur API-Key Behandlung
-       - Diese Design-Entscheidung ist bewusst und final
+    7. [08.02.2026 00:15] - API-KEY KONVENTION FESTGELEGT
 
-    8. [08.02.2026 00:15] - KONTEXT-HISTORIE UND TOKEN-ZÄHLUNG KORRIGIERT:
-       - Fehler 8 behoben: Inkonsistente Token-Zählung in der Kontexthistorie
-       - Funktionen `addUserMessageToContext` und `addAIResponseToContext` aktualisieren jetzt automatisch die Token-Zählung
-       - `updateContextEstimation()` wird bei jeder Nachricht automatisch aufgerufen
-       - Die Kontexthistorie bleibt jetzt konsistent und aktuell
+    8. [08.02.2026 00:15] - KONTEXT-HISTORIE UND TOKEN-ZÄHLUNG KORRIGIERT
 
-    9. [08.02.2026 00:15] - DATEI-UPLOAD-BEGRENZUNG VOLLSTÄNDIG IMPLEMENTIERT:
-       - Fehler 9 behoben: PDF-Extraktion wird jetzt ebenfalls auf 15.000 Zeichen begrenzt
-       - Die Begrenzung erfolgt jetzt direkt in der `extractTextFromPDF` Funktion
-       - Alle Dateitypen werden konsistent auf maximal 15.000 Zeichen gekürzt
-       - Die Performance bei großen PDFs wurde verbessert
+    9. [08.02.2026 00:15] - DATEI-UPLOAD-BEGRENZUNG VOLLSTÄNDIG IMPLEMENTIERT
 
-    10. [08.02.2026 00:15] - PDF.JS WORKER FALLBACK IMPLEMENTIERT:
-        - Fehler 1 behoben: Robustes Fallback-System für PDF.js Worker
-        - Mehrere CDN-Quellen mit Prioritätsreihenfolge
-        - Lokaler Fallback für Offline-Operationen
-        - Verbesserte Fehlermeldungen bei fehlgeschlagenem Worker-Load
+    10. [08.02.2026 00:15] - PDF.JS WORKER FALLBACK IMPLEMENTIERT
 
-    11. [08.02.2026 00:15] - UNGENUTZTE FUNKTIONEN OPTIMIERT:
-        - Fehler 2 behoben: Ungenutzte Funktionen bereinigt
-        - `calculateContextUsage()` Funktion entfernt
-        - Token-Schätzung mit optimiertem Algorithmus
-        - Reduzierte Code-Komplexität
+    11. [08.02.2026 00:15] - UNGENUTZTE FUNKTIONEN OPTIMIERT
 
-    12. [08.02.2026 00:15] - PDF-VERARBEITUNG VERBESSERT:
-        - Fehler 3 behoben: Maximale Dateigröße von 10 MB eingeführt
-        - Timeout von 30 Sekunden für PDF-Extraktion implementiert
-        - Verbesserte Fehlerbehandlung für große Dateien
+    12. [08.02.2026 00:15] - PDF-VERARBEITUNG VERBESSERT
 
-    13. [08.02.2026 00:15] - EVENT-LISTENER PROBLEME BEHOBEN:
-        - Fehler 4 behoben: `keypress` durch `keydown` ersetzt für bessere Enter-Erkennung
-        - Race-Condition bei `setTimeout` behoben durch direkte Event-Listener-Zuordnung
-        - Verbesserte Stabilität der Benutzerinteraktionen
+    13. [08.02.2026 00:15] - EVENT-LISTENER PROBLEME BEHOBEN
 
-    14. [08.02.2026 00:15] - MODUS-UMSCHALTUNG KORRIGIERT:
-        - Fehler 5 behoben: Modus-Buttons kehren bei erneutem Klick zum Standard-Chat-Modus zurück
-        - Konsequente Modus-Logik mit klarem Zustandsübergang
-        - Verbesserte Benutzerführung
+    14. [08.02.2026 00:15] - MODUS-UMSCHALTUNG KORRIGIERT
 
-    15. [08.02.2026 00:15] - API-ANTWORTVALIDIERUNG IMPLEMENTIERT:
-        - Robustes Validierungssystem für API-Antworten
-        - Prüfung auf `data.choices[0].message.content` mit Fallback
-        - Verbesserte Fehlerbehandlung bei ungültigen API-Antworten
+    15. [08.02.2026 00:15] - API-ANTWORTVALIDIERUNG IMPLEMENTIERT
 
-    16. [08.02.2026 00:15] - CSS-SELECTOR-DUPLIKATE KONSOLIDIERT:
-        - Konsolidierung aller doppelten CSS-Regeln
-        - Entfernung redundanter Button-Definitionen
-        - Optimierte CSS-Spezifität ohne Funktionsverlust
+    16. [08.02.2026 00:15] - CSS-SELECTOR-DUPLIKATE KONSOLIDIERT
 
-    17. [08.02.2026 00:15] - CSS-SPEZIFITÄTSPROBLEME BEHOBEN:
-        - CSS-Selektoren in logischer Reihenfolge reorganisiert
-        - Potenzielle Konflikte zwischen Selektoren entfernt
-        - Verbesserte Vorhersagbarkeit der Stil-Anwendung
+    17. [08.02.2026 00:15] - CSS-SPEZIFITÄTSPROBLEME BEHOBEN
 
-    18. [08.02.2026 00:15] - LOCALSTORAGE VERSIONIERUNG IMPLEMENTIERT:
-        - Versionsnummer für Einstellungen eingeführt (aktuell: 1.0)
-        - Automatische Migrationsfunktion für zukünftige Updates
-        - Rückwärtskompatibilität mit alten Einstellungen gewährleistet
+    18. [08.02.2026 00:15] - LOCALSTORAGE VERSIONIERUNG IMPLEMENTIERT
 
-    19. [08.02.2026 00:15] - CODE-OPTIMIERUNGEN DURCHGEFÜHRT:
-        - Magische Zahlen durch Konstanten ersetzt (MAX_CONTEXT_MESSAGES)
-        - Datei-Upload-Validierung verbessert mit klarer Benutzerrückmeldung
-        - localStorage Migration-Logik vereinfacht und robuster gemacht
-        - Bessere Wartbarkeit durch benannte Konstanten
+    19. [08.02.2026 00:15] - CODE-OPTIMIERUNGEN DURCHGEFÜHRT
 
-    20. [11.02.2026 12:28] - Schutz vor Mehrfach-Anfragen / Rate-Limiting implementiert:
-        - Einführung von `isSending`-Flag
-        - Deaktivierung des Send-Buttons und des Eingabefelds während laufender API-Anfrage
-        - Button-Textänderung zu „Wird gesendet..." während Verarbeitung
-        - Enter-Taste blockiert während laufender Anfrage
-        - `finally`-Block stellt immer Reset sicher (auch bei Fehlern)
-        - Grund: Verhinderung unbeabsichtigter Mehrfach-Anfragen durch schnelles Klicken/Enter-Drücken
+    20. [11.02.2026 12:28] - Schutz vor Mehrfach-Anfragen / Rate-Limiting implementiert
 
-    21. [11.02.2026 13:05] - Echter Multi-Turn-Kontext implementiert:
-        - messages-Array enthält nun System-Prompt + abwechselnd die letzten User- und AI-Nachrichten (bis MAX_CONTEXT_MESSAGES)
-        - contextHistory wird aktiv für den API-Call verwendet
-        - Grund: Bisher fehlte echtes Chat-Gedächtnis → Antworten ignorierten vorherige Nachrichten
+    21. [11.02.2026 13:05] - Echter Multi-Turn-Kontext implementiert
 
-    22. [11.02.2026 13:05] - Umlaute-Ersetzung nur noch auf Eingaben angewendet:
-        - replaceGermanUmlauts(aiResponse) entfernt
-        - Ersetzung gilt weiterhin für System-Prompt und User-Nachricht
-        - Grund: AI-Antworten sollen normales Deutsch mit Umlauten enthalten (bessere Lesbarkeit)
+    22. [11.02.2026 13:05] - Umlaute-Ersetzung nur noch auf Eingaben angewendet
 
-    23. [11.02.2026 13:45] - Thinking-Div wird bei API-Fehlern entfernt:
-        - Im catch-Block: thinkingDiv.remove() statt permanenter Anzeige
-        - Grund: Verhindert hängenbleibende "Denkt..."-Nachricht → saubere UI auch bei Fehlern
+    23. [11.02.2026 13:45] - Thinking-Div wird bei API-Fehlern entfernt
 
-    24. [11.02.2026 13:45] - Kontext-Reihenfolge chronologisch korrigiert:
-        - .reverse() entfernt, messages werden in der gespeicherten Reihenfolge (älteste zuerst) gesendet
-        - Grund: API erwartet chronologische Abfolge → deutlich bessere Antwortqualität bei Multi-Turn
+    24. [11.02.2026 13:45] - Kontext-Reihenfolge chronologisch korrigiert
 
-    25. [11.02.2026 13:45] - Einheitliche Datei-Inhaltsbehandlung:
-        - fullUserMessage verwendet nun denselben vollen Text wie userMessage (bis MAX_FILE_CONTENT_LENGTH)
-        - 500-Zeichen-Kürzung entfernt
-        - Grund: Konsistenz zwischen Kontext-History und aktueller API-Nachricht
+    25. [11.02.2026 13:45] - Einheitliche Datei-Inhaltsbehandlung
 
-    26. [13.02.2026 12:00] - SICHERHEITSUPGRADE: API-Key in serverseitige Umgebungsvariable ausgelagert:
-        - API-Key wird NICHT mehr im Client-Code gespeichert
-        - Python CGI-Script unter /cgi-bin/deepseek-api.py verwaltet nun die Authentifizierung
-        - API-Endpoint geändert von https://api.deepseek.com zu /cgi-bin/deepseek-api.py (lokaler Proxy)
-        - Authorization-Header aus Client-Code entfernt (wird vom CGI-Script hinzugefügt)
-        - DeepSeek API und Modell bleiben unverändert (deepseek-chat)
-        - Manifest aktualisiert: Abschnitte D.1 und F.4 komplett überarbeitet
-        - Grund: Moderne Sicherheitsarchitektur - API-Key niemals im Browser exponiert
+    26. [13.02.2026 12:00] - SICHERHEITSUPGRADE: API-Key in serverseitige Umgebungsvariable ausgelagert
 
-    27. [15.02.2026 12:00] - Umstellung http auf https, Testen der SSL-Zertifikate:
-        - Erzeugen eines eigenen GitHub-Projektes
+    27. [15.02.2026 12:00] - Umstellung http auf https, Testen der SSL-Zertifikate
 
-    28. [15.02.2026 21:30] - SERVERSEITIGES LOGGING IMPLEMENTIERT:
-        - Neue Funktion `log_to_file` in `deepseek-api.py` eingeführt
-        - Log-Datei unter `/var/www/deepseek-chat/cgi-bin/deepseek-chat.log`
-        - Aufgezeichnet werden: Zeitstempel, IP, Methode, Pfad, HTTP-Status, ggf. Fehlermeldung
-        - API-Keys werden bewusst nicht geloggt
-        - OPTIONS-Requests werden ignoriert, um das Log nicht zu überfluten
+    28. [15.02.2026 21:30] - SERVERSEITIGES LOGGING IMPLEMENTIERT
 
-    29. [16.02.2026 01:30] - LOG-BUTTON HINZUGEFÜGT:
-        - Alle Tastenkombinationen entfernt, LOG Button ist nun zusätzlich
-        - Neu: Eigene Button-Reihe unter den Modi mit Button "Log-Dateien"
-        - Button-Design: 40px Höhe, Farbe Blau (#0056b3) wie Haupt-Buttons
-        - Manifest aktualisiert: Abschnitt C.2 um Zeile 3 ergänzt
-        - Grund: Tastenkombinationen funktionierten nicht zuverlässig in Firefox
+    29. [16.02.2026 01:30] - LOG-BUTTON HINZUGEFÜGT
 
-    30. [16.02.2026 01:30] - TOKEN-ZÄHLUNG VERBESSERT:
-        - Token-Zählung massiv verbessert inklusive einer Warnung beim Erreichen
-          der maximalen Größe des Kontext Windows
+    30. [16.02.2026 01:30] - TOKEN-ZÄHLUNG VERBESSERT
 
-    31. [16.02.2026 02:00] - SESSION-MANAGEMENT UND EXPORT-FUNKTIONALITÄT IMPLEMENTIERT:
-        - NEUE PYTHON-SCRIPTS:
-          * save-session.py - Speichert Chat-Verlauf nach jeder Nachricht (POST)
-          * load-session.py - Lädt Session-Liste (GET) oder spezifische Session (POST)
-          * delete-session.py - Löscht einzelne Session (POST)
-          * export-pdf.py - Generiert professionelles PDF mit ReportLab
-          * export-markdown.py - Generiert Markdown-Datei
-        - SESSIONS-VERZEICHNIS:
-          * Pfad: /var/www/deepseek-chat/sessions/
-          * Rechte: 700 (nur für Webserver lesbar/schreibbar)
-          * Automatische Erstellung falls nicht vorhanden
-          * Session-Dateien: {sessionId}.json mit Rechten 600
-        - SESSION-ID FORMAT:
-          * Format: YYYY-MM-DD_HHMMSS_random (z.B. 2026-02-16_143045_abc123)
-          * Client erzeugt ID, Server validiert
-        - DROPDOWN-BUTTON "EXPORTIEREN":
-          * Platzierung: Zeile 1 (neben Senden, Datei hochladen, Einstellungen)
-          * Drei Optionen: PDF herunterladen, Markdown herunterladen, Chat-Verlauf laden
-          * Dropdown schließt automatisch bei Klick außerhalb oder Escape-Taste
-        - SESSION-LADE-MODAL und HOVER-BUTTONS implementiert
-        - Grund: Dauerhafte Speicherung, professioneller Export, Multi-Chat-Verwaltung
+    31. [16.02.2026 02:00] - SESSION-MANAGEMENT UND EXPORT-FUNKTIONALITÄT IMPLEMENTIERT
 
-    32. [17.02.2026 07:30] - APACHE-KONFIGURATION KORRIGIERT UND PDF-BUG BEHOBEN:
-        - APACHE SCRIPTALIAS VEREINFACHT:
-          * Vorher: Einzelne ScriptAlias Einträge pro Script (/api/chat, /api/get-log)
-          * Nachher: ScriptAlias /cgi-bin/ /var/www/deepseek-chat/cgi-bin/
-          * Vorteil: Keine Apache-Änderung bei neuen Scripts notwendig
-          * Aktive Konfigurationsdatei: deepseek-chat-ssl.conf
-          * Redundante Datei deepseek-chat.conf via a2dissite deaktiviert
-          * Neuer Abschnitt D.7 im Manifest dokumentiert Apache-Konfiguration
-        - API-ENDPOINT AKTUALISIERT:
-          * Vorher: const API_URL = '/api/chat'
-          * Nachher: const API_URL = '/cgi-bin/deepseek-api.py'
-          * Alle URLs auf /cgi-bin/ Pfad umgestellt
-        - LOG-URL KORRIGIERT:
-          * GET_LOG_URL = '/cgi-bin/get-log.py' in index.html ergänzt
-          * Log-Overlay CSS und HTML in index.html ergänzt
-          * fetchLog() Funktion und Event-Listener in index.html ergänzt
-          * Grund: Log-Funktion fehlte in neuer index.html Version
-        - PDF-EXPORT BUG BEHOBEN:
-          * Problem: "malformed header from script: Bad header: %PDF-1.4"
-          * Ursache: Konflikt zwischen print() (Text-Modus) und sys.stdout.buffer (Binary-Modus)
-          * Lösung: send_response() Funktion in export-pdf.py komplett überarbeitet
-          * Binäre PDF-Daten werden nun ausschließlich über sys.stdout.buffer geschrieben
-          * HTTP-Header werden als bytes encoded vor den PDF-Daten geschrieben
-          * Content-Length Header hinzugefügt für korrekte Browser-Verarbeitung
-        - GRUND:
-          * 404-Fehler bei allen CGI-Scripts behoben
-          * PDF-Download funktioniert jetzt korrekt im Browser
-          * Log-Anzeige wieder vollständig funktionsfähig
+    32. [17.02.2026 07:30] - APACHE-KONFIGURATION KORRIGIERT UND PDF-BUG BEHOBEN
 
-        33. [17.02.2026 09:00] - GITHUB RAW-URL CACHE VERHALTEN DOKUMENTIERT:
-        - raw.githubusercontent.com URLs werden von GitHub bis zu 10 Minuten gecacht
-        - Nach einem git push ist die neue Version NICHT sofort über Raw-URLs sichtbar
-        - Dies betrifft alle GitHub-Accounts (Gratis und bezahlt)
-        - Lösung: Nach git push einfach 5-10 Minuten warten
-        - Die Dateien sind korrekt auf GitHub sobald git push erfolgreich war
-        - Prüfung ob Upload korrekt war: git log --oneline und git show --name-only
-        - Lokale Kontrolle: grep -c "schlüsselwort" /pfad/zur/datei
+    33. [17.02.2026 09:00] - GITHUB RAW-URL CACHE VERHALTEN DOKUMENTIERT
 
-        34. [17.02.2026 10:00] - BUG-FIX deleteMessage() - Option A implementiert:
-        - deleteMessage() löscht jetzt angeklickte Nachricht + ALLE nachfolgenden
-        - Bestätigungsdialog: "Diese Nachricht und alle nachfolgenden Nachrichten löschen?"
-        - DOM: Nachricht-Container + alle Geschwister-Elemente (inkl. Trennlinien) entfernt
-        - contextHistory: messages.slice(0, msgIndex) - alles ab Position entfernt
-        - Git: a591bce
+    34. [17.02.2026 10:00] - BUG-FIX deleteMessage() - Option A implementiert
 
-        35. [17.02.2026 11:00] - TXT/RTF EXPORT + DL-BUTTON EINZELNACHRICHTEN:
-        - Gesamt-Export Dropdown um 2 Formate erweitert: TXT und RTF
-        - export-txt.py: neues CGI-Script fuer TXT-Export des gesamten Chats
-        - export-rtf.py: neues CGI-Script fuer RTF-Export (ohne externe Library, Umlaute als RTF-Codes)
-        - DL-Button [DL] gruen bei Hover neben X-Button fuer jede Nachricht
-        - DL-Button oeffnet Dropdown: Als TXT / Als Markdown / Als RTF / Als PDF
-        - TXT, Markdown, RTF Einzel-Export direkt im Browser (JavaScript Blob, kein Server)
-        - PDF Einzel-Export ueber bestehendes export-pdf.py (nur eine Nachricht)
-        - Git: 01e0fb3 (index.html) + da8282c (export-txt.py) + 5aa5213 (export-rtf.py) + 7d038c1 (files-directorys)
+    35. [17.02.2026 11:00] - TXT/RTF EXPORT + DL-BUTTON EINZELNACHRICHTEN
 
-        36. [17.02.2026 17:00] - FEEDBACK-BUTTONS FUER AI-ANTWORTEN IMPLEMENTIERT:
-        - 4 neue Buttons bei jeder AI-Antwort (erscheinen beim Hover, links unten)
-        - [Copy] - Kopiert Nachrichtentext in die Zwischenablage, zeigt kurz "Copied!"
-        - [Like] - Gruen markiert, schreibt LIKE-Eintrag in deepseek-chat.log
-        - [Dislike] - Rot markiert, schreibt DISLIKE-Eintrag in deepseek-chat.log
-        - [Regen] - Loescht alte AI-Antwort, generiert neue Antwort auf dieselbe User-Frage
-        - Like/Dislike gegenseitig ausschliessend (Klick auf Like deaktiviert Dislike und umgekehrt)
-        - Feedback-Buttons nur bei AI-Antworten, nicht bei User-Nachrichten
-        - Neues CGI-Script feedback-log.py schreibt ins bestehende deepseek-chat.log
-        - Log-Format: YYYY-MM-DD HH:MM:SS | IP | FEEDBACK | LIKE/DISLIKE | msgId | "Preview"
-        - Git: a2e371b (index.html) + e3ba685 (feedback-log.py)
+    36. [17.02.2026 17:00] - FEEDBACK-BUTTONS FUER AI-ANTWORTEN IMPLEMENTIERT
 
-        37. [17.02.2026 18:30] - MAGIC BYTES PRUEFUNG GEGEN AUSFUEHRBARE DATEIEN:
-        - Sicherheits-Feature: Erkennung ausfuehrbarer Dateien anhand Magic Bytes
-        - Schuetzt vor umbenannten EXE/ELF/Mach-O Dateien (z.B. virus.exe -> virus.jpg)
-        - Erkannte Plattformen:
-          * Windows 32/64 Bit (PE/MZ Header - EXE, DLL, SYS)
-          * Linux 32/64 Bit (ELF32/ELF64 Header)
-          * macOS 32/64 Bit (Mach-O Little/Big Endian)
-          * macOS Universal Binary (Fat Binary - mehrere Architekturen)
-          * ARM 32 Bit (ELF32 ARM Little Endian)
-          * ARM 64 Bit (ELF64 AArch64 Little Endian)
-          * Shell Scripts (Shebang #! Header)
-          * Python Bytecode (.pyc Dateien Python 3.8+)
-        - Pruefung erfolgt VOR der Dateiverarbeitung durch Lesen der ersten 20 Bytes
-        - Bei Treffer: Upload wird blockiert mit detaillierter Fehlermeldung
-        - Standalone Python-Script detect-executable.py fuer Server-seitige Pruefung erstellt
-        - Git: 301880c (index.html mit Magic Bytes Pruefung)
+    37. [17.02.2026 18:30] - MAGIC BYTES PRUEFUNG GEGEN AUSFUEHRBARE DATEIEN
 
-        38. [17.02.2026 23:30] - STREAMING RESPONSES IMPLEMENTIERT:
-        - AI-Antworten erscheinen jetzt Token-fuer-Token (wie ChatGPT/Claude)
-        - Server-Sent Events (SSE) statt blocking JSON response
-        - deepseek-api.py: stream: True aktiviert, text/event-stream Header
-        - index.html: sendMessage() komplett umgebaut fuer Streaming-Empfang
-        - ReadableStream API mit TextDecoder fuer Token-Parsing
-        - Auto-Scroll waehrend Streaming fuer bessere UX
-        - Psychologischer Effekt: Antwort startet nach 0.3s statt 8s "Denkt..."
-        - handleRegenerate() noch OHNE Streaming (TODO fuer naechste Version)
-        - Git: aa4ecf7 (deepseek-api.py) + 0963081 (index.html mit Streaming)
-        - Deutlich bessere User Experience bei langen Antworten
+    38. [17.02.2026 23:30] - STREAMING RESPONSES IMPLEMENTIERT
 
-        39. [18.02.2026 08:56] - index.html synchronisiert und ins Git-Repository uebernommen:
-        - Alte index.html (Eigentuemer: root) im source-Repo geloescht und neu erstellt
-        - Eigentuemer auf source:source gesetzt (chown source:source index.html)
-        - Neue index.html (90093 Bytes) committed und nach GitHub gepusht (Commit: 9c2503e)
-        - GitHub, source-Repo und Produktionsverzeichnis sind nun synchron
+    39. [18.02.2026 08:56] - index.html synchronisiert und ins Git-Repository uebernommen
 
-        40. [18.02.2026 08:56] - SICHERHEITSHINWEIS FUER MANIFEST-EINTRAEGE (VERBINDLICH):
-        - Im Manifest duerfen NIEMALS vertrauliche Server-Interna eingetragen werden
-        - Verboten sind insbesondere: IP-Adressen, Hostnamen, Benutzernamen,
-          Passwörter, API-Keys, SSH-Schluessel, interne Netzwerk-Informationen,
-          Zertifikate oder sonstige Informationen die die Sicherheit gefaehrden
-        - Diese Regel gilt fuer alle aktuellen und zukuenftigen Eintraege
-        - Datum und Uhrzeit aller Aenderungen sind zwingend anzugeben
+    40. [18.02.2026 08:56] - SICHERHEITSHINWEIS FUER MANIFEST-EINTRAEGE (VERBINDLICH)
 
-        41. [18.02.2026 10:45] - DATENSCHUTZ-TOGGLE UND APACHE-BEREINIGUNG:
-        - index.html: Neuer Toggle "Daten nicht fuer Training verwenden" in Einstellungen
-        - Toggle Standard: Eingeschaltet (Opt-Out aktiv)
-        - Sendet Header X-No-Training: true an die API (soweit von API unterstuetzt)
-        - settings-Objekt um noTraining: true erweitert
-        - SETTINGS_VERSION auf 1.1 erhoeht (migrateSettings() rueckwaertskompatibel)
-        - deepseek-api.py: no_training Parameter ausgewertet, X-No-Training Header gesetzt
-        - Apache: API-Key aus deepseek-chat.conf und deepseek-chat-ssl.conf entfernt
-        - Apache: API-Key sicher in /etc/apache2/envvars ausgelagert
-        - Apache: SetEnv DEEPSEEK_API_KEY ${DEEPSEEK_API_KEY} in deepseek-chat-ssl.conf
-        - Apache: ServerName in beide VirtualHost-Konfigurationen eingetragen
-        - Apache laeuft ohne Warnungen nach systemctl restart apache2
-        - Git: 406e70a (index.html) + vorherige Commits fuer deepseek-api.py und manifest
+    41. [18.02.2026 10:45] - DATENSCHUTZ-TOGGLE UND APACHE-BEREINIGUNG
 
-        42. [18.02.2026 18:45] - Bereinigung GUI:
-        - Textänderung Buttons
+    42. [18.02.2026 18:45] - Bereinigung GUI
 
-        43. [18.02.2026 20:00] - Bugfix deepseek-api.py: Streaming-Implementierung:
-        - stream: True in API-Request ergaenzt (Hauptursache fuer fehlende AI-Antworten)
-        - Content-Type text/event-stream Header hinzugefuegt
-        - X-Accel-Buffering: no Header fuer Apache-Proxy ergaenzt
-        - Cache-Control: no-cache Header ergaenzt
-        - X-No-Training Header implementiert (wird gesendet wenn noTraining aktiv)
-        - API-Verbindung wird VOR SSE-Header-Ausgabe aufgebaut
-          (Verbindungsfehler koennen so noch als JSON zurueckgegeben werden)
+    43. [18.02.2026 20:00] - Bugfix deepseek-api.py: Streaming-Implementierung
 
-        44. [18.02.2026 20:10] - Bugfix index.html: 3 kritische Fehler behoben:
-        - BUGFIX 1: replaceGermanUmlauts() war komplett wirkungslos
-          (ae->ae statt ae statt ae->ae, identische No-Op Ersetzung)
-          Korrigiert: ae/oe/ue/ss/Ae/Oe/Ue korrekt auf Umlaute gemappt
-        - BUGFIX 2: handleRegenerate() hatte kein Streaming
-          Nachgeruestet: identischer SSE-Reader wie in sendMessage()
-        - BUGFIX 3: saveHandler rief updateSettingsUI() nicht auf
-          Datenschutz-Beschreibung aktualisierte Anredeform nicht sofort
-          Korrigiert: updateSettingsUI() am Ende von saveHandler ergaenzt
+    44. [18.02.2026 20:10] - Bugfix index.html: 3 kritische Fehler behoben
 
-        45. [18.02.2026 21:15] - Bugfix: Fehlermeldung ungueltige Dateiformat als alert():
-        - Fehlermeldung bei nicht unterstuetztem Dateiformat war nicht sichtbar
-        - Grund: #fileInfo Box verschwindet zu schnell / wird uebersehen
-        - Loesung: alert() Popup statt stiller Fehlermeldung in der Box
+    45. [18.02.2026 21:15] - Bugfix: Fehlermeldung ungueltige Dateiformat als alert()
 
-        46. [18.02.2026 22:03] - Umlaute und Anredeform-Korrekturen index.html:
-        - durchgeführt statt durchgefuehrt (Mode-Indikatoren, 2x)
-        - Gesprächsmodus, für (Settings-Beschreibung Chat-Modus)
-        - Überlegungen (Settings-Beschreibung DeepThink)
-        - für Training (Toggle-Label)
-        - unterstützt, für das Training (Toggle-Beschreibung HTML + JS)
-        - Schließen der Seite (Settings-Info)
-        - übernehmen (Save-Button HTML + JS)
-        - zu groß, Größe (extractTextFromPDF)
-        - ausgewählte Session (loadSpecificSession confirm)
-        - wirklich löschen?, Löschen (deleteSession confirm + alert)
-        - Löschen (Session-Liste Button-Text)
-        - Keine Log-Einträge (fetchLog)
-        - löschen? (deleteMessage confirm)
-        - unterstützt, Unterstützte (handleFileUpload alert)
-        - Ausführbare Datei (handleFileUpload Magic-Bytes)
-        - Anredeform-Bug: DeepThink/Search System-Prompt verwendete immer
-          Sie-Form unabhaengig von Einstellung - korrigiert in
-          sendMessage() und handleRegenerate()
+    46. [18.02.2026 22:03] - Umlaute und Anredeform-Korrekturen index.html
 
-        47. [19.02.2026 01:00] - Anredeform-Korrektur settings-info Text:
-        - .info-text Div erhielt id="settingsInfoText"
-        - updateSettingsUI() setzt Text dynamisch je nach Anredeform:
-          Sie-Form: "Ihre Einstellungen ... Ihrem Browser ... Schließen"
-          Du-Form:  "Deine Einstellungen ... deinem Browser ... Schließen"
+    47. [19.02.2026 01:00] - Anredeform-Korrektur settings-info Text
 
-        48. [19.02.2026 01:15] - Einstellungs-Buttons auf Toggle-Switches umgestellt:
-        - Alle Radio-Buttons in den Einstellungen durch Toggle-Switches ersetzt
-        - Betrifft: Anredeform (Sie/Du) und Standard Modus (Chat/DeepThink/Search)
-        - Radio-Gruppen-Logik: setAddressFormToggle() und setDefaultModeToggle()
-          stellen sicher dass immer genau ein Toggle pro Gruppe aktiv ist
-        - Klick auf setting-item aktiviert den zugehoerigen Toggle (UX-Verbesserung)
-        - CSS: radio-custom Klasse entfernt, einheitlich .toggle-switch fuer alles
-        - saveHandler liest Werte jetzt aus Toggle-Zustand statt Radio-Inputs
-        - Manifest Abschnitte A.3, C.3 und E.1 um verbindliche Toggle-Konvention erweitert
+    48. [19.02.2026 01:15] - Einstellungs-Buttons auf Toggle-Switches umgestellt
 
-        49. [19.02.2026 11:45] - Farbänderung Settings-Toggle-Container:
-        - toggle-active (grün) für Anredeform und Standard Modus ersetzt
-          durch toggle-active-blue (blau) für konsistentes Design
-        - Betrifft: sieFormItem, duFormItem, chatModeItem,
-          deepthinkModeItem, searchModeItem
-        - Datenschutz-Sektion bleibt weiterhin grün (toggle-active)
-        - CSS .toggle-active-blue war bereits vorhanden (#1e3a5f / #0056b3)
-        - Funktionen: setAddressFormToggle(), setDefaultModeToggle()
+    49. [19.02.2026 11:45] - Farbänderung Settings-Toggle-Container
 
-        50. [19.02.2026 12:13] - Settings-Toggles mit Hauptseite synchronisiert:
-        - DeepThink/Search Buttons auf Hauptseite spiegeln sich nun
-          automatisch in den Einstellungen (Standard Modus Gruppe)
-        - Implementierung: setMode() ruft am Ende setDefaultModeToggle(mode)
-        - Damit ist UI-Zustand immer konsistent: Hauptseite <-> Einstellungen
+    50. [19.02.2026 12:13] - Settings-Toggles mit Hauptseite synchronisiert
 
-        51. [19.02.2026 16:05] - Modus-Buttons auf Pill-Style umgestellt +
-            Search-Button entfernt (API-Recherche ergab: nicht verfuegbar):
+    51. [19.02.2026 16:05] - Modus-Buttons auf Pill-Style umgestellt +
+        Search-Button entfernt (API-Recherche ergab: nicht verfuegbar):
         - DeepSeek API bietet kein Search/Web-Suche an (nur App/Web)
         - Search-Button auf Hauptseite entfernt
-        - Search-Modus in Einstellungen (Standard Modus) entfernt
-        - searchIndicator, search-mode CSS entfernt
-        - migrateSettings(): alte 'search' Sessions werden auf 'chat' gesetzt
-        - SETTINGS_VERSION: 1.1 -> 1.2
-        - Modus-Button Design: Pill-Style analog DeepSeek-App
-          Inaktiv: #2d2d2d Hintergrund, #555 Rand, weisse Schrift
-          Aktiv:   #1e3a5f Hintergrund, #4dabf7 Rand, blaue Schrift
-          Layout: buttons-row-mode, justify-content: flex-start
+        - Search-Modus in Einstellungen entfernt
         - Korrektes API-Model je nach Modus:
           chat      -> model: 'deepseek-chat'
           deepthink -> model: 'deepseek-reasoner' (echtes Reasoning)
-          Betrifft: sendMessage() und handleRegenerate()
 
-        52. [19.02.2026 16:15] - Eingabefeld auf Textarea mit Focus-Animation umgestellt:
+    52. [19.02.2026 16:52] - Eingabefeld auf Textarea mit Focus-Animation umgestellt:
         - <input type="text"> durch <textarea rows="1"> ersetzt
         - Inaktiv: 40px hoch, einzeilig, grauer Rand (#444)
         - Fokus: 120px hoch, mehrzeilig, blauer Rand (#0056b3)
         - Sanfte Animation: transition height 0.2s ease, border-color 0.2s ease
-        - resize: none (kein manueller Resize-Griff)
         - Enter = Senden, Shift+Enter = neue Zeile
-        - keydown Handler: !e.shiftKey Bedingung ergaenzt
-        - CSS: #input:focus Regel neu hinzugefuegt
-        - font-family: Arial und font-size: 14px explizit gesetzt
-          (Textarea erbt diese nicht automatisch wie input)
+
+    53. [19.02.2026 20:23] - ALLE AKTIONS-BUTTONS AUF PILL-STYLE UMGESTELLT:
+        - Buttons Senden, Datei hochladen, Exportieren, Einstellungen, Log-Dateien
+          auf einheitlichen Pill-Style umgestellt
+        - CSS-Klasse .pill-button eingeführt (blau, border-radius: 20px, height: 36px)
+        - CSS-Klasse .pill-button-mode eingeführt (dunkel/blau Toggle für DeepThink)
+        - Alle Buttons in einer Zeile, gleiche Höhe, korrekte Reihenfolge
+        - Alte .action-button Klasse entfernt
+
+    54. [19.02.2026 20:33] - AKTIONS-BUTTONS: Farbe auf Blau gesetzt:
+        - .pill-button: background #0056b3, hover #003d82, active #002a5c
+        - DeepThink bleibt .pill-button-mode (dunkel inaktiv, blau aktiv)
+
+    55. [19.02.2026 20:59] - ALLE VERBLEIBENDEN BUTTONS AUF PILL-STYLE UMGESTELLT:
+        - Feedback-Buttons (.feedback-btn): border-radius: 20px, blau
+        - Session-Buttons: Laden grün (#28a745), Löschen rot (#dc3545), Pill
+        - Einstellungen übernehmen (.save-button): blau, Pill, border-radius: 20px
+        - Schliessen-X (.close-settings): rot, rund (border-radius: 50%), 36x36px
+        - Entfernen-Button (#removeFile): rot, Pill
+        - Download-Button (.download-message-btn): blau, Pill
+        - Löschen-Button (.delete-message-btn): rot, Pill
+        - MANIFEST ABSCHNITTE A.3, E.1 und F.5 mit verbindlicher Button-Konvention
+          für alle zukünftigen Buttons aktualisiert
 
     ============================================================================
+
