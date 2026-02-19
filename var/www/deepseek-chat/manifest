@@ -657,4 +657,36 @@
         - saveHandler liest Werte jetzt aus Toggle-Zustand statt Radio-Inputs
         - Manifest Abschnitte A.3, C.3 und E.1 um verbindliche Toggle-Konvention erweitert
 
+        49. [19.02.2026 11:45] - Farbänderung Settings-Toggle-Container:
+        - toggle-active (grün) für Anredeform und Standard Modus ersetzt
+          durch toggle-active-blue (blau) für konsistentes Design
+        - Betrifft: sieFormItem, duFormItem, chatModeItem,
+          deepthinkModeItem, searchModeItem
+        - Datenschutz-Sektion bleibt weiterhin grün (toggle-active)
+        - CSS .toggle-active-blue war bereits vorhanden (#1e3a5f / #0056b3)
+        - Funktionen: setAddressFormToggle(), setDefaultModeToggle()
+
+        50. [19.02.2026 12:13] - Settings-Toggles mit Hauptseite synchronisiert:
+        - DeepThink/Search Buttons auf Hauptseite spiegeln sich nun
+          automatisch in den Einstellungen (Standard Modus Gruppe)
+        - Implementierung: setMode() ruft am Ende setDefaultModeToggle(mode)
+        - Damit ist UI-Zustand immer konsistent: Hauptseite <-> Einstellungen
+
+        51. [19.02.2026 xx:xx] - Modus-Buttons auf Pill-Style umgestellt +
+            Search-Button entfernt (API-Recherche ergab: nicht verfuegbar):
+        - DeepSeek API bietet kein Search/Web-Suche an (nur App/Web)
+        - Search-Button auf Hauptseite entfernt
+        - Search-Modus in Einstellungen (Standard Modus) entfernt
+        - searchIndicator, search-mode CSS entfernt
+        - migrateSettings(): alte 'search' Sessions werden auf 'chat' gesetzt
+        - SETTINGS_VERSION: 1.1 -> 1.2
+        - Modus-Button Design: Pill-Style analog DeepSeek-App
+          Inaktiv: #2d2d2d Hintergrund, #555 Rand, weisse Schrift
+          Aktiv:   #1e3a5f Hintergrund, #4dabf7 Rand, blaue Schrift
+          Layout: buttons-row-mode, justify-content: flex-start
+        - Korrektes API-Model je nach Modus:
+          chat      -> model: 'deepseek-chat'
+          deepthink -> model: 'deepseek-reasoner' (echtes Reasoning)
+          Betrifft: sendMessage() und handleRegenerate()
+
     ============================================================================
