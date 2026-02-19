@@ -158,6 +158,7 @@
             background: #1a1a2e !important;
             border-left: 4px solid #28a745 !important;
         }
+
         /* =====================================================================
            EINGABEFELD: Textarea mit Focus-Animation
            Inaktiv: 40px hoch, einzeilig
@@ -186,28 +187,24 @@
             overflow-y: auto;
             outline: none;
         }
-        /* ===================================================================== */
-        .buttons-row {
-            display: flex;
-            gap: 10px;
-            margin: 15px 0;
-            align-items: center;
-            height: 40px;
-        }
+
         /* =====================================================================
-           MODUS-BUTTON: Pill-Style, nur DeepThink
-           Inaktiv: dunkles Pill, grauer Rand, weisse Schrift
-           Aktiv:   blauer Rand, blaue Schrift, leicht blauer Hintergrund
+           PILL-BUTTON: Einheitlicher Stil fuer ALLE Buttons
+           Gilt fuer: Senden, Datei hochladen, Exportieren, Einstellungen,
+                      Log-Dateien, DeepThink
+           Inaktiv:  #2d2d2d Hintergrund, #555 Rand, weisse Schrift
+           Aktiv:    #1e3a5f Hintergrund, #4dabf7 Rand, blaue Schrift (nur Toggle-Buttons)
+           Hover:    #3a3a3a Hintergrund, #888 Rand
+           Masse:    Hoehe 36px, border-radius 20px, padding 8px 16px
            ===================================================================== */
-        .buttons-row-mode {
+        .buttons-row {
             display: flex;
             gap: 10px;
             margin: 10px 0;
             align-items: center;
-            justify-content: flex-start;
-            height: auto;
+            flex-wrap: wrap;
         }
-        .mode-button {
+        .pill-button {
             flex: none;
             padding: 8px 16px;
             background: #2d2d2d;
@@ -216,6 +213,7 @@
             border-radius: 20px;
             cursor: pointer;
             font-size: 14px;
+            font-family: Arial;
             height: 36px;
             display: flex;
             align-items: center;
@@ -223,58 +221,27 @@
             transition: all 0.2s;
             white-space: nowrap;
         }
-        .mode-button:hover { border-color: #888; background: #3a3a3a; }
-        .mode-button.active {
+        .pill-button:hover { border-color: #888; background: #3a3a3a; }
+        .pill-button.active {
             background: #1e3a5f;
             border-color: #4dabf7;
             color: #4dabf7;
         }
-        .mode-icon { font-size: 15px; line-height: 1; }
-        /* ===================================================================== */
-        .action-button { 
-            padding: 10px 20px; 
-            background: #0056b3;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex: 1;
-            margin: 0 5px;
-        }
-        .action-button:hover { background: #003d82; }
-        .dropdown-container { position: relative; flex: 1; }
-        .dropdown-button {
-            width: 100%;
-            padding: 10px 20px;
-            background: #0056b3;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .dropdown-button:hover { background: #003d82; }
-        .dropdown-arrow { margin-left: 10px; font-size: 12px; }
+
+        /* Exportieren-Dropdown Container */
+        .dropdown-container { position: relative; }
+        .dropdown-arrow { margin-left: 6px; font-size: 11px; }
         .dropdown-menu {
             display: none;
             position: absolute;
-            top: 45px;
+            top: 42px;
             left: 0;
-            right: 0;
             background: #2d2d2d;
             border: 1px solid #444;
             border-radius: 4px;
             z-index: 1000;
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            min-width: 180px;
         }
         .dropdown-menu.show { display: block; }
         .dropdown-item {
@@ -283,10 +250,14 @@
             cursor: pointer;
             border-bottom: 1px solid #444;
             transition: background 0.2s;
+            font-size: 14px;
+            white-space: nowrap;
         }
         .dropdown-item:last-child { border-bottom: none; }
         .dropdown-item:hover { background: #3d3d3d; }
-        .file-input-wrapper { position: relative; flex: 1; height: 40px; }
+
+        /* Datei-Upload Wrapper */
+        .file-input-wrapper { position: relative; }
         #fileUpload {
             position: absolute;
             left: 0; top: 0;
@@ -294,6 +265,8 @@
             width: 100%; height: 100%;
             cursor: pointer;
         }
+
+        /* ===================================================================== */
         .mode-indicator {
             padding: 5px 10px;
             margin: 5px 0;
@@ -317,7 +290,7 @@
             display: none;
         }
         #fileInfo.visible { display: block; }
-        #removeFile { background: #dc3545; margin-left: 10px; padding: 4px 8px; font-size: 12px; }
+        #removeFile { background: #dc3545; margin-left: 10px; padding: 4px 8px; font-size: 12px; cursor: pointer; border: none; color: white; border-radius: 3px; }
         #removeFile:hover { background: #c82333; }
         .pdf-processing {
             padding: 10px;
@@ -405,9 +378,6 @@
         .setting-item.toggle-active-blue { background: #1e3a5f; border-color: #0056b3; }
         .setting-name { font-size: 15px; color: #f0f0f0; font-weight: normal; }
         .setting-description { font-size: 12px; color: #aaa; margin-top: 5px; line-height: 1.4; padding-left: 0; }
-        /* =====================================================================
-           TOGGLE SWITCH
-           ===================================================================== */
         .toggle-label { display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
         .toggle-switch { position: relative; width: 46px; height: 24px; flex-shrink: 0; }
         .toggle-switch input[type="checkbox"] { display: none; }
@@ -433,7 +403,6 @@
             transform: translateX(22px);
             background: #90ee90;
         }
-        /* ===================================================================== */
         .settings-info {
             margin-top: 20px;
             padding: 15px;
@@ -552,17 +521,22 @@
     <div id="deepThinkIndicator" class="mode-indicator deepthink-indicator">
         DeepThink Modus aktiv: Tiefgehende Analyse wird durchgeführt
     </div>
-    
+
+    <!-- ================================================================
+         AKTIONS-BUTTONS: Pill-Style, gleiche Hoehe, gleiche Reihenfolge
+         Senden | Datei hochladen | Exportieren | Einstellungen | Log-Dateien
+         ================================================================ -->
     <div class="buttons-row">
-        <button id="sendButton" class="action-button">Senden</button>
+        <button id="sendButton" class="pill-button">Senden</button>
+
         <div class="file-input-wrapper">
-            <button id="uploadButton" class="action-button">Datei hochladen</button>
+            <button id="uploadButton" class="pill-button">Datei hochladen</button>
             <input type="file" id="fileUpload" accept=".txt,.pdf,.doc,.docx,.jpg,.jpeg,.png,.csv,.xlsx,.pptx">
         </div>
+
         <div class="dropdown-container">
-            <button id="exportButton" class="dropdown-button">
-                Exportieren
-                <span class="dropdown-arrow">&#9660;</span>
+            <button id="exportButton" class="pill-button">
+                Exportieren <span class="dropdown-arrow">&#9660;</span>
             </button>
             <div id="exportMenu" class="dropdown-menu">
                 <div class="dropdown-item" id="exportPdfBtn">Als PDF herunterladen</div>
@@ -572,24 +546,22 @@
                 <div class="dropdown-item" id="loadSessionBtn">Chat-Verlauf laden</div>
             </div>
         </div>
-        <button id="settingsButton" class="action-button">Einstellungen</button>
+
+        <button id="settingsButton" class="pill-button">Einstellungen</button>
+        <button id="logButton" class="pill-button">Log-Dateien</button>
     </div>
-    
+
     <!-- ================================================================
          MODUS-BUTTON: Pill-Style, nur DeepThink
          deepseek-reasoner = thinking mode (API-seitig korrekt)
          Search wurde entfernt (nicht in der API verfuegbar)
          ================================================================ -->
-    <div class="buttons-row-mode">
-        <button id="deepThinkButton" class="mode-button">
+    <div class="buttons-row">
+        <button id="deepThinkButton" class="pill-button">
             <span class="mode-icon">&#10802;</span>DeepThink
         </button>
     </div>
-    
-    <div class="buttons-row">
-        <button id="logButton" class="action-button">Log-Dateien</button>
-    </div>
-    
+
     <div id="fileInfo"></div>
     
     <div id="settingsOverlay">
@@ -599,9 +571,6 @@
                 <button class="close-settings" id="closeSettings" title="Schliessen">&times;</button>
             </div>
             
-            <!-- ================================================================
-                 ANREDEFORM - Toggle Switches
-                 ================================================================ -->
             <div class="settings-group">
                 <div class="group-header">
                     <div class="group-title">Anredeform</div>
@@ -633,9 +602,6 @@
                 </div>
             </div>
             
-            <!-- ================================================================
-                 STANDARD MODUS - nur Chat und DeepThink (Search entfernt)
-                 ================================================================ -->
             <div class="settings-group">
                 <div class="group-header">
                     <div class="group-title">Standard Modus</div>
@@ -667,9 +633,6 @@
                 </div>
             </div>
 
-            <!-- ================================================================
-                 DATENSCHUTZ - Toggle Switch
-                 ================================================================ -->
             <div class="settings-group">
                 <div class="group-header">
                     <div class="group-title">Datenschutz</div>
@@ -720,7 +683,7 @@
                 <div class="settings-title">Log-Dateien</div>
                 <button class="close-settings" id="closeLog" title="Schliessen">&times;</button>
             </div>
-            <button class="action-button" id="refreshLog" style="width:auto; flex:none; padding: 8px 20px;">Aktualisieren</button>
+            <button class="pill-button" id="refreshLog" style="margin-bottom: 10px;">Aktualisieren</button>
             <div id="logContent">Lade Log-Dateien...</div>
         </div>
     </div>
@@ -992,10 +955,6 @@
             }
         }
         
-        // =====================================================================
-        // GESAMT-EXPORT FUNKTIONEN
-        // =====================================================================
-        
         async function exportPDF() {
             try {
                 const chatData = { version: "1.0", timestamp: new Date().toISOString(),
@@ -1055,10 +1014,6 @@
                 triggerDownload(blob, `deepseek-chat-${currentSessionId || 'export'}.rtf`);
             } catch (error) { alert('Fehler beim RTF-Export: ' + error.message); }
         }
-        
-        // =====================================================================
-        // EINZEL-EXPORT FUNKTIONEN
-        // =====================================================================
         
         function triggerDownload(blob, filename) {
             const url = window.URL.createObjectURL(blob);
@@ -1161,10 +1116,6 @@
             activeSingleExportDropdown = dropdown.classList.contains('show') ? dropdown : null;
         }
         
-        // =====================================================================
-        // FEEDBACK UND REGENERIEREN FUNKTIONEN
-        // =====================================================================
-
         async function sendFeedbackLog(type, msgId, preview) {
             try {
                 await fetch(FEEDBACK_LOG_URL, {
@@ -1190,7 +1141,6 @@
             likeBtn.textContent = 'Mag ich'; dislikeBtn.textContent = 'Mag ich gar nicht';
             if (!isDisliked) {
                 dislikeBtn.classList.add('disliked');
-                dislikeBtn.textContent = 'Mag ich gar nicht';
                 sendFeedbackLog('DISLIKE', msgId, getMsgText(msgId).substring(0, 60));
             }
         }
@@ -1247,11 +1197,6 @@
                 contextHistory.messages.forEach(msg => {
                     messages.push({ role: msg.role, content: replaceGermanUmlauts(msg.content) });
                 });
-                // =====================================================================
-                // WICHTIG: model wird je nach Modus gesetzt
-                // deepthink -> deepseek-reasoner (echtes Reasoning)
-                // chat      -> deepseek-chat
-                // =====================================================================
                 const modelName = (userMsg.mode === 'deepthink') ? 'deepseek-reasoner' : 'deepseek-chat';
                 const response = await fetch(API_URL, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -1279,7 +1224,7 @@
                                     const token = data.choices[0].delta.content || '';
                                     if (token) { fullText += token; aiText.textContent = fullText; chat.scrollTop = chat.scrollHeight; }
                                 }
-                            } catch (e) { /* Ignoriere Parse-Fehler */ }
+                            } catch (e) { }
                         }
                     }
                 }
@@ -1360,7 +1305,6 @@
             if (!oldSettings || typeof oldSettings !== 'object') {
                 return { version: SETTINGS_VERSION, addressForm: 'sie', defaultMode: 'chat', noTraining: true };
             }
-            // search-Modus auf chat zuruecksetzen falls in alten Sessions gespeichert
             let defaultMode = oldSettings.defaultMode || 'chat';
             if (defaultMode === 'search') defaultMode = 'chat';
             return {
@@ -1434,7 +1378,6 @@
         }
         
         function setMode(mode) {
-            // Sicherheit: search gibt es nicht mehr
             if (mode === 'search') mode = 'chat';
             currentMode = mode;
             deepThinkButton.classList.remove('active');
@@ -1445,7 +1388,6 @@
                 deepThinkIndicator.classList.add('mode-active');
                 chat.classList.add('thinking-mode');
             }
-            // Settings-Toggle synchronisieren
             setDefaultModeToggle(mode);
         }
 
@@ -1545,11 +1487,6 @@
                 contextHistory.messages.forEach(msg => {
                     messages.push({ role: msg.role, content: replaceGermanUmlauts(msg.content) });
                 });
-                // =====================================================================
-                // WICHTIG: model wird je nach Modus gesetzt
-                // deepthink -> deepseek-reasoner (echtes Reasoning via API)
-                // chat      -> deepseek-chat
-                // =====================================================================
                 const modelName = (currentMode === 'deepthink') ? 'deepseek-reasoner' : 'deepseek-chat';
                 const response = await fetch(API_URL, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -1574,7 +1511,7 @@
                                     const token = data.choices[0].delta.content || '';
                                     if (token) { fullText += token; aiText.textContent = fullText; chat.scrollTop = chat.scrollHeight; }
                                 }
-                            } catch (e) { /* Ignoriere Parse-Fehler */ }
+                            } catch (e) { }
                         }
                     }
                 }
@@ -1627,9 +1564,6 @@
             chat.scrollTop = chat.scrollHeight;
         }
         
-        // =====================================================================
-        // MAGIC BYTES SIGNATUREN fuer ausfuehrbare Dateien
-        // =====================================================================
         const EXECUTABLE_SIGNATURES = [
             { bytes: [0x4D, 0x5A],                                                                                                                         platform: "Windows 32/64 Bit",        format: "PE/MZ Executable" },
             { bytes: [0x7F, 0x45, 0x4C, 0x46, 0x01],                                                                                                      platform: "Linux 32 Bit",             format: "ELF32 Executable" },
@@ -1723,9 +1657,7 @@
         function initializeEventListeners() {
             cleanupEventListeners();
             addEventListenerWithCleanup(sendButton, 'click', sendMessage);
-            // =====================================================================
-            // EINGABEFELD: Enter = Senden, Shift+Enter = neue Zeile
-            // =====================================================================
+            // Enter = Senden, Shift+Enter = neue Zeile
             addEventListenerWithCleanup(inputField, 'keydown', e => {
                 if (e.key === 'Enter' && !e.shiftKey) { if (isSending) { e.preventDefault(); return; } e.preventDefault(); sendMessage(); }
             });
@@ -1759,24 +1691,18 @@
                     if (activeSingleExportDropdown) { activeSingleExportDropdown.classList.remove('show'); activeSingleExportDropdown = null; }
                 }
             });
-
-            // Anredeform Toggles
             addEventListenerWithCleanup(sieFormToggle, 'change', () => {
                 setAddressFormToggle(sieFormToggle.checked ? 'sie' : 'du');
             });
             addEventListenerWithCleanup(duFormToggle, 'change', () => {
                 setAddressFormToggle(duFormToggle.checked ? 'du' : 'sie');
             });
-
-            // Modus Toggles (nur Chat und DeepThink)
             addEventListenerWithCleanup(chatModeToggle, 'change', () => {
                 setDefaultModeToggle(chatModeToggle.checked ? 'chat' : 'deepthink');
             });
             addEventListenerWithCleanup(deepthinkModeToggle, 'change', () => {
                 setDefaultModeToggle(deepthinkModeToggle.checked ? 'deepthink' : 'chat');
             });
-
-            // Klick auf setting-item
             addEventListenerWithCleanup(sieFormItem, 'click', (e) => {
                 if (e.target !== sieFormToggle) { sieFormToggle.checked = true; setAddressFormToggle('sie'); }
             });
@@ -1789,14 +1715,11 @@
             addEventListenerWithCleanup(deepthinkModeItem, 'click', (e) => {
                 if (e.target !== deepthinkModeToggle) { deepthinkModeToggle.checked = true; setDefaultModeToggle('deepthink'); }
             });
-
-            // Datenschutz Toggle
             addEventListenerWithCleanup(noTrainingToggle, 'change', () => {
                 noTrainingStatus.textContent = noTrainingToggle.checked ? 'Aktiv' : 'Inaktiv';
                 if (noTrainingToggle.checked) noTrainingItem.classList.add('toggle-active');
                 else noTrainingItem.classList.remove('toggle-active');
             });
-
             // BUGFIX 3: Settings speichern
             const saveHandler = function() {
                 settings.addressForm = duFormToggle.checked ? 'du' : 'sie';
@@ -1809,8 +1732,6 @@
                 settingsOverlay.style.display = 'none';
             };
             addEventListenerWithCleanup(saveSettingsButton, 'click', saveHandler);
-
-            // DeepThink Button (Toggle: an/aus)
             addEventListenerWithCleanup(deepThinkButton, 'click', () => {
                 setMode(currentMode === 'deepthink' ? 'chat' : 'deepthink');
             });
