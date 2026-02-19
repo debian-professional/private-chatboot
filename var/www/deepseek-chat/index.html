@@ -484,20 +484,19 @@
             border-radius: 6px;
             border: 1px solid #333;
             transition: all 0.2s;
+            cursor: pointer;
         }
         .setting-item:hover {
             background: #333;
             border-color: #444;
         }
-        .setting-item.active {
+        .setting-item.toggle-active {
+            background: #1a2e1a;
+            border-color: #28a745;
+        }
+        .setting-item.toggle-active-blue {
             background: #1e3a5f;
             border-color: #0056b3;
-        }
-        .setting-label {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
         }
         .setting-name {
             font-size: 15px;
@@ -509,35 +508,10 @@
             color: #aaa;
             margin-top: 5px;
             line-height: 1.4;
-            padding-left: 20px;
-        }
-        .radio-custom {
-            width: 18px;
-            height: 18px;
-            border: 2px solid #666;
-            border-radius: 50%;
-            position: relative;
-            transition: all 0.2s;
-        }
-        .setting-label input[type="radio"] {
-            display: none;
-        }
-        .setting-label input[type="radio"]:checked + .radio-custom {
-            border-color: #4dabf7;
-            background-color: #4dabf7;
-        }
-        .setting-label input[type="radio"]:checked + .radio-custom::after {
-            content: '';
-            position: absolute;
-            top: 4px;
-            left: 4px;
-            width: 6px;
-            height: 6px;
-            background: white;
-            border-radius: 50%;
+            padding-left: 0;
         }
         /* =====================================================================
-           TOGGLE SWITCH - Datenschutz
+           TOGGLE SWITCH - einheitlicher Typ fuer alle Einstellungen
            ===================================================================== */
         .toggle-label {
             display: flex;
@@ -579,10 +553,6 @@
         .toggle-switch input[type="checkbox"]:checked + .toggle-slider::before {
             transform: translateX(22px);
             background: #90ee90;
-        }
-        .setting-item.toggle-active {
-            background: #1a2e1a;
-            border-color: #28a745;
         }
         /* ===================================================================== */
         .settings-info {
@@ -809,6 +779,9 @@
                 <button class="close-settings" id="closeSettings" title="Schliessen">&times;</button>
             </div>
             
+            <!-- ================================================================
+                 ANREDEFORM - Toggle Switches
+                 ================================================================ -->
             <div class="settings-group">
                 <div class="group-header">
                     <div class="group-title">Anredeform</div>
@@ -816,10 +789,12 @@
                 </div>
                 
                 <div class="setting-item" id="sieFormItem">
-                    <label class="setting-label" for="sieForm">
+                    <label class="toggle-label" for="sieFormToggle">
                         <span class="setting-name">Sie-Form (formell)</span>
-                        <input type="radio" name="addressForm" id="sieForm" value="sie" checked>
-                        <span class="radio-custom"></span>
+                        <span class="toggle-switch">
+                            <input type="checkbox" id="sieFormToggle">
+                            <span class="toggle-slider"></span>
+                        </span>
                     </label>
                     <div class="setting-description">
                         Sie werden mit der formellen Anrede "Sie" angesprochen.
@@ -827,10 +802,12 @@
                 </div>
                 
                 <div class="setting-item" id="duFormItem">
-                    <label class="setting-label" for="duForm">
+                    <label class="toggle-label" for="duFormToggle">
                         <span class="setting-name">Du-Form (informell)</span>
-                        <input type="radio" name="addressForm" id="duForm" value="du">
-                        <span class="radio-custom"></span>
+                        <span class="toggle-switch">
+                            <input type="checkbox" id="duFormToggle">
+                            <span class="toggle-slider"></span>
+                        </span>
                     </label>
                     <div class="setting-description">
                         Du wirst mit der informellen Anrede "Du" angesprochen.
@@ -838,6 +815,9 @@
                 </div>
             </div>
             
+            <!-- ================================================================
+                 STANDARD MODUS - Toggle Switches (Radio-Gruppe)
+                 ================================================================ -->
             <div class="settings-group">
                 <div class="group-header">
                     <div class="group-title">Standard Modus</div>
@@ -845,10 +825,12 @@
                 </div>
                 
                 <div class="setting-item" id="chatModeItem">
-                    <label class="setting-label" for="chatMode">
+                    <label class="toggle-label" for="chatModeToggle">
                         <span class="setting-name">Normaler Chat</span>
-                        <input type="radio" name="defaultMode" id="chatMode" value="chat" checked>
-                        <span class="radio-custom"></span>
+                        <span class="toggle-switch">
+                            <input type="checkbox" id="chatModeToggle">
+                            <span class="toggle-slider"></span>
+                        </span>
                     </label>
                     <div class="setting-description">
                         Standard-Gesprächsmodus für allgemeine Fragen.
@@ -856,10 +838,12 @@
                 </div>
                 
                 <div class="setting-item" id="deepthinkModeItem">
-                    <label class="setting-label" for="deepthinkMode">
+                    <label class="toggle-label" for="deepthinkModeToggle">
                         <span class="setting-name">DeepThink Modus</span>
-                        <input type="radio" name="defaultMode" id="deepthinkMode" value="deepthink">
-                        <span class="radio-custom"></span>
+                        <span class="toggle-switch">
+                            <input type="checkbox" id="deepthinkModeToggle">
+                            <span class="toggle-slider"></span>
+                        </span>
                     </label>
                     <div class="setting-description">
                         Tiefgehende Analyse mit detaillierten Überlegungen.
@@ -867,10 +851,12 @@
                 </div>
                 
                 <div class="setting-item" id="searchModeItem">
-                    <label class="setting-label" for="searchMode">
+                    <label class="toggle-label" for="searchModeToggle">
                         <span class="setting-name">Search Modus</span>
-                        <input type="radio" name="defaultMode" id="searchMode" value="search">
-                        <span class="radio-custom"></span>
+                        <span class="toggle-switch">
+                            <input type="checkbox" id="searchModeToggle">
+                            <span class="toggle-slider"></span>
+                        </span>
                     </label>
                     <div class="setting-description">
                         Recherche-basierte Antworten mit aktuellen Informationen.
@@ -879,7 +865,7 @@
             </div>
 
             <!-- ================================================================
-                 DATENSCHUTZ - Kein Training
+                 DATENSCHUTZ - Toggle Switch (unveraendert)
                  ================================================================ -->
             <div class="settings-group">
                 <div class="group-header">
@@ -906,7 +892,6 @@
             
             <div class="settings-info">
                 <div class="info-title">Einstellungen werden automatisch gespeichert</div>
-                <!-- KORREKTUR: wird dynamisch per updateSettingsUI() gesetzt -->
                 <div class="info-text" id="settingsInfoText">
                     Ihre Einstellungen werden lokal in Ihrem Browser gespeichert und bleiben auch nach dem Schließen der Seite erhalten.
                 </div>
@@ -1558,7 +1543,6 @@
                     throw new Error(`API-Fehler (${response.status}): ${errorText}`);
                 }
 
-                // STREAMING fuer Regenerate
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 let fullText = '';
@@ -1732,6 +1716,18 @@
         const refreshLog = document.getElementById('refreshLog');
         const noTrainingToggle = document.getElementById('noTrainingToggle');
         const noTrainingItem = document.getElementById('noTrainingItem');
+
+        // Toggle-Elemente fuer Anredeform und Modus
+        const sieFormToggle = document.getElementById('sieFormToggle');
+        const duFormToggle = document.getElementById('duFormToggle');
+        const chatModeToggle = document.getElementById('chatModeToggle');
+        const deepthinkModeToggle = document.getElementById('deepthinkModeToggle');
+        const searchModeToggle = document.getElementById('searchModeToggle');
+        const sieFormItem = document.getElementById('sieFormItem');
+        const duFormItem = document.getElementById('duFormItem');
+        const chatModeItem = document.getElementById('chatModeItem');
+        const deepthinkModeItem = document.getElementById('deepthinkModeItem');
+        const searchModeItem = document.getElementById('searchModeItem');
         
         let selectedFile = null;
         let fileTextContent = null;
@@ -1771,6 +1767,32 @@
                 chat.classList.add('search-mode');
             }
         }
+
+        // =====================================================================
+        // TOGGLE-GRUPPEN LOGIK
+        // Anredeform: nur eines der beiden Toggles kann aktiv sein
+        // Modus: nur eines der drei Toggles kann aktiv sein
+        // =====================================================================
+
+        function setAddressFormToggle(value) {
+            sieFormToggle.checked = (value === 'sie');
+            duFormToggle.checked = (value === 'du');
+            sieFormItem.classList.toggle('toggle-active', value === 'sie');
+            duFormItem.classList.toggle('toggle-active', value === 'du');
+            addressFormStatus.textContent = value === 'sie' ? 'Sie-Form' : 'Du-Form';
+        }
+
+        function setDefaultModeToggle(value) {
+            chatModeToggle.checked = (value === 'chat');
+            deepthinkModeToggle.checked = (value === 'deepthink');
+            searchModeToggle.checked = (value === 'search');
+            chatModeItem.classList.toggle('toggle-active', value === 'chat');
+            deepthinkModeItem.classList.toggle('toggle-active', value === 'deepthink');
+            searchModeItem.classList.toggle('toggle-active', value === 'search');
+            defaultModeStatus.textContent =
+                value === 'chat' ? 'Normaler Chat' :
+                value === 'deepthink' ? 'DeepThink Modus' : 'Search Modus';
+        }
         
         function loadSettings() {
             try {
@@ -1796,23 +1818,10 @@
         }
         
         function updateSettingsUI() {
-            document.getElementById('sieForm').checked = (settings.addressForm === 'sie');
-            document.getElementById('duForm').checked = (settings.addressForm === 'du');
-            document.getElementById('chatMode').checked = (settings.defaultMode === 'chat');
-            document.getElementById('deepthinkMode').checked = (settings.defaultMode === 'deepthink');
-            document.getElementById('searchMode').checked = (settings.defaultMode === 'search');
+            setAddressFormToggle(settings.addressForm);
+            setDefaultModeToggle(settings.defaultMode);
             noTrainingToggle.checked = (settings.noTraining !== false);
-            addressFormStatus.textContent = settings.addressForm === 'sie' ? 'Sie-Form' : 'Du-Form';
-            defaultModeStatus.textContent =
-                settings.defaultMode === 'chat' ? 'Normaler Chat' :
-                settings.defaultMode === 'deepthink' ? 'DeepThink Modus' : 'Search Modus';
             noTrainingStatus.textContent = settings.noTraining !== false ? 'Aktiv' : 'Inaktiv';
-            document.querySelectorAll('.setting-item').forEach(item => item.classList.remove('active'));
-            if (settings.addressForm === 'sie') document.getElementById('sieFormItem').classList.add('active');
-            else document.getElementById('duFormItem').classList.add('active');
-            if (settings.defaultMode === 'chat') document.getElementById('chatModeItem').classList.add('active');
-            else if (settings.defaultMode === 'deepthink') document.getElementById('deepthinkModeItem').classList.add('active');
-            else document.getElementById('searchModeItem').classList.add('active');
             if (settings.noTraining !== false) {
                 noTrainingItem.classList.add('toggle-active');
             } else {
@@ -1826,7 +1835,7 @@
                         Soweit von der API unterstützt werden ${daten} nicht für das Training verwendet.<br>
                         Standard: Eingeschaltet (Opt-Out aktiv).`;
             }
-            // KORREKTUR: Anredeform in settings-info Text anpassen
+            // Anredeform in settings-info Text anpassen
             const settingsInfoText = document.getElementById('settingsInfoText');
             if (settingsInfoText) {
                 settingsInfoText.textContent = settings.addressForm === 'sie' ?
@@ -2140,6 +2149,52 @@
                     }
                 }
             });
+
+            // =====================================================================
+            // TOGGLE-GRUPPEN Event-Listener
+            // Anredeform: Radio-Gruppe mit zwei Toggles
+            // =====================================================================
+            addEventListenerWithCleanup(sieFormToggle, 'change', () => {
+                if (sieFormToggle.checked) setAddressFormToggle('sie');
+                else setAddressFormToggle('du');
+            });
+            addEventListenerWithCleanup(duFormToggle, 'change', () => {
+                if (duFormToggle.checked) setAddressFormToggle('du');
+                else setAddressFormToggle('sie');
+            });
+
+            // Modus: Radio-Gruppe mit drei Toggles
+            addEventListenerWithCleanup(chatModeToggle, 'change', () => {
+                if (chatModeToggle.checked) setDefaultModeToggle('chat');
+                else setDefaultModeToggle('deepthink');
+            });
+            addEventListenerWithCleanup(deepthinkModeToggle, 'change', () => {
+                if (deepthinkModeToggle.checked) setDefaultModeToggle('deepthink');
+                else setDefaultModeToggle('chat');
+            });
+            addEventListenerWithCleanup(searchModeToggle, 'change', () => {
+                if (searchModeToggle.checked) setDefaultModeToggle('search');
+                else setDefaultModeToggle('chat');
+            });
+
+            // Klick auf setting-item aktiviert den zugehoerigen Toggle
+            addEventListenerWithCleanup(sieFormItem, 'click', (e) => {
+                if (e.target !== sieFormToggle) { sieFormToggle.checked = true; setAddressFormToggle('sie'); }
+            });
+            addEventListenerWithCleanup(duFormItem, 'click', (e) => {
+                if (e.target !== duFormToggle) { duFormToggle.checked = true; setAddressFormToggle('du'); }
+            });
+            addEventListenerWithCleanup(chatModeItem, 'click', (e) => {
+                if (e.target !== chatModeToggle) { chatModeToggle.checked = true; setDefaultModeToggle('chat'); }
+            });
+            addEventListenerWithCleanup(deepthinkModeItem, 'click', (e) => {
+                if (e.target !== deepthinkModeToggle) { deepthinkModeToggle.checked = true; setDefaultModeToggle('deepthink'); }
+            });
+            addEventListenerWithCleanup(searchModeItem, 'click', (e) => {
+                if (e.target !== searchModeToggle) { searchModeToggle.checked = true; setDefaultModeToggle('search'); }
+            });
+
+            // Datenschutz Toggle (unveraendert)
             addEventListenerWithCleanup(noTrainingToggle, 'change', () => {
                 noTrainingStatus.textContent = noTrainingToggle.checked ? 'Aktiv' : 'Inaktiv';
                 if (noTrainingToggle.checked) {
@@ -2148,11 +2203,13 @@
                     noTrainingItem.classList.remove('toggle-active');
                 }
             });
+
             // BUGFIX 3: updateSettingsUI() nach dem Speichern aufrufen
-            // damit Datenschutz-Beschreibung die neue Anredeform sofort anzeigt
             const saveHandler = function() {
-                settings.addressForm = document.querySelector('input[name="addressForm"]:checked').value;
-                settings.defaultMode = document.querySelector('input[name="defaultMode"]:checked').value;
+                // Werte aus Toggle-Zustand lesen
+                settings.addressForm = duFormToggle.checked ? 'du' : 'sie';
+                settings.defaultMode = deepthinkModeToggle.checked ? 'deepthink' :
+                                       searchModeToggle.checked ? 'search' : 'chat';
                 settings.noTraining = noTrainingToggle.checked;
                 saveSettings();
                 setMode(settings.defaultMode);
@@ -2161,29 +2218,11 @@
                 settingsOverlay.style.display = 'none';
             };
             addEventListenerWithCleanup(saveSettingsButton, 'click', saveHandler);
+
             const deepThinkHandler = () => setMode(currentMode === 'deepthink' ? 'chat' : 'deepthink');
             const searchHandler = () => setMode(currentMode === 'search' ? 'chat' : 'search');
             addEventListenerWithCleanup(deepThinkButton, 'click', deepThinkHandler);
             addEventListenerWithCleanup(searchButton, 'click', searchHandler);
-            document.querySelectorAll('.setting-item').forEach(item => {
-                const clickHandler = function() {
-                    const radioInput = this.querySelector('input[type="radio"]');
-                    if (radioInput) {
-                        radioInput.checked = true;
-                        document.querySelectorAll('.setting-item').forEach(i => i.classList.remove('active'));
-                        this.classList.add('active');
-                    }
-                };
-                addEventListenerWithCleanup(item, 'click', clickHandler);
-            });
-            document.querySelectorAll('input[type="radio"]').forEach(radio => {
-                const changeHandler = function() {
-                    document.querySelectorAll('.setting-item').forEach(item => item.classList.remove('active'));
-                    const parentItem = this.closest('.setting-item');
-                    if (parentItem) parentItem.classList.add('active');
-                };
-                addEventListenerWithCleanup(radio, 'change', changeHandler);
-            });
         }
         
         document.addEventListener('DOMContentLoaded', function() {

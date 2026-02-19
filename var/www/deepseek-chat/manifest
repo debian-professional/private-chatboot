@@ -1,4 +1,3 @@
-
 ============================================================================
     DEEPSEEK CHAT - DESIGN-MANIFEST & KONVENTIONEN
     ============================================================================
@@ -32,6 +31,16 @@
        - Modus-Buttons: Grün (#28a745) und Türkis (#17a2b8)
        - Hover-Effekt: Dunklere Variante der Grundfarbe
        - Aktive Buttons: zusätzliche Markierung
+       - EINSTELLUNGS-TOGGLES (VERBINDLICH UND UNUMSTÖSSLICH):
+         * Alle Auswahlmöglichkeiten in den Einstellungen verwenden
+           ausschließlich Toggle-Switches (Links-nach-Rechts Schieberegler)
+         * Kein Radio-Button, Checkbox oder sonstiger Button-Typ erlaubt
+         * Toggle-Masse: Breite 46px, Höhe 24px, Knopf 18px
+         * Toggle-Farben: Inaktiv #444/grauer Knopf, Aktiv #155724/grüner Knopf
+         * Radio-Gruppen-Verhalten: bei mehreren Optionen (z.B. Modus)
+           wird beim Aktivieren eines Toggles der vorherige automatisch deaktiviert
+         * CSS-Klassen: .toggle-switch, .toggle-slider, .toggle-label
+         * Diese Konvention gilt für alle zukünftigen Einstellungen ohne Ausnahme
     
     B) FUNKTIONALE KONVENTIONEN:
     -----------------------------
@@ -105,7 +114,7 @@
     3. EINSTELLUNGS-BEREICH:
        - Overlay-Design mit dunklem Hintergrund
        - Klare Gruppen-Trennung mit Überschriften
-       - Radio-Buttons als klickbare Karten
+       - Toggle-Switches als einziger Auswahltyp (siehe A.3)
        - Status-Anzeige für aktive Einstellungen
     
     4. CHAT-BEREICH:
@@ -185,7 +194,7 @@
        - Alle Pfade und Dateien sind genau definiert in /var/www/deepseek-chat/files-directorys
        - Bei erfolgreichem Abruf: Anzeige im Log-Overlay
        - Bei Fehler: Anzeige einer benutzerfreundlichen Fehlermeldung
-       - Bei leerem Log: Hinweis "Keine Log-Eintraege vorhanden"
+       - Bei leerem Log: Hinweis "Keine Log-Einträge vorhanden"
        - Overlay schliesst mit Escape-Taste oder Klick auf Schliessen-Button
     
     6. SESSION-MANAGEMENT-FUNKTIONEN:
@@ -225,6 +234,7 @@
        - Umlaut-Ersetzung für Eingaben beibehalten
        - Konsistente Button-Höhe von 40px
        - ANREDEFORM-KONSISTENZ EINHALTEN: Alle neuen Texte müssen der gewählten Anredeform entsprechen
+       - TOGGLE-KONVENTION EINHALTEN: Neue Einstellungen ausschließlich als Toggle-Switch (siehe A.3)
     
     2. CODE-QUALITÄT:
        - Kommentare für komplexe Logik
@@ -515,7 +525,6 @@
         - PDF Einzel-Export ueber bestehendes export-pdf.py (nur eine Nachricht)
         - Git: 01e0fb3 (index.html) + da8282c (export-txt.py) + 5aa5213 (export-rtf.py) + 7d038c1 (files-directorys)
 
-
         36. [17.02.2026 17:00] - FEEDBACK-BUTTONS FUER AI-ANTWORTEN IMPLEMENTIERT:
         - 4 neue Buttons bei jeder AI-Antwort (erscheinen beim Hover, links unten)
         - [Copy] - Kopiert Nachrichtentext in die Zwischenablage, zeigt kurz "Copied!"
@@ -545,7 +554,6 @@
         - Standalone Python-Script detect-executable.py fuer Server-seitige Pruefung erstellt
         - Git: 301880c (index.html mit Magic Bytes Pruefung)
 
-
         38. [17.02.2026 23:30] - STREAMING RESPONSES IMPLEMENTIERT:
         - AI-Antworten erscheinen jetzt Token-fuer-Token (wie ChatGPT/Claude)
         - Server-Sent Events (SSE) statt blocking JSON response
@@ -571,7 +579,7 @@
           Zertifikate oder sonstige Informationen die die Sicherheit gefaehrden
         - Diese Regel gilt fuer alle aktuellen und zukuenftigen Eintraege
         - Datum und Uhrzeit aller Aenderungen sind zwingend anzugeben
- 
+
         41. [18.02.2026 10:45] - DATENSCHUTZ-TOGGLE UND APACHE-BEREINIGUNG:
         - index.html: Neuer Toggle "Daten nicht fuer Training verwenden" in Einstellungen
         - Toggle Standard: Eingeschaltet (Opt-Out aktiv)
@@ -582,12 +590,12 @@
         - Apache: API-Key aus deepseek-chat.conf und deepseek-chat-ssl.conf entfernt
         - Apache: API-Key sicher in /etc/apache2/envvars ausgelagert
         - Apache: SetEnv DEEPSEEK_API_KEY ${DEEPSEEK_API_KEY} in deepseek-chat-ssl.conf
-        - Apache: ServerName 172.29.255.1 in beide VirtualHost-Konfigurationen eingetragen
+        - Apache: ServerName in beide VirtualHost-Konfigurationen eingetragen
         - Apache laeuft ohne Warnungen nach systemctl restart apache2
         - Git: 406e70a (index.html) + vorherige Commits fuer deepseek-api.py und manifest
 
         42. [18.02.2026 18:45] - Bereinigung GUI:
-        - Textänderung Buttons  
+        - Textänderung Buttons
 
         43. [18.02.2026 20:00] - Bugfix deepseek-api.py: Streaming-Implementierung:
         - stream: True in API-Request ergaenzt (Hauptursache fuer fehlende AI-Antworten)
@@ -613,7 +621,7 @@
         - Grund: #fileInfo Box verschwindet zu schnell / wird uebersehen
         - Loesung: alert() Popup statt stiller Fehlermeldung in der Box
 
-        46. [18.02.2026 22:00] - Umlaute und Anredeform-Korrekturen index.html:
+        46. [18.02.2026 22:03] - Umlaute und Anredeform-Korrekturen index.html:
         - durchgeführt statt durchgefuehrt (Mode-Indikatoren, 2x)
         - Gesprächsmodus, für (Settings-Beschreibung Chat-Modus)
         - Überlegungen (Settings-Beschreibung DeepThink)
@@ -633,10 +641,20 @@
           Sie-Form unabhaengig von Einstellung - korrigiert in
           sendMessage() und handleRegenerate()
 
+        47. [19.02.2026 xx:xx] - Anredeform-Korrektur settings-info Text:
+        - .info-text Div erhielt id="settingsInfoText"
+        - updateSettingsUI() setzt Text dynamisch je nach Anredeform:
+          Sie-Form: "Ihre Einstellungen ... Ihrem Browser ... Schließen"
+          Du-Form:  "Deine Einstellungen ... deinem Browser ... Schließen"
+
+        48. [19.02.2026 xx:xx] - Einstellungs-Buttons auf Toggle-Switches umgestellt:
+        - Alle Radio-Buttons in den Einstellungen durch Toggle-Switches ersetzt
+        - Betrifft: Anredeform (Sie/Du) und Standard Modus (Chat/DeepThink/Search)
+        - Radio-Gruppen-Logik: setAddressFormToggle() und setDefaultModeToggle()
+          stellen sicher dass immer genau ein Toggle pro Gruppe aktiv ist
+        - Klick auf setting-item aktiviert den zugehoerigen Toggle (UX-Verbesserung)
+        - CSS: radio-custom Klasse entfernt, einheitlich .toggle-switch fuer alles
+        - saveHandler liest Werte jetzt aus Toggle-Zustand statt Radio-Inputs
+        - Manifest Abschnitte A.3, C.3 und E.1 um verbindliche Toggle-Konvention erweitert
+
     ============================================================================
-
-
-
-    ============================================================================
-
-
