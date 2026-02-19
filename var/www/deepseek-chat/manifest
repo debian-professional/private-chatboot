@@ -490,5 +490,14 @@
         - MANIFEST ABSCHNITTE A.3, E.1 und F.5 mit verbindlicher Button-Konvention
           für alle zukünftigen Buttons aktualisiert
 
+    56. [19.02.2026 21:28] - MODEL_CONFIG: Modellabhaengige Token-Konfiguration:
+        - Alte Einzelkonstanten ersetzt durch MODEL_CONFIG Objekt
+        - deepseek-chat:     maxContextTokens 100000, maxOutputTokens 8192,  maxContextMessages 50
+        - deepseek-reasoner: maxContextTokens 65000,  maxOutputTokens 32768, maxContextMessages 30
+        - MAX_FILE_CONTENT_LENGTH: 15000 -> 50000 (passt zu grossem Kontextfenster)
+        - max_tokens in sendMessage() und handleRegenerate() dynamisch aus MODEL_CONFIG
+        - Bei Modellwechsel: NUR MODEL_CONFIG anpassen, Rest automatisch
+        - Quelle: https://api-docs.deepseek.com (DeepSeek V3.2, Stand 19.02.2026)
+
     ============================================================================
 
