@@ -689,4 +689,16 @@
           deepthink -> model: 'deepseek-reasoner' (echtes Reasoning)
           Betrifft: sendMessage() und handleRegenerate()
 
+        52. [19.02.2026 16:15] - Eingabefeld auf Textarea mit Focus-Animation umgestellt:
+        - <input type="text"> durch <textarea rows="1"> ersetzt
+        - Inaktiv: 40px hoch, einzeilig, grauer Rand (#444)
+        - Fokus: 120px hoch, mehrzeilig, blauer Rand (#0056b3)
+        - Sanfte Animation: transition height 0.2s ease, border-color 0.2s ease
+        - resize: none (kein manueller Resize-Griff)
+        - Enter = Senden, Shift+Enter = neue Zeile
+        - keydown Handler: !e.shiftKey Bedingung ergaenzt
+        - CSS: #input:focus Regel neu hinzugefuegt
+        - font-family: Arial und font-size: 14px explizit gesetzt
+          (Textarea erbt diese nicht automatisch wie input)
+
     ============================================================================
