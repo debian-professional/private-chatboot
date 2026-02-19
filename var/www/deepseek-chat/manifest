@@ -613,7 +613,27 @@
         - Grund: #fileInfo Box verschwindet zu schnell / wird uebersehen
         - Loesung: alert() Popup statt stiller Fehlermeldung in der Box
 
+        46. [18.02.2026 22:00] - Umlaute und Anredeform-Korrekturen index.html:
+        - durchgeführt statt durchgefuehrt (Mode-Indikatoren, 2x)
+        - Gesprächsmodus, für (Settings-Beschreibung Chat-Modus)
+        - Überlegungen (Settings-Beschreibung DeepThink)
+        - für Training (Toggle-Label)
+        - unterstützt, für das Training (Toggle-Beschreibung HTML + JS)
+        - Schließen der Seite (Settings-Info)
+        - übernehmen (Save-Button HTML + JS)
+        - zu groß, Größe (extractTextFromPDF)
+        - ausgewählte Session (loadSpecificSession confirm)
+        - wirklich löschen?, Löschen (deleteSession confirm + alert)
+        - Löschen (Session-Liste Button-Text)
+        - Keine Log-Einträge (fetchLog)
+        - löschen? (deleteMessage confirm)
+        - unterstützt, Unterstützte (handleFileUpload alert)
+        - Ausführbare Datei (handleFileUpload Magic-Bytes)
+        - Anredeform-Bug: DeepThink/Search System-Prompt verwendete immer
+          Sie-Form unabhaengig von Einstellung - korrigiert in
+          sendMessage() und handleRegenerate()
 
+    ============================================================================
 
 
 
