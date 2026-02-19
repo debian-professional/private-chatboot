@@ -1777,8 +1777,8 @@
         function setAddressFormToggle(value) {
             sieFormToggle.checked = (value === 'sie');
             duFormToggle.checked = (value === 'du');
-            sieFormItem.classList.toggle('toggle-active', value === 'sie');
-            duFormItem.classList.toggle('toggle-active', value === 'du');
+            sieFormItem.classList.toggle('toggle-active-blue', value === 'sie');
+            duFormItem.classList.toggle('toggle-active-blue', value === 'du');
             addressFormStatus.textContent = value === 'sie' ? 'Sie-Form' : 'Du-Form';
         }
 
@@ -1786,9 +1786,9 @@
             chatModeToggle.checked = (value === 'chat');
             deepthinkModeToggle.checked = (value === 'deepthink');
             searchModeToggle.checked = (value === 'search');
-            chatModeItem.classList.toggle('toggle-active', value === 'chat');
-            deepthinkModeItem.classList.toggle('toggle-active', value === 'deepthink');
-            searchModeItem.classList.toggle('toggle-active', value === 'search');
+            chatModeItem.classList.toggle('toggle-active-blue', value === 'chat');
+            deepthinkModeItem.classList.toggle('toggle-active-blue', value === 'deepthink');
+            searchModeItem.classList.toggle('toggle-active-blue', value === 'search');
             defaultModeStatus.textContent =
                 value === 'chat' ? 'Normaler Chat' :
                 value === 'deepthink' ? 'DeepThink Modus' : 'Search Modus';
