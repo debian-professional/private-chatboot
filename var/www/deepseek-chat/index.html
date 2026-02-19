@@ -158,6 +158,12 @@
             background: #1a1a2e !important;
             border-left: 4px solid #28a745 !important;
         }
+        /* =====================================================================
+           EINGABEFELD: Textarea mit Focus-Animation
+           Inaktiv: 40px hoch, einzeilig
+           Fokus:   120px hoch, mehrzeilig, blauer Rand
+           Enter = Senden, Shift+Enter = neue Zeile
+           ===================================================================== */
         #input { 
             width: 100%;
             padding: 10px; 
@@ -166,7 +172,21 @@
             border: 1px solid #444;
             margin-bottom: 10px;
             box-sizing: border-box;
+            height: 40px;
+            resize: none;
+            overflow: hidden;
+            transition: height 0.2s ease, border-color 0.2s ease;
+            font-family: Arial;
+            font-size: 14px;
+            line-height: 1.4;
         }
+        #input:focus {
+            height: 120px;
+            border-color: #0056b3;
+            overflow-y: auto;
+            outline: none;
+        }
+        /* ===================================================================== */
         .buttons-row {
             display: flex;
             gap: 10px;
@@ -521,7 +541,13 @@
     
     <div id="chat"></div>
     
-    <input type="text" id="input" placeholder="Ihre Nachricht hier eingeben...">
+    <!-- ================================================================
+         EINGABEFELD: Textarea mit Focus-Animation
+         Inaktiv: 40px, einzeilig
+         Fokus:   120px, mehrzeilig, blauer Rand
+         Enter = Senden, Shift+Enter = neue Zeile
+         ================================================================ -->
+    <textarea id="input" placeholder="Ihre Nachricht hier eingeben..." rows="1"></textarea>
     
     <div id="deepThinkIndicator" class="mode-indicator deepthink-indicator">
         DeepThink Modus aktiv: Tiefgehende Analyse wird durchgeführt
@@ -1697,8 +1723,11 @@
         function initializeEventListeners() {
             cleanupEventListeners();
             addEventListenerWithCleanup(sendButton, 'click', sendMessage);
+            // =====================================================================
+            // EINGABEFELD: Enter = Senden, Shift+Enter = neue Zeile
+            // =====================================================================
             addEventListenerWithCleanup(inputField, 'keydown', e => {
-                if (e.key === 'Enter') { if (isSending) { e.preventDefault(); return; } e.preventDefault(); sendMessage(); }
+                if (e.key === 'Enter' && !e.shiftKey) { if (isSending) { e.preventDefault(); return; } e.preventDefault(); sendMessage(); }
             });
             addEventListenerWithCleanup(fileUpload, 'change', handleFileUpload);
             addEventListenerWithCleanup(settingsButton, 'click', () => settingsOverlay.style.display = 'flex');
