@@ -204,7 +204,28 @@
             align-items: center;
             flex-wrap: wrap;
         }
-        .pill-button {
+.pill-button {
+            flex: none;
+            padding: 8px 16px;
+            background: #0056b3;
+            color: #ffffff;
+            border: 1px solid #0056b3;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: Arial;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .pill-button:hover { background: #003d82; border-color: #003d82; }
+        .pill-button:active { background: #002a5c; border-color: #002a5c; }
+
+        /* DeepThink: Toggle-Verhalten, dunkel/blau */
+        .pill-button-mode {
             flex: none;
             padding: 8px 16px;
             background: #2d2d2d;
@@ -221,8 +242,8 @@
             transition: all 0.2s;
             white-space: nowrap;
         }
-        .pill-button:hover { border-color: #888; background: #3a3a3a; }
-        .pill-button.active {
+        .pill-button-mode:hover { border-color: #888; background: #3a3a3a; }
+        .pill-button-mode.active {
             background: #1e3a5f;
             border-color: #4dabf7;
             color: #4dabf7;
@@ -557,7 +578,7 @@
          Search wurde entfernt (nicht in der API verfuegbar)
          ================================================================ -->
     <div class="buttons-row">
-        <button id="deepThinkButton" class="pill-button">
+        <button id="deepThinkButton" class="pill-button-mode">
             <span class="mode-icon">&#10802;</span>DeepThink
         </button>
     </div>
