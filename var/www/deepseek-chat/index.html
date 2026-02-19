@@ -115,7 +115,6 @@
 
         /* =====================================================================
            FEEDBACK-BUTTONS: Pill-Style, Originalfarbe blau
-           Aktiv-Zustaende: liked (blau), disliked (rot), copied (dunkelblau)
            ===================================================================== */
         .feedback-btn {
             background: #0056b3;
@@ -388,7 +387,7 @@
         .settings-title { font-size: 22px; font-weight: bold; color: #4dabf7; }
 
         /* =====================================================================
-           CLOSE-BUTTON: Pill-Style, rot, rund
+           CLOSE-BUTTON: rot, rund
            ===================================================================== */
         .close-settings {
             background: #dc3545;
@@ -468,7 +467,7 @@
         .info-text { font-size: 12px; color: #aaa; line-height: 1.4; }
 
         /* =====================================================================
-           SAVE-BUTTON: Pill-Style, blau (Einstellungen uebernehmen)
+           SAVE-BUTTON: Pill-Style, blau
            ===================================================================== */
         .save-button {
             width: 100%;
@@ -600,6 +599,12 @@
     
     <div id="chat"></div>
     
+    <!-- ================================================================
+         EINGABEFELD: Textarea mit Focus-Animation
+         Inaktiv: 40px, einzeilig
+         Fokus:   120px, mehrzeilig, blauer Rand
+         Enter = Senden, Shift+Enter = neue Zeile
+         ================================================================ -->
     <textarea id="input" placeholder="Ihre Nachricht hier eingeben..." rows="1"></textarea>
     
     <div id="deepThinkIndicator" class="mode-indicator deepthink-indicator">
@@ -783,10 +788,35 @@
         const FEEDBACK_LOG_URL = '/cgi-bin/feedback-log.py';
         
         const SERVER_NAME = 'DeepSeek Chat Server';
-        const MAX_CONTEXT_TOKENS = 16000;
-        const MAX_CONTEXT_MESSAGES = 20;
-        const TOKENS_PER_CHAR = 0.25;
-        const MAX_FILE_CONTENT_LENGTH = 15000;
+
+        // =====================================================================
+        // MODELL-KONFIGURATION: DeepSeek V3.2 (Stand: 19.02.2026)
+        // Quelle: https://api-docs.deepseek.com
+        // Bei Modellwechsel NUR diesen Block anpassen!
+        // =====================================================================
+        const MODEL_CONFIG = {
+            'deepseek-chat': {
+                // deepseek-chat = DeepSeek-V3.2, nicht-denkender Modus
+                // Kontext-Fenster: 128K Tokens total (Input + Output)
+                // Max Output:      8.192 Tokens
+                maxContextTokens:  100000,   // 128K - Reserve fuer Output
+                maxOutputTokens:   8192,     // Maximale Antwortlaenge
+                maxContextMessages: 50       // Nachrichten im Kontext
+            },
+            'deepseek-reasoner': {
+                // deepseek-reasoner = DeepSeek-V3.2, Reasoning-Modus (CoT)
+                // Kontext-Fenster: 128K Tokens total (Input + Output)
+                // Max Output:      64K Tokens (inkl. Chain-of-Thought)
+                // ACHTUNG: reasoning_content NICHT in naechste Anfrage einfuegen!
+                maxContextTokens:  65000,    // Weniger wegen grossem Output-Bedarf
+                maxOutputTokens:   32768,    // 32K fuer Antwort (Rest fuer CoT)
+                maxContextMessages: 30       // Weniger wegen groesseren Tokens pro Nachricht
+            }
+        };
+        // =====================================================================
+
+        const TOKENS_PER_CHAR = 0.25;         // Schätzwert: 1 Token ≈ 4 Zeichen (Englisch/Deutsch)
+        const MAX_FILE_CONTENT_LENGTH = 50000; // Erhöht: passt nun zu grösserem Kontextfenster
         const MAX_FILE_SIZE_MB = 10;
         const PDF_EXTRACTION_TIMEOUT = 30000;
         const SETTINGS_VERSION = '1.2';
@@ -906,6 +936,12 @@
             contextHistory.totalEstimatedTokens = total;
             return total;
         }
+
+        // Gibt die Konfiguration fuer das aktuell aktive Modell zurueck
+        function getCurrentModelConfig() {
+            const modelName = (currentMode === 'deepthink') ? 'deepseek-reasoner' : 'deepseek-chat';
+            return MODEL_CONFIG[modelName];
+        }
         
         function addUserMessageToContext(content, mode, hasFile) {
             const msgId = ++messageIdCounter;
@@ -914,7 +950,8 @@
                 id: msgId, role: "user", content, mode, hasFile,
                 timestamp, estimatedTokens: estimateTokens(content)
             });
-            while (contextHistory.messages.length > MAX_CONTEXT_MESSAGES * 2) contextHistory.messages.shift();
+            const cfg = getCurrentModelConfig();
+            while (contextHistory.messages.length > cfg.maxContextMessages * 2) contextHistory.messages.shift();
             updateContextEstimation();
             return msgId;
         }
@@ -926,7 +963,8 @@
                 id: msgId, role: "assistant", content, mode,
                 timestamp, estimatedTokens: estimateTokens(content)
             });
-            while (contextHistory.messages.length > MAX_CONTEXT_MESSAGES * 2) contextHistory.messages.shift();
+            const cfg = getCurrentModelConfig();
+            while (contextHistory.messages.length > cfg.maxContextMessages * 2) contextHistory.messages.shift();
             updateContextEstimation();
             return msgId;
         }
@@ -1279,10 +1317,15 @@
                 contextHistory.messages.forEach(msg => {
                     messages.push({ role: msg.role, content: replaceGermanUmlauts(msg.content) });
                 });
+                // =====================================================================
+                // MODELL UND MAX_TOKENS: abhaengig vom Modus der urspruenglichen Nachricht
+                // Konfiguration aus MODEL_CONFIG (oben) - bei Modellwechsel nur dort anpassen
+                // =====================================================================
                 const modelName = (userMsg.mode === 'deepthink') ? 'deepseek-reasoner' : 'deepseek-chat';
+                const maxTokens = MODEL_CONFIG[modelName].maxOutputTokens;
                 const response = await fetch(API_URL, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ model: modelName, messages, max_tokens: 2000, no_training: settings.noTraining })
+                    body: JSON.stringify({ model: modelName, messages, max_tokens: maxTokens, no_training: settings.noTraining })
                 });
                 if (!response.ok) {
                     const errorText = await response.text();
@@ -1569,10 +1612,17 @@
                 contextHistory.messages.forEach(msg => {
                     messages.push({ role: msg.role, content: replaceGermanUmlauts(msg.content) });
                 });
+                // =====================================================================
+                // MODELL UND MAX_TOKENS: abhaengig vom aktuellen Modus
+                // Konfiguration aus MODEL_CONFIG (oben) - bei Modellwechsel nur dort anpassen
+                // deepthink -> deepseek-reasoner: 32768 max_tokens
+                // chat      -> deepseek-chat:     8192  max_tokens
+                // =====================================================================
                 const modelName = (currentMode === 'deepthink') ? 'deepseek-reasoner' : 'deepseek-chat';
+                const maxTokens = MODEL_CONFIG[modelName].maxOutputTokens;
                 const response = await fetch(API_URL, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ model: modelName, messages, max_tokens: 2000, no_training: settings.noTraining })
+                    body: JSON.stringify({ model: modelName, messages, max_tokens: maxTokens, no_training: settings.noTraining })
                 });
                 if (!response.ok) throw new Error(`API-Fehler (${response.status})`);
                 const reader = response.body.getReader();
@@ -1739,6 +1789,7 @@
         function initializeEventListeners() {
             cleanupEventListeners();
             addEventListenerWithCleanup(sendButton, 'click', sendMessage);
+            // Enter = Senden, Shift+Enter = neue Zeile
             addEventListenerWithCleanup(inputField, 'keydown', e => {
                 if (e.key === 'Enter' && !e.shiftKey) { if (isSending) { e.preventDefault(); return; } e.preventDefault(); sendMessage(); }
             });
