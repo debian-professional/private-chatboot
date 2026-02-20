@@ -67,7 +67,7 @@
           - Hover:   background #218838, border #218838
           - Active:  background #1a6b2e, border #1a6b2e
 
-       E) FEEDBACK-BUTTONS (blau, kleiner) - CSS-Klasse: .feedback-btn
+       E) FEEDBACK-BUTTONS (blau) - CSS-Klasse: .feedback-btn
           Verwendet für: Kopieren, Mag ich, Mag ich gar nicht, Regenerieren
           - Normal:  background #0056b3, border #0056b3, color #ffffff
           - Hover:   background #003d82, border #003d82
@@ -75,7 +75,7 @@
           - Liked:   background #0a2f44, color #9ac7ff, border #007bff
           - Disliked:background #5a1e1e, color #ffb3b3, border #dc3545
           - Copied:  background #003366, color #99ccff, border #0056b3
-          - Padding: 4px 12px, font-size: 11px
+          - Padding: 8px 16px, font-size: 14px, height: 36px
 
        F) EINSTELLUNGS-TOGGLES (VERBINDLICH UND UNUMSTÖSSLICH):
           * Alle Auswahlmöglichkeiten in den Einstellungen verwenden
@@ -175,7 +175,10 @@
        - Feste Höhe: 400px mit Scrollbalken
        - Automatisches Scrollen zur neuesten Nachricht
        - Trennlinien für bessere Lesbarkeit
-       - Hover-Buttons zum Löschen einzelner Nachrichten (kleines [X] rechts oben)
+       - Hover-Buttons zum Löschen einzelner Nachrichten (kleines [X] rechts unten)
+       - Hover-Buttons Exportieren links neben X (rechts unten)
+       - Feedback-Buttons links unten (gleiche Höhe wie Exportieren/X)
+       - Alle 6 Hover-Buttons auf gleicher Höhe (bottom: 5px)
        - Jede Nachricht in Container mit data-msg-id Attribut
     
     5. LOG-ANZEIGE-BEREICH:
@@ -346,7 +349,7 @@
     5. BUTTON-VERBOT:
        - Eckige Buttons (border-radius: 0 oder 4px) sind VERBOTEN
        - Buttons mit anderen Grundfarben als in A.3 definiert sind VERBOTEN
-       - Buttons mit anderer Höhe als 36px (bzw. Feedback 4px 12px) sind VERBOTEN
+       - Buttons mit anderer Höhe als 36px (bzw. Feedback 8px 16px) sind VERBOTEN
        - Diese Regel gilt für alle bestehenden und zukünftigen Buttons ohne Ausnahme
     
     WICHTIG: Jede Änderung an diesem Manifest muss hier dokumentiert werden!
@@ -805,21 +808,28 @@
         - Bei Modellwechsel: NUR MODEL_CONFIG anpassen, Rest automatisch
         - Quelle: https://api-docs.deepseek.com (DeepSeek V3.2, Stand 19.02.2026)
 
-    57. [19.02.2026 22:xx] - MANIFEST VOLLSTAENDIG WIEDERHERGESTELLT:
+    57. [19.02.2026 22:08] - MANIFEST VOLLSTAENDIG WIEDERHERGESTELLT:
         - Eintraege 7-50 wurden faelschlicherweise gekuerzt - jetzt vollstaendig wiederhergestellt
         - IP-Adresse aus Eintrag 41 entfernt (Verstoss gegen Sicherheitsregel Eintrag 40)
         - Alle Eintraege nun mit vollstaendigem Originaltext
         - Einheitliche Einrueckung bei allen Eintraegen (4 Leerzeichen)
-
 
     58. [20.02.2026 09:05] - Button-Layout Nachrichten-Container überarbeitet:
         - Alle 6 Hover-Buttons auf gleicher Höhe (bottom: 5px)
         - Links unten: Kopieren, Mag ich, Mag ich gar nicht, Regenerieren (.feedback-btn)
         - Rechts unten: Exportieren (.download-message-btn), X (.delete-message-btn)
         - Alle 6 Buttons: height 36px, font-size 14px, padding 8px 16px (Pill-Style)
-        - Abstand zwischen Exportieren und X korrigiert: right: 47px (war 90px)
+        - Abstand zwischen Exportieren und X korrigiert (right: 47px, dann px-Fehler behoben)
         - Kein Text wird mehr durch Buttons überdeckt
         - padding-bottom: 42px im .message-container für Platz der Buttons
+
+    59. [20.02.2026 09:xx] - Rechte Buttons in Flex-Container zusammengefasst:
+        - Neuer CSS-Container .message-buttons-right eingeführt
+          (position: absolute, right: 5px, bottom: 5px, display: flex, gap: 6px)
+        - .delete-message-btn und .download-message-btn ohne eigene absolute Positionierung
+        - gap: 6px identisch zu .feedback-buttons (linke Seite) - einheitlicher Abstand
+        - Abstand zwischen "Exportieren" und "X" nun exakt gleich wie zwischen den 4 linken Buttons
+        - Betrifft: CSS, addMessageToChat(), sendMessage(), handleRegenerate()
 
     ============================================================================
 
