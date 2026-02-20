@@ -811,5 +811,15 @@
         - Alle Eintraege nun mit vollstaendigem Originaltext
         - Einheitliche Einrueckung bei allen Eintraegen (4 Leerzeichen)
 
+
+    58. [20.02.2026 09:05] - Button-Layout Nachrichten-Container überarbeitet:
+        - Alle 6 Hover-Buttons auf gleicher Höhe (bottom: 5px)
+        - Links unten: Kopieren, Mag ich, Mag ich gar nicht, Regenerieren (.feedback-btn)
+        - Rechts unten: Exportieren (.download-message-btn), X (.delete-message-btn)
+        - Alle 6 Buttons: height 36px, font-size 14px, padding 8px 16px (Pill-Style)
+        - Abstand zwischen Exportieren und X korrigiert: right: 47px (war 90px)
+        - Kein Text wird mehr durch Buttons überdeckt
+        - padding-bottom: 42px im .message-container für Platz der Buttons
+
     ============================================================================
 
