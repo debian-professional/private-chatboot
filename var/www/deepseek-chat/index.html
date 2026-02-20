@@ -48,6 +48,21 @@
             color: #aaa;
             font-weight: normal;
         }
+        .context-info {
+            font-size: 14px;
+            color: #aaa;
+            font-weight: normal;
+            margin-top: 3px;
+        }
+        .context-info.warning {
+            color: #ff4444;
+            font-weight: bold;
+            animation: blink 1s step-start infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
         #chat { 
             height: 400px; 
             overflow-y: auto; 
@@ -599,6 +614,7 @@
         <div class="server-title-section">
             <h1 id="serverTitle">DeepSeek Chat Server</h1>
             <div class="server-info" id="serverInfo">IP: Lade Server-Informationen...</div>
+            <div class="context-info" id="contextInfo">Kontext: 0%</div>
         </div>
     </div>
     
@@ -914,11 +930,29 @@
             if (!text) return 0;
             return Math.ceil(text.length * TOKENS_PER_CHAR);
         }
+
+        // =====================================================================
+        // KONTEXT-ANZEIGE: Dynamisch, modellabhängig, Warnung ab 90%
+        // =====================================================================
+        function updateContextDisplay() {
+            const modelName = (currentMode === 'deepthink') ? 'deepseek-reasoner' : 'deepseek-chat';
+            const maxTokens = MODEL_CONFIG[modelName].maxContextTokens;
+            const usedTokens = contextHistory.totalEstimatedTokens || 0;
+            const percent = Math.min(100, Math.round((usedTokens / maxTokens) * 100));
+            const contextInfo = document.getElementById('contextInfo');
+            contextInfo.textContent = `Kontext: ${percent}% (${modelName})`;
+            if (percent >= 90) {
+                contextInfo.classList.add('warning');
+            } else {
+                contextInfo.classList.remove('warning');
+            }
+        }
         
         function updateContextEstimation() {
             let total = contextHistory.systemPromptTokens;
             contextHistory.messages.forEach(msg => total += estimateTokens(msg.content));
             contextHistory.totalEstimatedTokens = total;
+            updateContextDisplay();
             return total;
         }
 
@@ -1497,6 +1531,7 @@
                 chat.classList.add('thinking-mode');
             }
             setDefaultModeToggle(mode);
+            updateContextDisplay();
         }
 
         function setAddressFormToggle(value) {
@@ -1856,6 +1891,7 @@
             loadSettings();
             initializeEventListeners();
             updateSettingsUI();
+            updateContextDisplay();
             currentSessionId = generateSessionId();
         });
         
@@ -1865,5 +1901,4 @@
     </script>
 </body>
 </html>
-
 
