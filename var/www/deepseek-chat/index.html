@@ -63,17 +63,21 @@
             margin-bottom: 5px;
             padding-bottom: 42px;
         }
-        .message-container:hover .delete-message-btn,
-        .message-container:hover .download-message-btn { display: flex; }
 
         /* =====================================================================
-           LÖSCHEN UND EXPORTIEREN: Pill-Style, rechts unten (gleiche Höhe wie Feedback)
+           RECHTE BUTTONS: Flex-Container für einheitlichen Abstand
            ===================================================================== */
-        .delete-message-btn {
+        .message-buttons-right {
             display: none;
             position: absolute;
             right: 5px;
             bottom: 5px;
+            gap: 6px;
+            flex-direction: row;
+        }
+        .message-container:hover .message-buttons-right { display: flex; }
+
+        .delete-message-btn {
             background: #dc3545;
             color: white;
             border: 1px solid #dc3545;
@@ -83,6 +87,7 @@
             font-size: 14px;
             font-family: Arial;
             cursor: pointer;
+            display: flex;
             align-items: center;
             transition: all 0.2s;
             white-space: nowrap;
@@ -90,10 +95,6 @@
         .delete-message-btn:hover { background: #c82333; border-color: #c82333; }
 
         .download-message-btn {
-            display: none;
-            position: absolute;
-            right: 47px;
-            bottom: 5px;
             background: #0056b3;
             color: white;
             border: 1px solid #0056b3;
@@ -103,6 +104,7 @@
             font-size: 14px;
             font-family: Arial;
             cursor: pointer;
+            display: flex;
             align-items: center;
             transition: all 0.2s;
             white-space: nowrap;
@@ -147,7 +149,7 @@
         .single-export-dropdown {
             display: none;
             position: absolute;
-            right: 90px;
+            right: 5px;
             bottom: 46px;
             background: #2d2d2d;
             border: 1px solid #444;
@@ -1334,14 +1336,17 @@
                 const aiMsgId = addAIResponseToContext(fullText, userMsg.mode);
                 aiContainer.setAttribute('data-msg-id', aiMsgId);
                 addFeedbackButtons(aiContainer, aiMsgId);
+                const rightButtons = document.createElement('div');
+                rightButtons.className = 'message-buttons-right';
                 const dlBtn = document.createElement('button');
                 dlBtn.className = 'download-message-btn'; dlBtn.textContent = 'Exportieren';
                 dlBtn.onclick = (e) => { e.stopPropagation(); showSingleExportDropdown(aiMsgId, dlBtn); };
-                aiContainer.appendChild(dlBtn);
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'delete-message-btn'; deleteBtn.textContent = 'X';
                 deleteBtn.onclick = () => deleteMessage(aiMsgId);
-                aiContainer.appendChild(deleteBtn);
+                rightButtons.appendChild(dlBtn);
+                rightButtons.appendChild(deleteBtn);
+                aiContainer.appendChild(rightButtons);
                 chat.appendChild(document.createElement('div')).className = 'message-divider';
                 await saveSession();
             } catch (error) {
@@ -1622,14 +1627,17 @@
                 const aiMsgId = addAIResponseToContext(fullText, currentMode);
                 aiContainer.setAttribute('data-msg-id', aiMsgId);
                 addFeedbackButtons(aiContainer, aiMsgId);
+                const rightButtons = document.createElement('div');
+                rightButtons.className = 'message-buttons-right';
                 const dlBtn = document.createElement('button');
                 dlBtn.className = 'download-message-btn'; dlBtn.textContent = 'Exportieren';
                 dlBtn.onclick = (e) => { e.stopPropagation(); showSingleExportDropdown(aiMsgId, dlBtn); };
-                aiContainer.appendChild(dlBtn);
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'delete-message-btn'; deleteBtn.textContent = 'X';
                 deleteBtn.onclick = () => deleteMessage(aiMsgId);
-                aiContainer.appendChild(deleteBtn);
+                rightButtons.appendChild(dlBtn);
+                rightButtons.appendChild(deleteBtn);
+                aiContainer.appendChild(rightButtons);
                 chat.appendChild(document.createElement('div')).className = 'message-divider';
                 await saveSession();
             } catch (error) {
@@ -1655,14 +1663,17 @@
             messageDiv.textContent = text;
             messageContainer.appendChild(messageDiv);
             if (!isUser) addFeedbackButtons(messageContainer, msgId);
+            const rightButtons = document.createElement('div');
+            rightButtons.className = 'message-buttons-right';
             const dlBtn = document.createElement('button');
             dlBtn.className = 'download-message-btn'; dlBtn.textContent = 'Exportieren';
             dlBtn.onclick = (e) => { e.stopPropagation(); showSingleExportDropdown(msgId, dlBtn); };
-            messageContainer.appendChild(dlBtn);
             const deleteBtn = document.createElement('button');
             deleteBtn.className = 'delete-message-btn'; deleteBtn.textContent = 'X';
             deleteBtn.onclick = () => deleteMessage(msgId);
-            messageContainer.appendChild(deleteBtn);
+            rightButtons.appendChild(dlBtn);
+            rightButtons.appendChild(deleteBtn);
+            messageContainer.appendChild(rightButtons);
             chat.appendChild(messageContainer);
             if (isUser) chat.appendChild(document.createElement('div')).className = 'message-divider';
             chat.scrollTop = chat.scrollHeight;
@@ -1854,4 +1865,5 @@
     </script>
 </body>
 </html>
+
 
