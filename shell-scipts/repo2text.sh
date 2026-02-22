@@ -118,6 +118,9 @@ if ! command -v git &> /dev/null; then
     exit 1
 fi
 
+# Startverzeichnis merken
+START_DIR="$(pwd)"
+
 # --- URL bestimmen ---
 REPO_URL=""
 
@@ -178,12 +181,18 @@ cd "$TEMP_DIR"
 COMMIT_HASH=$(git rev-parse HEAD)
 BRANCH_NAME=$(git symbolic-ref --short HEAD 2>/dev/null || echo "detached")
 
+# Zurück zum Startverzeichnis für die Ausgabedatei
+cd "$START_DIR"
+
 TIMESTAMP=$(date '+%Y-%m-%d_%H%M%S')
-OUTPUT_FILE="$(pwd -P)/${OUTPUT_FILE_PREFIX}_${REPO_NAME}_${TIMESTAMP}.txt"
+OUTPUT_FILE="${OUTPUT_FILE_PREFIX}_${REPO_NAME}_${TIMESTAMP}.txt"
 CONTENT_FILE="${OUTPUT_FILE}.content"
 > "$CONTENT_FILE"
 
 file_count=0
+
+# Wieder ins temporäre Repo wechseln für die Dateiextraktion
+cd "$TEMP_DIR"
 
 while IFS= read -r -d '' file; do
     full_path="$TEMP_DIR/$file"
@@ -196,7 +205,7 @@ while IFS= read -r -d '' file; do
             cat "$full_path"
             echo
             echo
-        } >> "$CONTENT_FILE"
+        } >> "$START_DIR/$CONTENT_FILE"   # Absoluter Pfad zur Content-Datei
 
         ((file_count++))
         echo "  + Hinzugefügt: $file"
@@ -207,7 +216,8 @@ done < <(git ls-files -z)
 
 echo "=== Extraktion abgeschlossen. Erstelle Export-Datei... ==="
 
-cd - > /dev/null
+# Wieder ins Startverzeichnis wechseln
+cd "$START_DIR"
 
 # Header mit Metadaten erstellen und mit Inhalt kombinieren
 {
@@ -224,6 +234,7 @@ cd - > /dev/null
     cat "$CONTENT_FILE"
 } > "$OUTPUT_FILE"
 
+# Temporäre Inhaltsdatei löschen
 rm -f "$CONTENT_FILE"
 
 echo "=== Aufräumen: Lösche temporäres Repository ==="
@@ -231,6 +242,6 @@ rm -rf "$TEMP_DIR"
 
 echo "==============================================="
 echo "Fertig! Es wurden $file_count Textdateien extrahiert."
-echo "Die Ausgabedatei wurde erstellt: $(pwd)/$(basename "$OUTPUT_FILE")"
+echo "Die Ausgabedatei wurde erstellt: $START_DIR/$OUTPUT_FILE"
 echo "==============================================="
 
