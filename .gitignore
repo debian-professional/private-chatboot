@@ -1,4 +1,5 @@
 
+shell-scripts/repo_export_private-chatboot.txt
 etc/config/backup/swto*
 etc/config/backup/config
 etc/config/backup/passwd
