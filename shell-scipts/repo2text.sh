@@ -41,22 +41,20 @@ get_git_remote_url() {
     echo "$url"
 }
 
-# === Funktion: Prüfe, ob das aktuelle Git-Repo "sauber" ist (keine uncommitteten/unpushed Änderungen) ===
+# === Funktion: Prüfe, ob das aktuelle Git-Repo "sauber" ist ===
 check_git_cleanliness() {
     if ! git rev-parse --git-dir > /dev/null 2>&1; then
-        return 0  # kein Git-Repo, also immer "sauber"
+        return 0
     fi
 
     local dirty=0
     local unpushed=0
     local branch=$(git symbolic-ref --short HEAD 2>/dev/null)
 
-    # Uncommittete Änderungen?
     if ! git diff --quiet || ! git diff --cached --quiet; then
         dirty=1
     fi
 
-    # Nicht gepushte Commits?
     if [ -n "$branch" ]; then
         local remote=$(git config "branch.$branch.remote" 2>/dev/null)
         local merge=$(git config "branch.$branch.merge" 2>/dev/null)
@@ -83,6 +81,19 @@ check_git_cleanliness() {
     fi
 }
 
+# === Funktion: SSH-URL in HTTPS-URL umwandeln ===
+convert_ssh_to_https() {
+    local url="$1"
+    # Muster: git@host:pfad.git -> https://host/pfad.git
+    if [[ "$url" =~ ^git@([^:]+):(.+)$ ]]; then
+        local host="${BASH_REMATCH[1]}"
+        local path="${BASH_REMATCH[2]}"
+        echo "https://${host}/${path}"
+    else
+        echo "$url"
+    fi
+}
+
 # === Hauptprogramm ===
 
 # Prüfen, ob git installiert ist
@@ -95,11 +106,9 @@ fi
 # --- URL bestimmen ---
 REPO_URL=""
 
-# 1. Fall: URL als Parameter übergeben
 if [ $# -ge 1 ]; then
     REPO_URL="$1"
 else
-    # 2. Fall: Skript läuft in einem Git-Repo? Dann Remote auslesen
     git_remote_url=$(get_git_remote_url)
     if [ -n "$git_remote_url" ]; then
         echo "Gefundene Remote-URL des aktuellen Git-Repos: $git_remote_url"
@@ -109,7 +118,6 @@ else
         fi
     fi
 
-    # 3. Fall: immer noch keine URL -> interaktiv abfragen
     if [ -z "$REPO_URL" ]; then
         read -p "Bitte gib die GitHub-Repository-URL ein: " REPO_URL
         if [ -z "$REPO_URL" ]; then
@@ -120,8 +128,19 @@ else
     fi
 fi
 
-# Prüfung auf Sauberkeit des aktuellen Repos (nur wenn wir in einem sind)
+# Prüfung auf Sauberkeit des aktuellen Repos
 check_git_cleanliness
+
+# --- SSH/HTTPS-Auswahl ---
+if [[ "$REPO_URL" == git@* ]]; then
+    echo "Die URL ist eine SSH-URL: $REPO_URL"
+    echo "SSH-Zugriff erfordert einen hinterlegten SSH-Key."
+    read -p "Möchten Sie SSH verwenden? (j/n): " use_ssh
+    if [[ ! "$use_ssh" =~ ^[jJ]$ ]]; then
+        REPO_URL=$(convert_ssh_to_https "$REPO_URL")
+        echo "Verwende stattdessen HTTPS: $REPO_URL"
+    fi
+fi
 
 # Repository-Namen aus der URL extrahieren
 REPO_NAME=$(basename "$REPO_URL" .git)
@@ -145,20 +164,16 @@ fi
 echo "=== Klonen erfolgreich. Extrahiere Textdateien... ==="
 
 TIMESTAMP=$(date '+%Y-%m-%d_%H%M%S')
-# Absolute Pfade für Ausgabedateien (Startverzeichnis)
 OUTPUT_FILE="$(pwd)/${OUTPUT_FILE_PREFIX}_${REPO_NAME}_${TIMESTAMP}.txt"
 CONTENT_FILE="${OUTPUT_FILE}.content"
 > "$CONTENT_FILE"
 
 file_count=0
 
-# Ins geklonte Repo wechseln und versionierte Dateien via git ls-files auflisten
 cd "$TEMP_DIR"
 
 while IFS= read -r -d '' file; do
     full_path="$TEMP_DIR/$file"
-
-    # Prüfen, ob die Datei eine Textdatei ist
     mime_type=$(file -b --mime-type "$full_path")
 
     if [[ "$mime_type" == text/* ]]; then
@@ -180,10 +195,8 @@ done < <(git ls-files -z)
 
 echo "=== Extraktion abgeschlossen. Erstelle Export-Datei... ==="
 
-# Zurück zum ursprünglichen Arbeitsverzeichnis wechseln (wichtig für den nächsten cat)
 cd - > /dev/null
 
-# Header mit Metadaten erstellen und mit Inhalt kombinieren
 {
     echo "========================================================================="
     echo "Repository Export"
@@ -196,10 +209,8 @@ cd - > /dev/null
     cat "$CONTENT_FILE"
 } > "$OUTPUT_FILE"
 
-# Temporäre Inhaltsdatei löschen
 rm -f "$CONTENT_FILE"
 
-# Jetzt das temporäre Repository löschen
 echo "=== Aufräumen: Lösche temporäres Repository ==="
 rm -rf "$TEMP_DIR"
 
