@@ -68,8 +68,9 @@ echo "=== Klonen erfolgreich. Extrahiere Textdateien... ==="
 # Ausgabedateinamen bestimmen
 OUTPUT_FILE="${OUTPUT_FILE_PREFIX}_${REPO_NAME}.txt"
 
-# Stelle sicher, dass die Ausgabedatei leer ist
-> "$OUTPUT_FILE"
+# Temporäre Datei für den Inhalt (ohne Header)
+CONTENT_FILE="${OUTPUT_FILE}.content"
+> "$CONTENT_FILE"
 
 file_count=0
 
@@ -88,7 +89,7 @@ while IFS= read -r -d '' file; do
             cat "$file"
             echo
             echo
-        } >> "$OUTPUT_FILE"
+        } >> "$CONTENT_FILE"
 
         ((file_count++))
         echo "  + Hinzugefügt: $relative_path"
@@ -99,6 +100,22 @@ done < <(find "$TEMP_DIR" -type f -not -path "$TEMP_DIR/.git/*" -print0)
 
 echo "=== Aufräumen: Lösche temporäres Repository ==="
 rm -rf "$TEMP_DIR"
+
+# Jetzt Header mit Metadaten erstellen und mit Inhalt kombinieren
+{
+    echo "========================================================================="
+    echo "Repository Export"
+    echo "========================================================================="
+    echo "Export-Datum: $(date '+%Y-%m-%d %H:%M:%S')"
+    echo "Repository-URL: $REPO_URL"
+    echo "Anzahl extrahierter Textdateien: $file_count"
+    echo "========================================================================="
+    echo
+    cat "$CONTENT_FILE"
+} > "$OUTPUT_FILE"
+
+# Temporäre Inhaltsdatei löschen
+rm -f "$CONTENT_FILE"
 
 echo "==============================================="
 echo "Fertig! Es wurden $file_count Textdateien extrahiert."
