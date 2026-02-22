@@ -30,7 +30,6 @@ get_git_remote_url() {
         return
     fi
 
-    # Erstes Remote ermitteln (sortiert, z.B. origin)
     local remote=$(git remote | head -n1)
     if [ -z "$remote" ]; then
         echo ""
@@ -84,7 +83,6 @@ check_git_cleanliness() {
 # === Funktion: SSH-URL in HTTPS-URL umwandeln ===
 convert_ssh_to_https() {
     local url="$1"
-    # Muster: git@host:pfad.git -> https://host/pfad.git
     if [[ "$url" =~ ^git@([^:]+):(.+)$ ]]; then
         local host="${BASH_REMATCH[1]}"
         local path="${BASH_REMATCH[2]}"
@@ -92,6 +90,23 @@ convert_ssh_to_https() {
     else
         echo "$url"
     fi
+}
+
+# === Funktion: Prüft, ob eine Datei eine reine Textdatei ist ===
+is_text_file() {
+    local file="$1"
+
+    # 1. MIME-Typ muss mit text/ beginnen
+    if ! file -b --mime-type "$file" | grep -q "^text/"; then
+        return 1
+    fi
+
+    # 2. Datei darf keine Binärzeichen enthalten
+    if ! grep -Iq . "$file" 2>/dev/null; then
+        return 1
+    fi
+
+    return 0
 }
 
 # === Hauptprogramm ===
@@ -128,10 +143,8 @@ else
     fi
 fi
 
-# Prüfung auf Sauberkeit des aktuellen Repos
 check_git_cleanliness
 
-# --- SSH/HTTPS-Auswahl ---
 if [[ "$REPO_URL" == git@* ]]; then
     echo "Die URL ist eine SSH-URL: $REPO_URL"
     echo "SSH-Zugriff erfordert einen hinterlegten SSH-Key."
@@ -142,10 +155,8 @@ if [[ "$REPO_URL" == git@* ]]; then
     fi
 fi
 
-# Repository-Namen aus der URL extrahieren
 REPO_NAME=$(basename "$REPO_URL" .git)
 
-# Temporäres Verzeichnis zum Klonen erstellen
 TEMP_DIR=$(mktemp -d -t "${REPO_NAME}-XXXXX")
 if [ ! -d "$TEMP_DIR" ]; then
     echo "Fehler: Konnte kein temporäres Verzeichnis erstellen."
@@ -154,7 +165,6 @@ fi
 
 echo "=== Klone Repository '$REPO_URL' nach '$TEMP_DIR' ==="
 
-# Repository klonen (nur Standard-Branch, ohne Historie)
 if ! git clone --depth 1 "$REPO_URL" "$TEMP_DIR"; then
     echo "Fehler beim Klonen des Repositories. Löschen des Temp-Verzeichnisses."
     rm -rf "$TEMP_DIR"
@@ -174,9 +184,8 @@ cd "$TEMP_DIR"
 
 while IFS= read -r -d '' file; do
     full_path="$TEMP_DIR/$file"
-    mime_type=$(file -b --mime-type "$full_path")
 
-    if [[ "$mime_type" == text/* ]]; then
+    if is_text_file "$full_path"; then
         {
             echo "========================================================================="
             echo "Datei: $file"
@@ -189,7 +198,7 @@ while IFS= read -r -d '' file; do
         ((file_count++))
         echo "  + Hinzugefügt: $file"
     else
-        echo "  - Überspringe (keine Textdatei): $file"
+        echo "  - Überspringe (keine reine Textdatei): $file"
     fi
 done < <(git ls-files -z)
 
