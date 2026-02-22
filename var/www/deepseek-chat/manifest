@@ -842,7 +842,7 @@
         - Abstand zwischen "Exportieren" und "X" nun exakt gleich wie zwischen den 4 linken Buttons
         - Betrifft: CSS, addMessageToChat(), sendMessage(), handleRegenerate()
 
-    60. [20.02.2026 10:xx] - Kontext-Auslastungsanzeige implementiert:
+    60. [20.02.2026 10:00] - Kontext-Auslastungsanzeige implementiert:
         - Neue Zeile unter IP-Adresse im Server-Header
         - HTML: <div class="context-info" id="contextInfo">Kontext: 0%</div>
         - CSS-Klasse .context-info: font-size 14px, color #aaa (identisch zu .server-info)
@@ -856,6 +856,14 @@
         - Aufgerufen aus: updateContextEstimation() und setMode()
         - Damit automatisch aktuell bei: jeder Nachricht, jedem Löschen, jedem Modellwechsel
         - Manifest Abschnitte B.9 und C.1 aktualisiert
+
+    61. [22.02.2026 20:30] - NEUES HILFSSKRIPT REPO2TEXT.SH HINZUGEFÜGT:
+        - Das Skript `shell-scipts/repo2text.sh` wurde entwickelt, um den gesamten Text eines GitHub-Repos in eine einzige Datei zu extrahieren.
+        - Es klont das Repository mit `--depth 1`, respektiert `.gitignore` via `git ls-files` und filtert zuverlässig reine Textdateien (MIME-Typ + `grep -I`).
+        - Enthält intelligente Features: automatische Erkennung der Remote-URL, Warnung bei uncommitteten/unpushed Änderungen, SSH/HTTPS-Auswahl, Zeitstempel im Dateinamen, zusätzliche Metadaten (Commit-Hash, Branch) im Header.
+        - Erstellt sowohl eine `.txt`- als auch eine `.zip`-Datei des Exports.
+        - Dieses Tool erleichtert die Übergabe des gesamten Projektkontexts an KI-Assistenten erheblich.
+        - Implementiert in Commit 6ffef70.
 
     ============================================================================
 
