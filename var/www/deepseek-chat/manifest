@@ -865,5 +865,12 @@
         - Dieses Tool erleichtert die Übergabe des gesamten Projektkontexts an KI-Assistenten erheblich.
         - Implementiert in Commit 6ffef70.
 
+     62. [23.02.2026 18:00] - Weiter kleine Anpassungen bei rep22text.sh
+
+        -  Die Optionen --only und --md5 sind vorhanden und funktionsfähig.
+        -  Die Dateien .gitignore und .gitattributes im Wurzelverzeichnis werden explizit eingeschlossen.
+        -  Die Hilfe-Seite ist aktualisiert, Abhängigkeiten werden korrekt geprüft, und die MD5-Berechnung
+           funktioniert sowohl mit md5sum als auch mit md5.
+
     ============================================================================
 
