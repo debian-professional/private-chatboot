@@ -105,9 +105,9 @@ und farbcodiertem Chat-Verlauf.
 
 ### 9. Feedback-System mit Server-Logging
 Like und Dislike werden in die serverseitige Log-Datei geschrieben:
-```
+
 2026-02-17 17:23:45 | 192.168.1.1 | FEEDBACK | LIKE | msgId:42 | "Die Antwort war..."
-```
+
 Damit können Antwortqualitäten nachvollzogen und ausgewertet werden.
 
 ### 10. Konsequentes Design-System
@@ -177,7 +177,7 @@ auch nach langen Pausen oder bei Zusammenarbeit mit KI-Assistenten.
 
 ## Sicherheitsarchitektur
 
-```
+
 Browser (Client)
       │
       │  HTTPS (SSL)
@@ -189,7 +189,7 @@ Apache 2.4
 Python CGI-Script ──► DeepSeek API
 (liest API-Key aus          (external)
  Umgebungsvariable)
-```
+
 
 **Prinzipien:**
 1. Der API-Key verlässt den Server niemals
@@ -234,13 +234,13 @@ Eine einzige HTML-Datei enthält das gesamte Frontend:
 - DeepSeek API-Key
 
 ### 1. Repository klonen
-```bash
+bash
 git clone https://github.com/debian-professional/private-chatboot.git
 cd private-chatboot
-```
+
 
 ### 2. Apache konfigurieren
-```apache
+apache
 <VirtualHost *:443>
     ServerName your-domain.com
     DocumentRoot /var/www/deepseek-chat
@@ -255,13 +255,13 @@ cd private-chatboot
     SSLCertificateFile /path/to/cert.pem
     SSLCertificateKeyFile /path/to/key.pem
 </VirtualHost>
-```
+
 
 ### 3. API-Key konfigurieren
 In `/etc/apache2/envvars`:
-```bash
+
 export DEEPSEEK_API_KEY="your-api-key-here"
-```
+
 
 ### 4. Verzeichnisse erstellen
 ```bash
@@ -273,7 +273,7 @@ chmod +x /var/www/deepseek-chat/cgi-bin/*.py
 ### 5. Deployen
 ```bash
 ./deploy.sh
-```
+
 
 ---
 
@@ -293,7 +293,7 @@ const MODEL_CONFIG = {
         maxContextMessages: 30
     }
 };
-```
+
 
 Bei einem Modellwechsel muss **nur dieser Block** angepasst werden.
 
@@ -322,7 +322,7 @@ Bei einem Modellwechsel muss **nur dieser Block** angepasst werden.
 
 ## Projektstruktur
 
-```
+
 /var/www/deepseek-chat/
 ├── index.html              # Gesamtes Frontend
 ├── manifest                # Design-Manifest & Änderungshistorie
@@ -341,7 +341,7 @@ Bei einem Modellwechsel muss **nur dieser Block** angepasst werden.
 │   ├── feedback-log.py     # Feedback loggen
 │   └── deepseek-chat.log   # Server-Log
 └── sessions/               # Gespeicherte Chat-Sessions (JSON)
-```
+
 
 ---
 
@@ -353,11 +353,11 @@ Das Projekt verwendet **Git Tags** für Milestones:
 |---------|-------|--------------|
 | v0.80 | 20.02.2026 | Erster stabiler Release mit vollem Feature-Set |
 
-```bash
+bash
 # Aktuellen Stand als Version taggen
 git tag -a v0.80 -m "Version 0.80 - stable release"
 git push origin v0.80
-```
+
 
 ---
 
