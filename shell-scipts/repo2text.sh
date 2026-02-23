@@ -21,6 +21,8 @@ show_help() {
     echo "Optionen:"
     echo "  -f, --format FORMAT   Ausgabeformat: txt, json, md (oder markdown)"
     echo "  --flat                Nur Dateinamen ohne Pfad verwenden (flat)"
+    echo "  -o, --only PATH       Nur den angegebenen Pfad (relativ zum Repository-Stamm) exportieren"
+    echo "  -md5, --md5           Für jede Datei eine MD5-Prüfsumme berechnen und ausgeben"
     echo "  -h, --help            Diese Hilfe anzeigen"
     echo ""
     echo "Argumente:"
@@ -85,7 +87,7 @@ is_text_file() {
 }
 
 # ============================================
-# Ausgabefunktionen
+# Ausgabefunktionen (angepasst für optionale MD5)
 # ============================================
 
 write_txt_header() {
@@ -99,7 +101,15 @@ EOF
 }
 
 write_txt_file() {
-    { echo "FILE: $2"; echo "---------------------------------------------------------"; cat "$3"; echo -e "\n\n"; } >> "$1"
+    local out="$1"
+    local disp="$2"
+    local file="$3"
+    local md5="${4:-}"
+    if [ -n "$md5" ]; then
+        { echo "FILE: $disp (MD5: $md5)"; echo "---------------------------------------------------------"; cat "$file"; echo -e "\n\n"; } >> "$out"
+    else
+        { echo "FILE: $disp"; echo "---------------------------------------------------------"; cat "$file"; echo -e "\n\n"; } >> "$out"
+    fi
 }
 
 write_md_header() {
@@ -107,8 +117,16 @@ write_md_header() {
 }
 
 write_md_file() {
-    local lang="${2##*.}"
-    { echo "## \`$2\`"; echo -e "\n\`\`\`$lang"; cat "$3"; echo -e "\n\`\`\`\n"; } >> "$1"
+    local out="$1"
+    local disp="$2"
+    local file="$3"
+    local md5="${4:-}"
+    local lang="${disp##*.}"
+    if [ -n "$md5" ]; then
+        { echo "## \`$disp\` (MD5: $md5)"; echo -e "\n\`\`\`$lang"; cat "$file"; echo -e "\n\`\`\`\n"; } >> "$out"
+    else
+        { echo "## \`$disp\`"; echo -e "\n\`\`\`$lang"; cat "$file"; echo -e "\n\`\`\`\n"; } >> "$out"
+    fi
 }
 
 write_json_final() {
@@ -120,7 +138,27 @@ write_json_final() {
 # Hauptprogramm
 # ============================================
 
-# Abhängigkeiten
+# Optionen initialisieren
+OUTPUT_FORMAT="txt"
+REPO_URL=""
+flat=false
+ONLY_PATH=""
+INCLUDE_MD5=false
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -f|--format) OUTPUT_FORMAT="$2"; shift 2 ;;
+        --flat) flat=true; shift ;;
+        -o|--only) ONLY_PATH="$2"; shift 2 ;;
+        -md5|--md5) INCLUDE_MD5=true; shift ;;
+        -h|--help) show_help; exit 0 ;;
+        *) REPO_URL="$1"; shift ;;
+    esac
+done
+
+[[ ! "$OUTPUT_FORMAT" =~ ^(txt|json|md)$ ]] && echo "Format-Fehler" && exit 1
+
+# Abhängigkeiten prüfen (jetzt mit Kenntnis der MD5-Option)
 MISSING_PKGS=()
 for pkg in git file zip jq pv; do
     command -v "$pkg" &>/dev/null || MISSING_PKGS+=("$pkg")
@@ -129,21 +167,19 @@ if [ ${#MISSING_PKGS[@]} -ne 0 ]; then
     echo "Fehler: Pakete fehlen: ${MISSING_PKGS[*]}"; exit 1
 fi
 
-OUTPUT_FORMAT="txt"
-REPO_URL=""
-flat=false
+# MD5-Befehl festlegen, falls gewünscht
+if $INCLUDE_MD5; then
+    if command -v md5sum &>/dev/null; then
+        compute_md5() { md5sum "$1" | cut -d' ' -f1; }
+    elif command -v md5 &>/dev/null; then
+        compute_md5() { md5 -q "$1"; }
+    else
+        echo "Fehler: Für MD5 wird md5sum oder md5 benötigt." >&2
+        exit 1
+    fi
+fi
 
-while [[ $# -gt 0 ]]; do
-    case "$1" in
-        -f|--format) OUTPUT_FORMAT="$2"; shift 2 ;;
-        --flat) flat=true; shift ;;
-        -h|--help) show_help; exit 0 ;;
-        *) REPO_URL="$1"; shift ;;
-    esac
-done
-
-[[ ! "$OUTPUT_FORMAT" =~ ^(txt|json|md)$ ]] && echo "Format-Fehler" && exit 1
-
+# Repository-URL ermitteln
 if [[ -z "$REPO_URL" ]]; then
     check_git_cleanliness
     DEFAULT_URL=$(get_git_remote_url)
@@ -162,14 +198,24 @@ git clone --depth 1 "$REPO_URL" "$TEMP_DIR" &>/dev/null || exit 1
 
 cd "$TEMP_DIR" && COMMIT_HASH=$(git rev-parse HEAD) && BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD) && cd ..
 
+# Prüfe, ob ein Teilbaum angegeben wurde
+START_DIR="$TEMP_DIR"
+if [ -n "$ONLY_PATH" ]; then
+    START_DIR="$TEMP_DIR/$ONLY_PATH"
+    if [ ! -d "$START_DIR" ]; then
+        echo "Fehler: Der angegebene Pfad '$ONLY_PATH' existiert nicht im Repository." >&2
+        rm -rf "$TEMP_DIR"
+        exit 1
+    fi
+fi
+
 OUTPUT_FILE="${OUTPUT_FILE_PREFIX}_${REPO_NAME}_$(date +%Y%m%d_%H%M%S).${OUTPUT_FORMAT}"
-file_count=0   # <-- Initialisierung
+file_count=0
 
 echo "Analysiere..."
-total_files=$(find "$TEMP_DIR" -type f -not -path '*/.*' | wc -l)
+total_files=$(find "$START_DIR" -type f \( -path "$TEMP_DIR/.gitignore" -o -not -path '*/.*' \) | wc -l)
 
 echo "Extrahiere..."
-# Prozess-Substitution, damit file_count in der Hauptshell bleibt
 while IFS= read -r -d '' full_path; do
     rel_path="${full_path#$TEMP_DIR/}"
 
@@ -179,16 +225,28 @@ while IFS= read -r -d '' full_path; do
     fi
 
     if is_text_file "$full_path"; then
-        case "$OUTPUT_FORMAT" in
-            txt) write_txt_file "$OUTPUT_FILE" "$display_path" "$full_path" ;;
-            md)  write_md_file  "$OUTPUT_FILE" "$display_path" "$full_path" ;;
-            json) jq -n --arg p "$display_path" --arg c "$(cat "$full_path")" '{path: $p, content: $c}' >> "json.tmp" ;;
-        esac
-        ((file_count++))   # <-- Zähler erhöhen
-    fi
-done < <(find "$TEMP_DIR" -type f -not -path '*/.*' -print0 | pv -0 -p -t -e -r -s "$total_files" -l)
+        # MD5 berechnen falls gewünscht
+        md5_sum=""
+        if $INCLUDE_MD5; then
+            md5_sum=$(compute_md5 "$full_path")
+        fi
 
-# Kein Lesen aus .count.tmp mehr nötig
+        case "$OUTPUT_FORMAT" in
+            txt) write_txt_file "$OUTPUT_FILE" "$display_path" "$full_path" "$md5_sum" ;;
+            md)  write_md_file  "$OUTPUT_FILE" "$display_path" "$full_path" "$md5_sum" ;;
+            json)
+                if [ -n "$md5_sum" ]; then
+                    jq -n --arg p "$display_path" --arg c "$(cat "$full_path")" --arg m "$md5_sum" '{path: $p, content: $c, md5: $m}' >> "json.tmp"
+                else
+                    jq -n --arg p "$display_path" --arg c "$(cat "$full_path")" '{path: $p, content: $c}' >> "json.tmp"
+                fi
+                ;;
+        esac
+        ((file_count++))
+    fi
+done < <(find "$START_DIR" -type f \( -path "$TEMP_DIR/.gitignore" -o -not -path '*/.*' \) -print0 | pv -0 -p -t -e -r -s "$total_files" -l)
+
+# Nachbereitung je nach Format
 if [[ "$OUTPUT_FORMAT" == "json" ]]; then
     write_json_final "json.tmp" "$OUTPUT_FILE" "$file_count" && rm "json.tmp"
 else
@@ -202,6 +260,11 @@ rm -rf "$TEMP_DIR"
 
 echo "==============================================="
 echo "Fertig! $file_count Dateien extrahiert."
+if [ -n "$ONLY_PATH" ]; then
+    echo "Exportierter Pfad: $ONLY_PATH"
+fi
+if $INCLUDE_MD5; then
+    echo "MD5-Prüfsummen wurden berechnet."
+fi
 echo "Output: $(pwd)/$OUTPUT_FILE"
 echo "==============================================="
-
