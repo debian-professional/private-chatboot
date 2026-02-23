@@ -3,6 +3,10 @@
 # === Konfiguration ===
 OUTPUT_FILE_PREFIX="repo_export"
 
+# Liste der Dateiendungen, die ignoriert werden sollen (Regex-Format)
+# Hier kannst du einfach weitere hinzufügen, z.B. |lock|tmp|bak
+EXCLUDE_EXTENSIONS="lock|log|tmp|bak|swp|cache"
+
 # === Funktion: Zeige Hilfe an ===
 show_help() {
     echo "Verwendung: $0 [OPTIONEN] [GitHub-Repository-URL]"
@@ -23,91 +27,60 @@ show_help() {
     echo "                            Wenn keine URL angegeben wird, erfolgt eine interaktive Eingabe."
     echo "                            Wird das Skript innerhalb eines Git-Repos ausgeführt,"
     echo "                            wird automatisch die Remote-URL als Vorschlag verwendet."
-    echo ""
-    echo "Beispiele:"
-    echo "  $0 https://github.com"
-    echo "  $0 -f json https://github.com"
-    echo "  $0 --format md   # dann URL eingeben (oder Vorschlag aus Git-Remote)"
 }
 
-# === Funktion: Lese Remote-URL des aktuellen Git-Repos (falls vorhanden) ===
+# === Funktion: Lese Remote-URL des aktuellen Git-Repos ===
 get_git_remote_url() {
     if ! git rev-parse --git-dir > /dev/null 2>&1; then
         echo ""
         return
     fi
-
     local remote=$(git remote | head -n1)
-    if [ -z "$remote" ]; then
-        echo ""
-        return
-    fi
-
-    local url=$(git config --get "remote.$remote.url")
-    echo "$url"
+    [ -z "$remote" ] && echo "" && return
+    echo "$(git config --get "remote.$remote.url")"
 }
 
-# === Funktion: Prüfe, ob das aktuelle Git-Repo "sauber" ist ===
+# === Funktion: Prüfe Git-Status ===
 check_git_cleanliness() {
-    if ! git rev-parse --git-dir > /dev/null 2>&1; then
-        return 0
-    fi
-
+    if ! git rev-parse --git-dir > /dev/null 2>&1; then return 0; fi
     local dirty=0
     local unpushed=0
     local branch=$(git symbolic-ref --short HEAD 2>/dev/null)
-
-    if ! git diff --quiet || ! git diff --cached --quiet; then
-        dirty=1
-    fi
-
+    if ! git diff --quiet || ! git diff --cached --quiet; then dirty=1; fi
     if [ -n "$branch" ]; then
         local remote=$(git config "branch.$branch.remote" 2>/dev/null)
         local merge=$(git config "branch.$branch.merge" 2>/dev/null)
         if [ -n "$remote" ] && [ -n "$merge" ]; then
             local upstream="${remote}/${merge#refs/heads/}"
-            local count=$(git rev-list --count "$upstream..$branch" 2>/dev/null)
-            if [ "$count" -gt 0 ]; then
-                unpushed=$count
-            fi
+            unpushed=$(git rev-list --count "$upstream..$branch" 2>/dev/null || echo 0)
         fi
     fi
-
-    if [ $dirty -eq 1 ] || [ $unpushed -gt 0 ]; then
-        echo ""
-        echo "WARNUNG: Das aktuelle Git-Repository ist nicht sauber:"
-        [ $dirty -eq 1 ] && echo "  - Es gibt uncommittete Änderungen."
-        [ $unpushed -gt 0 ] && echo "  - Es gibt $unpushed nicht gepushte Commits."
-        echo ""
+    if [ $dirty -eq 1 ] || [ "$unpushed" -gt 0 ]; then
+        echo -e "\nWARNUNG: Das aktuelle Git-Repository ist nicht sauber."
         read -p "Trotzdem fortfahren? (j/N): " confirm
-        if [[ ! "$confirm" =~ ^[jJ]$ ]]; then
-            echo "Abbruch."
-            exit 1
-        fi
+        [[ ! "$confirm" =~ ^[jJ]$ ]] && echo "Abbruch." && exit 1
     fi
 }
 
-# === Funktion: SSH-URL in HTTPS-URL umwandeln ===
+# === Funktion: SSH zu HTTPS ===
 convert_ssh_to_https() {
     local url="$1"
     if [[ "$url" =~ ^git@([^:]+):(.+)$ ]]; then
-        local host="${BASH_REMATCH[1]}"
-        local path="${BASH_REMATCH[2]}"
-        echo "https://${host}/${path}"
+        echo "https://${BASH_REMATCH[1]}/${BASH_REMATCH[2]}"
     else
         echo "$url"
     fi
 }
 
-# === Funktion: Prüft, ob eine Datei eine reine Textdatei ist ===
+# === Funktion: Textdatei-Prüfung ===
 is_text_file() {
     local file="$1"
-    if ! file -b --mime-type "$file" | grep -q "^text/"; then
-        return 1
-    fi
-    if ! grep -Iq . "$file" 2>/dev/null; then
-        return 1
-    fi
+    # 1. MIME-Check
+    if ! file -b --mime-type "$file" | grep -q "^text/"; then return 1; fi
+    # 2. Ausschluss über Endungen (Regex gegen Dateiname)
+    if [[ "$file" =~ \.($EXCLUDE_EXTENSIONS)$ ]]; then return 1; fi
+    # 3. Binär-Check
+    if ! grep -Iq . "$file" 2>/dev/null; then return 1; fi
     return 0
 }
 
@@ -116,220 +89,93 @@ is_text_file() {
 # ============================================
 
 write_txt_header() {
-    local outfile="$1"
-    local count="$2"
-    cat > "$outfile" <<EOF
+    cat > "$1" <<EOF
 =========================================================================
-Repository Export
-=========================================================================
-Export-Datum: $(date '+%Y-%m-%d %H:%M:%S')
-Repository-URL: $REPO_URL
-Commit-Hash: $COMMIT_HASH
-Branch: $BRANCH_NAME
-Anzahl extrahierter Textdateien: $count
+Repository Export | Dateien: $2
+Datum: $(date '+%Y-%m-%d %H:%M:%S') | URL: $REPO_URL
 =========================================================================
 
 EOF
 }
 
 write_txt_file() {
-    local outfile="$1"
-    local file="$2"
-    local full_path="$3"
-    {
-        echo "========================================================================="
-        echo "Datei: $file"
-        echo "========================================================================="
-        cat "$full_path"
-        echo
-        echo
-    } >> "$outfile"
+    { echo "FILE: $2"; echo "---------------------------------------------------------"; cat "$3"; echo -e "\n\n"; } >> "$1"
 }
 
 write_md_header() {
-    local outfile="$1"
-    local count="$2"
-    {
-        echo "# Repository Export"
-        echo
-        echo "**Export-Datum:** $(date '+%Y-%m-%d %H:%M:%S')"
-        echo
-        echo "**Repository-URL:** $REPO_URL"
-        echo
-        echo "**Commit-Hash:** $COMMIT_HASH"
-        echo
-        echo "**Branch:** $BRANCH_NAME"
-        echo
-        echo "**Anzahl extrahierter Textdateien:** $count"
-        echo
-        echo "---"
-        echo
-    } >> "$outfile"
+    { echo "# Repo Export"; echo -e "\n- **URL:** $REPO_URL\n- **Dateien:** $2\n\n---\n"; } >> "$1"
 }
 
 write_md_file() {
-    local outfile="$1"
-    local file="$2"
-    local full_path="$3"
-    local lang=""
-    case "$file" in
-        *.sh) lang="bash" ;;
-        *.py) lang="python" ;;
-        *.js) lang="javascript" ;;
-        *.json) lang="json" ;;
-        *.md) lang="markdown" ;;
-        *.c) lang="c" ;;
-        *.cpp) lang="cpp" ;;
-        *.java) lang="java" ;;
-        *.go) lang="go" ;;
-        *.rs) lang="rust" ;;
-        *.php) lang="php" ;;
-        *.rb) lang="ruby" ;;
-        *.pl) lang="perl" ;;
-        *.sql) lang="sql" ;;
-        *.xml) lang="xml" ;;
-        *.yaml|*.yml) lang="yaml" ;;
-        *.html) lang="html" ;;
-        *.css) lang="css" ;;
-        *) lang="" ;;
-    esac
-    {
-        echo "## Datei: \`$file\`"
-        echo
-        echo "\`\`\`$lang"
-        cat "$full_path"
-        echo "\`\`\`"
-        echo
-    } >> "$outfile"
+    local lang="${2##*.}"
+    { echo "## \`$2\`"; echo -e "\n\`\`\`$lang"; cat "$3"; echo -e "\n\`\`\`\n"; } >> "$1"
 }
 
 write_json_final() {
-    local objects_file="$1"
-    local final_file="$2"
-    local count="$3"
-    jq -n \
-        --arg date "$(date '+%Y-%m-%d %H:%M:%S')" \
-        --arg url "$REPO_URL" \
-        --arg commit "$COMMIT_HASH" \
-        --arg branch "$BRANCH_NAME" \
-        --argjson count "$count" \
-        --slurpfile files "$objects_file" \
-        '{metadata: {date: $date, url: $url, commit: $commit, branch: $branch, file_count: $count}, files: $files}' > "$final_file"
+    jq -n --arg date "$(date)" --arg url "$REPO_URL" --argjson count "$3" --slurpfile files "$1" \
+    '{metadata: {date: $date, url: $url, file_count: $count}, files: $files}' > "$2"
 }
 
 # ============================================
 # Hauptprogramm
 # ============================================
 
-# --- Erweiterte Abhängigkeitsprüfung am Anfang (inklusive pv) ---
+# Abhängigkeiten
 MISSING_PKGS=()
 for pkg in git file zip jq pv; do
-    if ! command -v "$pkg" &> /dev/null; then
-        MISSING_PKGS+=("$pkg")
-    fi
+    command -v "$pkg" &>/dev/null || MISSING_PKGS+=("$pkg")
 done
-
 if [ ${#MISSING_PKGS[@]} -ne 0 ]; then
-    echo "Fehler: Folgende benötigte Programme fehlen: ${MISSING_PKGS[*]}"
-    echo "Bitte installiere sie unter Debian mit:"
-    echo "sudo apt update && sudo apt install ${MISSING_PKGS[*]} -y"
-    exit 1
+    echo "Fehler: Pakete fehlen: ${MISSING_PKGS[*]}"; exit 1
 fi
 
-# --- Argumente parsen ---
 OUTPUT_FORMAT="txt"
 REPO_URL=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        -f|--format)
-            OUTPUT_FORMAT="$2"
-            shift 2
-            ;;
-        -h|--help)
-            show_help
-            exit 0
-            ;;
-        *)
-            if [[ -z "$REPO_URL" ]]; then
-                REPO_URL="$1"
-            else
-                echo "Unbekanntes Argument: $1"
-                show_help
-                exit 1
-            fi
-            shift
-            ;;
+        -f|--format) OUTPUT_FORMAT="$2"; shift 2 ;;
+        -h|--help) show_help; exit 0 ;;
+        *) REPO_URL="$1"; shift ;;
     esac
 done
 
-# Format normalisieren
-if [[ "$OUTPUT_FORMAT" == "markdown" ]]; then
-    OUTPUT_FORMAT="md"
-fi
-if [[ ! "$OUTPUT_FORMAT" =~ ^(txt|json|md)$ ]]; then
-    echo "Fehler: Unbekanntes Format '$OUTPUT_FORMAT'. Erlaubt: txt, json, md"
-    exit 1
-fi
+[[ ! "$OUTPUT_FORMAT" =~ ^(txt|json|md)$ ]] && echo "Format-Fehler" && exit 1
 
-# URL ermitteln falls nicht übergeben
 if [[ -z "$REPO_URL" ]]; then
     check_git_cleanliness
     DEFAULT_URL=$(get_git_remote_url)
-    if [ -n "$DEFAULT_URL" ]; then
-        read -p "GitHub-Repository-URL [$DEFAULT_URL]: " input_url
-        REPO_URL=${input_url:-$DEFAULT_URL}
-    else
-        read -p "GitHub-Repository-URL: " REPO_URL
-    fi
+    read -p "Repository-URL [${DEFAULT_URL}]: " input_url
+    REPO_URL=${input_url:-$DEFAULT_URL}
 fi
 
-if [[ -z "$REPO_URL" ]]; then
-    echo "Fehler: Keine Repository-URL angegeben."
-    exit 1
-fi
+[ -z "$REPO_URL" ] && exit 1
 
 REPO_URL=$(convert_ssh_to_https "$REPO_URL")
 REPO_NAME=$(basename "$REPO_URL" .git)
 TEMP_DIR="temp_repo_$(date +%s)"
 
-echo "Klone Repository: $REPO_URL ..."
-if ! git clone --depth 1 "$REPO_URL" "$TEMP_DIR" &> /dev/null; then
-    echo "Fehler: Klonen fehlgeschlagen."
-    exit 1
-fi
+echo "Klone $REPO_URL ..."
+git clone --depth 1 "$REPO_URL" "$TEMP_DIR" &>/dev/null || exit 1
 
-cd "$TEMP_DIR" || exit 1
-COMMIT_HASH=$(git rev-parse HEAD)
-BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
-cd ..
+cd "$TEMP_DIR" && COMMIT_HASH=$(git rev-parse HEAD) && BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD) && cd ..
 
 OUTPUT_FILE="${OUTPUT_FILE_PREFIX}_${REPO_NAME}_$(date +%Y%m%d_%H%M%S).${OUTPUT_FORMAT}"
-JSON_TEMP="json_files.tmp"
-[ "$OUTPUT_FORMAT" == "json" ] && rm -f "$JSON_TEMP"
-
-# --- Vorbereitung Profi-Fortschrittsanzeige ---
-echo "Analysiere Repository..."
-total_files=$(find "$TEMP_DIR" -type f -not -path '*/.*' | wc -l)
 echo 0 > .count.tmp
 
-echo "Extrahiere $total_files Dateien..."
+echo "Analysiere..."
+total_files=$(find "$TEMP_DIR" -type f -not -path '*/.*' | wc -l)
 
-# Die Schleife wird durch pv getaktet
+echo "Extrahiere..."
 find "$TEMP_DIR" -type f -not -path '*/.*' -print0 | pv -0 -p -t -e -r -s "$total_files" -l | while IFS= read -r -d '' full_path; do
     rel_path="${full_path#$TEMP_DIR/}"
-    
     if is_text_file "$full_path"; then
         case "$OUTPUT_FORMAT" in
-            txt)  write_txt_file "$OUTPUT_FILE" "$rel_path" "$full_path" ;;
-            md)   write_md_file  "$OUTPUT_FILE" "$rel_path" "$full_path" ;;
-            json)
-                content=$(cat "$full_path")
-                jq -n --arg path "$rel_path" --arg content "$content" '{path: $path, content: $content}' >> "$JSON_TEMP"
-                ;;
+            txt) write_txt_file "$OUTPUT_FILE" "$rel_path" "$full_path" ;;
+            md)  write_md_file  "$OUTPUT_FILE" "$rel_path" "$full_path" ;;
+            json) jq -n --arg p "$rel_path" --arg c "$(cat "$full_path")" '{path: $p, content: $c}' >> "json.tmp" ;;
         esac
-        curr_c=$(cat .count.tmp)
-        echo $((curr_c + 1)) > .count.tmp
+        echo $(($(cat .count.tmp) + 1)) > .count.tmp
     fi
 done
 
@@ -337,30 +183,18 @@ file_count=$(cat .count.tmp)
 rm .count.tmp
 
 if [[ "$OUTPUT_FORMAT" == "json" ]]; then
-    write_json_final "$JSON_TEMP" "$OUTPUT_FILE" "$file_count"
-    rm -f "$JSON_TEMP"
+    write_json_final "json.tmp" "$OUTPUT_FILE" "$file_count" && rm "json.tmp"
 else
-    TEMP_HEADER="header.tmp"
-    if [[ "$OUTPUT_FORMAT" == "txt" ]]; then
-        write_txt_header "$TEMP_HEADER" "$file_count"
-    else
-        write_md_header "$TEMP_HEADER" "$file_count"
-    fi
-    cat "$OUTPUT_FILE" >> "$TEMP_HEADER"
-    mv "$TEMP_HEADER" "$OUTPUT_FILE"
+    TEMP_H="h.tmp"
+    [[ "$OUTPUT_FORMAT" == "txt" ]] && write_txt_header "$TEMP_H" "$file_count" || write_md_header "$TEMP_H" "$file_count"
+    cat "$OUTPUT_FILE" >> "$TEMP_H" && mv "$TEMP_H" "$OUTPUT_FILE"
 fi
 
-echo "Erstelle ZIP-Archiv..."
 zip -q "${OUTPUT_FILE}.zip" "$OUTPUT_FILE"
-
-echo "Aufräumen..."
 rm -rf "$TEMP_DIR"
 
 echo "==============================================="
-echo "Fertig! Es wurden $file_count Textdateien extrahiert."
-echo "Die Ausgabedatei wurde erstellt: $(pwd)/$OUTPUT_FILE"
-if [ -f "$OUTPUT_FILE.zip" ]; then
-    echo "ZIP-Archiv erstellt:        $(pwd)/$OUTPUT_FILE.zip"
-fi
+echo "Fertig! $file_count Dateien extrahiert."
+echo "Output: $(pwd)/$OUTPUT_FILE"
 echo "==============================================="
 
