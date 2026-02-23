@@ -163,13 +163,14 @@ git clone --depth 1 "$REPO_URL" "$TEMP_DIR" &>/dev/null || exit 1
 cd "$TEMP_DIR" && COMMIT_HASH=$(git rev-parse HEAD) && BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD) && cd ..
 
 OUTPUT_FILE="${OUTPUT_FILE_PREFIX}_${REPO_NAME}_$(date +%Y%m%d_%H%M%S).${OUTPUT_FORMAT}"
-echo 0 > .count.tmp
+file_count=0   # <-- Initialisierung
 
 echo "Analysiere..."
 total_files=$(find "$TEMP_DIR" -type f -not -path '*/.*' | wc -l)
 
 echo "Extrahiere..."
-find "$TEMP_DIR" -type f -not -path '*/.*' -print0 | pv -0 -p -t -e -r -s "$total_files" -l | while IFS= read -r -d '' full_path; do
+# Prozess-Substitution, damit file_count in der Hauptshell bleibt
+while IFS= read -r -d '' full_path; do
     rel_path="${full_path#$TEMP_DIR/}"
 
     display_path="$rel_path"
@@ -183,13 +184,11 @@ find "$TEMP_DIR" -type f -not -path '*/.*' -print0 | pv -0 -p -t -e -r -s "$tota
             md)  write_md_file  "$OUTPUT_FILE" "$display_path" "$full_path" ;;
             json) jq -n --arg p "$display_path" --arg c "$(cat "$full_path")" '{path: $p, content: $c}' >> "json.tmp" ;;
         esac
-        echo $(($(cat .count.tmp) + 1)) > .count.tmp
+        ((file_count++))   # <-- Zähler erhöhen
     fi
-done
+done < <(find "$TEMP_DIR" -type f -not -path '*/.*' -print0 | pv -0 -p -t -e -r -s "$total_files" -l)
 
-file_count=$(cat .count.tmp)
-rm .count.tmp
-
+# Kein Lesen aus .count.tmp mehr nötig
 if [[ "$OUTPUT_FORMAT" == "json" ]]; then
     write_json_final "json.tmp" "$OUTPUT_FILE" "$file_count" && rm "json.tmp"
 else
