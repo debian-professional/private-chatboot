@@ -34,41 +34,46 @@
         }
         .server-title-section { flex: 1; }
         .server-title-section h1 {
-            margin-top: 0;
-            color: #4dabf7;
-            text-align: left;
+            margin: 0 0 5px 0;
             font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 5px;
-            padding-bottom: 0;
-            border-bottom: none;
+            color: #4dabf7;
         }
         .server-info {
             font-size: 14px;
             color: #aaa;
-            font-weight: normal;
+            margin: 2px 0;
         }
         .context-info {
             font-size: 14px;
             color: #aaa;
-            font-weight: normal;
-            margin-top: 3px;
+            margin: 2px 0;
         }
         .context-info.warning {
             color: #ff4444;
             font-weight: bold;
-            animation: blink 1s step-start infinite;
+            animation: blink 1s infinite;
         }
         @keyframes blink {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+            50%       { opacity: 0.3; }
         }
-        #chat { 
-            height: 400px; 
-            overflow-y: auto; 
-            border: 1px solid #444; 
-            padding: 10px; 
-            margin-bottom: 10px; 
+        #chat {
+            min-height: 200px;
+            margin-bottom: 20px;
+        }
+        .user-message {
+            padding: 10px 15px;
+            margin: 5px 0;
+            background: #1a3a5c;
+            color: #4dabf7;
+            border-left: 4px solid #0056b3;
+            border-radius: 0 8px 8px 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .ai-message {
+            padding: 10px 15px;
+            margin: 5px 0;
             background: #1e1e1e;
             color: #f0f0f0;
             line-height: 1.5;
@@ -104,11 +109,12 @@
             cursor: pointer;
             display: flex;
             align-items: center;
-            transition: all 0.2s;
-            white-space: nowrap;
         }
         .delete-message-btn:hover { background: #c82333; border-color: #c82333; }
 
+        /* =====================================================================
+           DOWNLOAD-MESSAGE BUTTON: Pill-Style, blau
+           ===================================================================== */
         .download-message-btn {
             background: #0056b3;
             color: white;
@@ -121,13 +127,35 @@
             cursor: pointer;
             display: flex;
             align-items: center;
-            transition: all 0.2s;
-            white-space: nowrap;
         }
         .download-message-btn:hover { background: #003d82; border-color: #003d82; }
 
+        .single-export-dropdown {
+            display: none;
+            position: absolute;
+            bottom: 42px;
+            right: 0;
+            background: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 8px;
+            z-index: 1000;
+            box-shadow: 0 -4px 8px rgba(0,0,0,0.3);
+            min-width: 150px;
+        }
+        .single-export-dropdown.show { display: block; }
+        .single-export-item {
+            padding: 10px 16px;
+            color: #f0f0f0;
+            cursor: pointer;
+            border-bottom: 1px solid #444;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        .single-export-item:last-child { border-bottom: none; }
+        .single-export-item:hover { background: #3d3d3d; }
+
         /* =====================================================================
-           FEEDBACK-BUTTONS: Pill-Style, links unten
+           FEEDBACK-BUTTONS: Pill-Style, blau
            ===================================================================== */
         .feedback-buttons {
             display: none;
@@ -138,99 +166,67 @@
             flex-direction: row;
         }
         .message-container:hover .feedback-buttons { display: flex; }
-
         .feedback-btn {
             background: #0056b3;
             color: white;
             border: 1px solid #0056b3;
             border-radius: 20px;
+            height: 36px;
             padding: 8px 16px;
             font-size: 14px;
-            height: 36px;
-            cursor: pointer;
-            line-height: 1;
-            white-space: nowrap;
-            transition: all 0.2s;
             font-family: Arial;
-            display: flex;
-            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
         }
         .feedback-btn:hover { background: #003d82; border-color: #003d82; }
-        .feedback-btn:active { background: #002a5c; border-color: #002a5c; }
+        .feedback-btn:active { background: #002a5c; }
         .feedback-btn.liked { background: #0a2f44; color: #9ac7ff; border-color: #007bff; }
         .feedback-btn.disliked { background: #5a1e1e; color: #ffb3b3; border-color: #dc3545; }
         .feedback-btn.copied { background: #003366; color: #99ccff; border-color: #0056b3; }
 
-        .single-export-dropdown {
-            display: none;
-            position: absolute;
-            right: 5px;
-            bottom: 46px;
-            background: #2d2d2d;
+        .message-divider {
+            border: none;
+            border-top: 1px solid #333;
+            margin: 10px 0;
+        }
+        textarea#input {
+            width: 100%;
+            padding: 10px;
+            background: #1e1e1e;
+            color: #f0f0f0;
             border: 1px solid #444;
             border-radius: 8px;
-            z-index: 2000;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-            min-width: 120px;
-        }
-        .single-export-dropdown.show { display: block; }
-        .single-export-item {
-            padding: 8px 14px;
-            color: #f0f0f0;
-            cursor: pointer;
-            font-size: 12px;
-            border-bottom: 1px solid #444;
-            white-space: nowrap;
-        }
-        .single-export-item:last-child { border-bottom: none; }
-        .single-export-item:hover { background: #3d3d3d; }
-        .user-message { color: #4dabf7; margin-bottom: 5px; }
-        .ai-message { color: #f0f0f0; margin-bottom: 15px; white-space: pre-wrap; }
-        .message-divider { height: 1px; background: #444; margin: 10px 0; opacity: 0.5; }
-        .thinking-mode {
-            background: #1a1a2e !important;
-            border-left: 4px solid #28a745 !important;
-        }
-
-        /* =====================================================================
-           EINGABEFELD: Textarea mit Focus-Animation
-           Inaktiv: 40px hoch, einzeilig
-           Fokus:   120px hoch, mehrzeilig, blauer Rand
-           Enter = Senden, Shift+Enter = neue Zeile
-           ===================================================================== */
-        #input { 
-            width: 100%;
-            padding: 10px; 
-            background: #2d2d2d;
-            color: #f0f0f0;
-            border: 1px solid #444;
-            margin-bottom: 10px;
-            box-sizing: border-box;
-            height: 40px;
+            font-size: 14px;
+            font-family: Arial;
             resize: none;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            height: 40px;
             overflow: hidden;
             transition: height 0.2s ease, border-color 0.2s ease;
-            font-family: Arial;
-            font-size: 14px;
-            line-height: 1.4;
         }
-        #input:focus {
-            height: 120px;
-            border-color: #0056b3;
-            overflow-y: auto;
+        textarea#input:focus {
             outline: none;
+            border-color: #0056b3;
+            height: 120px;
+            overflow: auto;
+        }
+        .buttons-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .buttons-row-mode {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            justify-content: flex-start;
         }
 
         /* =====================================================================
-           PILL-BUTTON: Aktions-Buttons (blau)
+           PILL-BUTTON: Standard Aktions-Button (blau)
            ===================================================================== */
-        .buttons-row {
-            display: flex;
-            gap: 10px;
-            margin: 10px 0;
-            align-items: center;
-            flex-wrap: wrap;
-        }
         .pill-button {
             flex: none;
             padding: 8px 16px;
@@ -613,173 +609,228 @@
     <div class="server-header">
         <div class="server-title-section">
             <h1 id="serverTitle">DeepSeek Chat Server</h1>
-            <div class="server-info" id="serverInfo">IP: Lade Server-Informationen...</div>
-            <div class="context-info" id="contextInfo">Kontext: 0%</div>
+            <div class="server-info" id="serverInfo">IP: ...</div>
+            <div class="context-info" id="contextInfo">Context: 0%</div>
         </div>
     </div>
     
     <div id="chat"></div>
     
-    <textarea id="input" placeholder="Ihre Nachricht hier eingeben..." rows="1"></textarea>
+    <textarea id="input" placeholder="Enter your message here..." rows="1"></textarea>
     
     <div id="deepThinkIndicator" class="mode-indicator deepthink-indicator">
-        DeepThink Modus aktiv: Tiefgehende Analyse wird durchgeführt
+        DeepThink Mode active: In-depth analysis in progress
     </div>
 
     <div class="buttons-row">
-        <button id="sendButton" class="pill-button">Senden</button>
+        <button id="sendButton" class="pill-button">Send</button>
 
         <div class="file-input-wrapper">
-            <button id="uploadButton" class="pill-button">Datei hochladen</button>
+            <button id="uploadButton" class="pill-button">Upload file</button>
             <input type="file" id="fileUpload" accept=".txt,.pdf,.doc,.docx,.jpg,.jpeg,.png,.csv,.xlsx,.pptx">
         </div>
 
         <div class="dropdown-container">
             <button id="exportButton" class="pill-button">
-                Exportieren <span class="dropdown-arrow">&#9660;</span>
+                Export <span class="dropdown-arrow">&#9660;</span>
             </button>
             <div id="exportMenu" class="dropdown-menu">
-                <div class="dropdown-item" id="exportPdfBtn">Als PDF herunterladen</div>
-                <div class="dropdown-item" id="exportMarkdownBtn">Als Markdown herunterladen</div>
-                <div class="dropdown-item" id="exportTxtBtn">Als TXT herunterladen</div>
-                <div class="dropdown-item" id="exportRtfBtn">Als RTF herunterladen</div>
-                <div class="dropdown-item" id="loadSessionBtn">Chat-Verlauf laden</div>
+                <div class="dropdown-item" id="exportPdfBtn">Download as PDF</div>
+                <div class="dropdown-item" id="exportMarkdownBtn">Download as Markdown</div>
+                <div class="dropdown-item" id="exportTxtBtn">Download as TXT</div>
+                <div class="dropdown-item" id="exportRtfBtn">Download as RTF</div>
+                <div class="dropdown-item" id="loadSessionBtn">Load chat history</div>
             </div>
         </div>
 
-        <button id="settingsButton" class="pill-button">Einstellungen</button>
-        <button id="logButton" class="pill-button">Log-Dateien</button>
+        <button id="settingsButton" class="pill-button">Settings</button>
+        <button id="logButton" class="pill-button">Log Files</button>
     </div>
 
     <div class="buttons-row">
         <button id="deepThinkButton" class="pill-button-mode">
-            <span class="mode-icon">&#10802;</span>DeepThink
+            <span class="mode-icon">&#10802;</span><span id="deepThinkButtonLabel">DeepThink</span>
         </button>
     </div>
 
     <div id="fileInfo"></div>
     
+    <!-- =====================================================================
+         SETTINGS OVERLAY
+         ===================================================================== -->
     <div id="settingsOverlay">
         <div id="settingsPanel">
             <div class="settings-header">
-                <div class="settings-title">Chat Einstellungen</div>
-                <button class="close-settings" id="closeSettings" title="Schliessen">&times;</button>
+                <div class="settings-title" id="settingsTitleText">Chat Settings</div>
+                <button class="close-settings" id="closeSettings" title="Close">&times;</button>
             </div>
             
-            <div class="settings-group">
+            <!-- LANGUAGE GROUP -->
+            <div class="settings-group" id="languageGroup">
                 <div class="group-header">
-                    <div class="group-title">Anredeform</div>
-                    <div class="group-status" id="addressFormStatus">Sie-Form</div>
+                    <div class="group-title" id="languageGroupTitle">Language</div>
+                    <div class="group-status" id="languageStatus">English</div>
+                </div>
+                <div class="setting-item toggle-active-blue" id="langEnItem">
+                    <label class="toggle-label" for="langEnToggle">
+                        <span class="setting-name" id="langEnLabel">English</span>
+                        <span class="toggle-switch">
+                            <input type="checkbox" id="langEnToggle" checked>
+                            <span class="toggle-slider"></span>
+                        </span>
+                    </label>
+                </div>
+                <div class="setting-item" id="langDeItem">
+                    <label class="toggle-label" for="langDeToggle">
+                        <span class="setting-name" id="langDeLabel">German</span>
+                        <span class="toggle-switch">
+                            <input type="checkbox" id="langDeToggle">
+                            <span class="toggle-slider"></span>
+                        </span>
+                    </label>
+                </div>
+                <div class="setting-item" id="langEsItem">
+                    <label class="toggle-label" for="langEsToggle">
+                        <span class="setting-name" id="langEsLabel">Spanish</span>
+                        <span class="toggle-switch">
+                            <input type="checkbox" id="langEsToggle">
+                            <span class="toggle-slider"></span>
+                        </span>
+                    </label>
+                </div>
+                <!-- Custom language slot - only visible when custom language is activated in language.xml -->
+                <div class="setting-item" id="langCustomItem" style="display:none;">
+                    <label class="toggle-label" for="langCustomToggle">
+                        <span class="setting-name" id="langCustomLabel">Custom</span>
+                        <span class="toggle-switch">
+                            <input type="checkbox" id="langCustomToggle">
+                            <span class="toggle-slider"></span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- ADDRESS FORM GROUP (hidden for English) -->
+            <div class="settings-group" id="addressFormGroup">
+                <div class="group-header">
+                    <div class="group-title" id="addressFormGroupTitle">Form of Address</div>
+                    <div class="group-status" id="addressFormStatus">Formal</div>
                 </div>
                 <div class="setting-item" id="sieFormItem">
                     <label class="toggle-label" for="sieFormToggle">
-                        <span class="setting-name">Sie-Form (formell)</span>
+                        <span class="setting-name" id="sieFormLabel">Formal</span>
                         <span class="toggle-switch">
                             <input type="checkbox" id="sieFormToggle">
                             <span class="toggle-slider"></span>
                         </span>
                     </label>
-                    <div class="setting-description">
-                        Sie werden mit der formellen Anrede "Sie" angesprochen.
+                    <div class="setting-description" id="sieFormDescription">
+                        You are addressed formally.
                     </div>
                 </div>
                 <div class="setting-item" id="duFormItem">
                     <label class="toggle-label" for="duFormToggle">
-                        <span class="setting-name">Du-Form (informell)</span>
+                        <span class="setting-name" id="duFormLabel">Informal</span>
                         <span class="toggle-switch">
                             <input type="checkbox" id="duFormToggle">
                             <span class="toggle-slider"></span>
                         </span>
                     </label>
-                    <div class="setting-description">
-                        Du wirst mit der informellen Anrede "Du" angesprochen.
+                    <div class="setting-description" id="duFormDescription">
+                        You are addressed informally.
                     </div>
                 </div>
             </div>
             
+            <!-- DEFAULT MODE GROUP -->
             <div class="settings-group">
                 <div class="group-header">
-                    <div class="group-title">Standard Modus</div>
-                    <div class="group-status" id="defaultModeStatus">Normaler Chat</div>
+                    <div class="group-title" id="defaultModeGroupTitle">Default Mode</div>
+                    <div class="group-status" id="defaultModeStatus">Normal Chat</div>
                 </div>
                 <div class="setting-item" id="chatModeItem">
                     <label class="toggle-label" for="chatModeToggle">
-                        <span class="setting-name">Normaler Chat</span>
+                        <span class="setting-name" id="chatModeLabel">Normal Chat</span>
                         <span class="toggle-switch">
                             <input type="checkbox" id="chatModeToggle">
                             <span class="toggle-slider"></span>
                         </span>
                     </label>
-                    <div class="setting-description">
-                        Standard-Gesprächsmodus für allgemeine Fragen. (deepseek-chat)
+                    <div class="setting-description" id="chatModeDescription">
+                        Standard conversation mode for general questions. (deepseek-chat)
                     </div>
                 </div>
                 <div class="setting-item" id="deepthinkModeItem">
                     <label class="toggle-label" for="deepthinkModeToggle">
-                        <span class="setting-name">DeepThink Modus</span>
+                        <span class="setting-name" id="deepthinkModeLabel">DeepThink Mode</span>
                         <span class="toggle-switch">
                             <input type="checkbox" id="deepthinkModeToggle">
                             <span class="toggle-slider"></span>
                         </span>
                     </label>
-                    <div class="setting-description">
-                        Tiefgehende Analyse mit Reasoning. (deepseek-reasoner)
+                    <div class="setting-description" id="deepthinkModeDescription">
+                        In-depth analysis with reasoning. (deepseek-reasoner)
                     </div>
                 </div>
             </div>
 
+            <!-- PRIVACY GROUP -->
             <div class="settings-group">
                 <div class="group-header">
-                    <div class="group-title">Datenschutz</div>
-                    <div class="group-status" id="noTrainingStatus">Aktiv</div>
+                    <div class="group-title" id="privacyGroupTitle">Privacy</div>
+                    <div class="group-status" id="noTrainingStatus">Active</div>
                 </div>
                 <div class="setting-item" id="noTrainingItem">
                     <label class="toggle-label" for="noTrainingToggle">
-                        <span class="setting-name">Daten nicht für Training verwenden</span>
+                        <span class="setting-name" id="noTrainingLabel">Do not use data for training</span>
                         <span class="toggle-switch">
                             <input type="checkbox" id="noTrainingToggle" checked>
                             <span class="toggle-slider"></span>
                         </span>
                     </label>
                     <div class="setting-description" id="noTrainingDescription">
-                        Sendet den Header X-No-Training: true an die API.<br>
-                        Soweit von der API unterstützt werden Ihre Daten nicht für das Training verwendet.<br>
-                        Standard: Eingeschaltet (Opt-Out aktiv).
+                        Sends the header X-No-Training: true to the API.
                     </div>
                 </div>
             </div>
             
             <div class="settings-info">
-                <div class="info-title">Einstellungen werden automatisch gespeichert</div>
+                <div class="info-title" id="settingsInfoTitle">Settings are saved automatically</div>
                 <div class="info-text" id="settingsInfoText">
-                    Ihre Einstellungen werden lokal in Ihrem Browser gespeichert und bleiben auch nach dem Schließen der Seite erhalten.
+                    Your settings are saved locally in your browser and persist after closing the page.
                 </div>
             </div>
             
             <button class="save-button" id="saveSettings">
-                 Einstellungen übernehmen
+                Apply Settings
             </button>
         </div>
     </div>
 
+    <!-- =====================================================================
+         SESSIONS OVERLAY
+         ===================================================================== -->
     <div id="sessionsOverlay">
         <div id="sessionsPanel">
             <div class="settings-header">
-                <div class="settings-title">Gespeicherte Chats</div>
-                <button class="close-settings" id="closeSessions" title="Schliessen">&times;</button>
+                <div class="settings-title" id="sessionsTitleText">Saved Chats</div>
+                <button class="close-settings" id="closeSessions" title="Close">&times;</button>
             </div>
             <div id="sessionsList"></div>
         </div>
     </div>
 
+    <!-- =====================================================================
+         LOG OVERLAY
+         ===================================================================== -->
     <div id="logOverlay">
         <div id="logPanel">
             <div class="settings-header">
-                <div class="settings-title">Log-Dateien</div>
-                <button class="close-settings" id="closeLog" title="Schliessen">&times;</button>
+                <div class="settings-title" id="logTitleText">Log Files</div>
+                <button class="close-settings" id="closeLog" title="Close">&times;</button>
             </div>
-            <button class="pill-button" id="refreshLog" style="margin-bottom: 10px;">Aktualisieren</button>
-            <div id="logContent">Lade Log-Dateien...</div>
+            <button class="pill-button" id="refreshLog" style="margin-bottom: 10px;">Refresh</button>
+            <div id="logContent">Loading log files...</div>
         </div>
     </div>
 
@@ -820,15 +871,278 @@
         const MAX_FILE_CONTENT_LENGTH = 50000;
         const MAX_FILE_SIZE_MB = 10;
         const PDF_EXTRACTION_TIMEOUT = 30000;
-        const SETTINGS_VERSION = '1.2';
+        const SETTINGS_VERSION = '1.3';
         const SUPPORTED_FILE_FORMATS = ['.txt', '.pdf'];
         const ACCEPTED_FILE_FORMATS = ['.txt', '.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png', '.csv', '.xlsx', '.pptx'];
+
+        // =====================================================================
+        // LANGUAGE SYSTEM
+        // =====================================================================
+        let langData = {};           // { langId: { id: text, ... }, ... }
+        let langMeta = {};           // { langId: { has_address_form, form_formal_label, ... }, ... }
+        let currentLang = 'en';      // active language ID
+
+        /**
+         * Load language.xml and populate langData / langMeta.
+         * Falls back gracefully if file is not found.
+         */
+        async function loadLanguage() {
+            try {
+                const response = await fetch('language.xml');
+                if (!response.ok) throw new Error('language.xml not found');
+                const xmlText = await response.text();
+                const parser = new DOMParser();
+                const xml = parser.parseFromString(xmlText, 'application/xml');
+                const languages = xml.querySelectorAll('language');
+                languages.forEach(lang => {
+                    const id = lang.getAttribute('id');
+                    const visible = lang.getAttribute('visible') !== 'false';
+                    const hasAddressForm = lang.getAttribute('has_address_form') === 'true';
+                    langMeta[id] = {
+                        name:               lang.getAttribute('name') || id,
+                        visible:            visible,
+                        has_address_form:   hasAddressForm,
+                        form_formal_label:  lang.getAttribute('form_formal_label') || 'Formal',
+                        form_informal_label:lang.getAttribute('form_informal_label') || 'Informal',
+                        form_formal_status: lang.getAttribute('form_formal_status') || 'Formal',
+                        form_informal_status:lang.getAttribute('form_informal_status') || 'Informal'
+                    };
+                    langData[id] = {};
+                    lang.querySelectorAll('text').forEach(textNode => {
+                        langData[id][textNode.getAttribute('id')] = textNode.textContent;
+                    });
+                });
+            } catch (e) {
+                console.warn('Language file could not be loaded, using built-in defaults.', e);
+                // Minimal English fallback
+                langMeta['en'] = { name: 'English', visible: true, has_address_form: false,
+                    form_formal_label: 'Formal', form_informal_label: 'Informal',
+                    form_formal_status: 'Formal', form_informal_status: 'Informal' };
+                langData['en'] = {};
+            }
+        }
+
+        /**
+         * Translate: returns text by numeric ID for current language.
+         * Falls back to English if not found.
+         */
+        function t(id) {
+            const sid = String(id);
+            if (langData[currentLang] && langData[currentLang][sid] !== undefined) {
+                return langData[currentLang][sid];
+            }
+            if (langData['en'] && langData['en'][sid] !== undefined) {
+                return langData['en'][sid];
+            }
+            return '??' + sid + '??';
+        }
+
+        /**
+         * Translate with placeholder substitution.
+         * tf(5) → "Sending..."
+         * tf(3, 10) → "File too large. Maximum size: 10 MB"
+         */
+        function tf(id, ...args) {
+            let text = t(id);
+            args.forEach((arg, i) => {
+                text = text.replace(new RegExp('\\{' + i + '\\}', 'g'), arg);
+            });
+            return text;
+        }
+
+        /**
+         * Get form-specific text (formal vs informal) for languages with address forms.
+         * For English (no address form), always returns the base text.
+         * isFormal: true = Sie/Usted, false = Du/Tú
+         */
+        function tform(idFormal, idInformal) {
+            const meta = langMeta[currentLang];
+            if (!meta || !meta.has_address_form) {
+                return t(idFormal); // no distinction in English
+            }
+            const addressForm = settings ? settings.addressForm : 'sie';
+            return (addressForm === 'sie') ? t(idFormal) : t(idInformal);
+        }
+
+        /**
+         * Apply all translations to static DOM elements.
+         * Called after language change or on startup.
+         */
+        function applyLanguage() {
+            const meta = langMeta[currentLang];
+            if (!meta) return;
+
+            // --- Server header ---
+            document.getElementById('serverInfo').textContent = 'IP: ' + (getServerIP() || '...');
+
+            // --- Buttons row 1 ---
+            sendButton.textContent = t(205);
+            document.getElementById('uploadButton').textContent = t(206);
+            exportButton.innerHTML = t(207) + ' <span class="dropdown-arrow">&#9660;</span>';
+            document.getElementById('exportPdfBtn').textContent = t(208);
+            document.getElementById('exportMarkdownBtn').textContent = t(209);
+            document.getElementById('exportTxtBtn').textContent = t(210);
+            document.getElementById('exportRtfBtn').textContent = t(211);
+            document.getElementById('loadSessionBtn').textContent = t(212);
+            settingsButton.textContent = t(213);
+            logButton.textContent = t(214);
+
+            // --- DeepThink button ---
+            document.getElementById('deepThinkButtonLabel').textContent = t(229);
+            document.getElementById('deepThinkIndicator').textContent = t(204);
+
+            // --- Settings overlay ---
+            document.getElementById('settingsTitleText').textContent = t(101);
+            document.getElementById('languageGroupTitle').textContent = t(124);
+            document.getElementById('langEnLabel').textContent = t(125);
+            document.getElementById('langDeLabel').textContent = t(126);
+            document.getElementById('langEsLabel').textContent = t(127);
+            document.getElementById('langCustomLabel').textContent = t(128);
+
+            // Show/hide custom language option
+            const customMeta = langMeta['custom'];
+            document.getElementById('langCustomItem').style.display =
+                (customMeta && customMeta.visible) ? 'block' : 'none';
+
+            // Address form group
+            const addressFormGroup = document.getElementById('addressFormGroup');
+            if (meta.has_address_form) {
+                addressFormGroup.style.display = 'block';
+                document.getElementById('addressFormGroupTitle').textContent = t(103);
+                document.getElementById('sieFormLabel').textContent = meta.form_formal_label;
+                document.getElementById('sieFormDescription').textContent = t(107);
+                document.getElementById('duFormLabel').textContent = meta.form_informal_label;
+                document.getElementById('duFormDescription').textContent = t(109);
+                // Update status
+                const addressFormStatus = document.getElementById('addressFormStatus');
+                addressFormStatus.textContent = (settings && settings.addressForm === 'sie')
+                    ? meta.form_formal_status : meta.form_informal_status;
+            } else {
+                addressFormGroup.style.display = 'none';
+            }
+
+            // Default mode group
+            document.getElementById('defaultModeGroupTitle').textContent = t(110);
+            document.getElementById('chatModeLabel').textContent = t(112);
+            document.getElementById('chatModeDescription').textContent = t(113);
+            document.getElementById('deepthinkModeLabel').textContent = t(114);
+            document.getElementById('deepthinkModeDescription').textContent = t(115);
+            document.getElementById('defaultModeStatus').textContent =
+                (settings && settings.defaultMode === 'deepthink') ? t(129) : t(130);
+
+            // Privacy group
+            document.getElementById('privacyGroupTitle').textContent = t(116);
+            document.getElementById('noTrainingLabel').textContent = t(119);
+            document.getElementById('settingsInfoTitle').textContent = t(121);
+            document.getElementById('saveSettings').textContent = t(123);
+
+            // Sessions overlay
+            document.getElementById('sessionsTitleText').textContent = t(215);
+
+            // Log overlay
+            document.getElementById('logTitleText').textContent = t(214);
+            document.getElementById('refreshLog').textContent = t(216);
+
+            // Language status
+            document.getElementById('languageStatus').textContent = meta.name;
+
+            // Input placeholder
+            updateInputPlaceholder();
+
+            // noTraining description (uses address-form-aware data text)
+            updateNoTrainingDescription();
+
+            // settingsInfoText (uses address-form-aware text)
+            updateSettingsInfoText();
+        }
+
+        /**
+         * Set the language toggle items to reflect the current language.
+         */
+        function setLanguageToggle(langId) {
+            ['en', 'de', 'es', 'custom'].forEach(id => {
+                const toggle = document.getElementById('lang' + id.charAt(0).toUpperCase() + id.slice(1) + 'Toggle');
+                const item   = document.getElementById('lang' + id.charAt(0).toUpperCase() + id.slice(1) + 'Item');
+                if (toggle) toggle.checked = (id === langId);
+                if (item)   item.classList.toggle('toggle-active-blue', id === langId);
+            });
+            const meta = langMeta[langId];
+            if (meta) document.getElementById('languageStatus').textContent = meta.name;
+        }
+
+        // =====================================================================
+        // CONTEXT HISTORY
+        // =====================================================================
+        let contextHistory = { messages: [], totalEstimatedTokens: 0, systemPromptTokens: 0 };
         
-        let isSending = false;
-        let currentSessionId = null;
-        let messageIdCounter = 0;
-        let activeSingleExportDropdown = null;
+        function updateSystemPromptTokens(systemPrompt) {
+            contextHistory.systemPromptTokens = Math.ceil(systemPrompt.length * TOKENS_PER_CHAR);
+        }
         
+        function addUserMessageToContext(content, mode, hasFile) {
+            const msgId = 'msg_' + (++messageIdCounter);
+            const estimatedTokens = Math.ceil(content.length * TOKENS_PER_CHAR);
+            contextHistory.messages.push({
+                id: msgId, role: 'user', content, mode, hasFile,
+                timestamp: new Date().toLocaleString(),
+                estimatedTokens
+            });
+            updateContextEstimation();
+            return msgId;
+        }
+        
+        function addAIResponseToContext(content, mode) {
+            const msgId = 'msg_' + (++messageIdCounter);
+            const estimatedTokens = Math.ceil(content.length * TOKENS_PER_CHAR);
+            contextHistory.messages.push({
+                id: msgId, role: 'assistant', content, mode,
+                timestamp: new Date().toLocaleString(),
+                estimatedTokens
+            });
+            updateContextEstimation();
+            return msgId;
+        }
+        
+        function updateContextEstimation() {
+            const modelName = (currentMode === 'deepthink') ? 'deepseek-reasoner' : 'deepseek-chat';
+            const config = MODEL_CONFIG[modelName];
+            const maxMessages = config.maxContextMessages;
+            const recentMessages = contextHistory.messages.slice(-maxMessages);
+            const totalTokens = recentMessages.reduce((sum, msg) => sum + (msg.estimatedTokens || 0), 0);
+            contextHistory.totalEstimatedTokens = totalTokens + contextHistory.systemPromptTokens;
+            updateContextDisplay();
+        }
+
+        function updateContextDisplay() {
+            const modelName = (currentMode === 'deepthink') ? 'deepseek-reasoner' : 'deepseek-chat';
+            const config = MODEL_CONFIG[modelName];
+            const pct = Math.min(100, Math.round((contextHistory.totalEstimatedTokens / config.maxContextTokens) * 100));
+            const contextInfoEl = document.getElementById('contextInfo');
+            contextInfoEl.textContent = t(2) + ' ' + pct + '% (' + modelName + ')';
+            if (pct >= 90) contextInfoEl.classList.add('warning');
+            else           contextInfoEl.classList.remove('warning');
+        }
+
+        function getServerIP() {
+            const info = document.getElementById('serverInfo').textContent;
+            const match = info.match(/(\d+\.\d+\.\d+\.\d+)/);
+            return match ? match[1] : null;
+        }
+        
+        function updateServerTitle() {
+            const serverInfoEl = document.getElementById('serverInfo');
+            serverInfoEl.textContent = 'IP: ' + t(1);
+            fetch('/cgi-bin/deepseek-api.py', { method: 'OPTIONS' })
+                .then(r => {
+                    const ip = r.headers.get('X-Server-IP') || 'unknown';
+                    serverInfoEl.textContent = 'IP: ' + ip;
+                })
+                .catch(() => { serverInfoEl.textContent = 'IP: unknown'; });
+        }
+
+        // =====================================================================
+        // SESSION MANAGEMENT
+        // =====================================================================
         function generateSessionId() {
             const now = new Date();
             const dateStr = now.toISOString().split('T')[0];
@@ -837,14 +1151,96 @@
             return `${dateStr}_${timeStr}_${random}`;
         }
         
-        // BUGFIX 1: Korrigierte Umlaut-Ersetzung
+        async function saveSession() {
+            if (!currentSessionId || contextHistory.messages.length === 0) return;
+            try {
+                await fetch(SAVE_SESSION_URL, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sessionId: currentSessionId, messages: contextHistory.messages })
+                });
+            } catch (e) { console.error('Session save error:', e); }
+        }
+        
+        async function loadSessionsList() {
+            const sessionsList = document.getElementById('sessionsList');
+            sessionsList.innerHTML = '<div style="color:#aaa;text-align:center;padding:20px;">...</div>';
+            try {
+                const response = await fetch(LOAD_SESSION_URL);
+                const data = await response.json();
+                if (!data.sessions || data.sessions.length === 0) {
+                    sessionsList.innerHTML = `<div class="no-sessions">${t(37)}</div>`;
+                    return;
+                }
+                sessionsList.innerHTML = '';
+                data.sessions.forEach(session => {
+                    const item = document.createElement('div');
+                    item.className = 'session-item';
+                    const msgCount = session.messageCount || 0;
+                    item.innerHTML = `
+                        <div class="session-header">
+                            <div class="session-id">${session.id}</div>
+                            <div class="session-date">${session.date || ''}</div>
+                        </div>
+                        <div class="session-preview">${session.preview || '...'}</div>
+                        <div class="session-count">${tf(38, msgCount)}</div>
+                        <div class="session-actions">
+                            <button class="session-load-btn">${t(223)}</button>
+                            <button class="session-delete-btn">${t(224)}</button>
+                        </div>`;
+                    item.querySelector('.session-load-btn').onclick = () => loadSession(session.id);
+                    item.querySelector('.session-delete-btn').onclick = () => deleteSession(session.id, item);
+                    sessionsList.appendChild(item);
+                });
+            } catch (e) {
+                sessionsList.innerHTML = `<div class="no-sessions">${tf(44, e.message)}</div>`;
+            }
+        }
+        
+        async function loadSession(sessionId) {
+            try {
+                await saveSession();
+                const response = await fetch(`${LOAD_SESSION_URL}?id=${sessionId}`);
+                const data = await response.json();
+                if (data.messages) {
+                    contextHistory.messages = [];
+                    messageIdCounter = 0;
+                    document.getElementById('chat').innerHTML = '';
+                    currentSessionId = sessionId;
+                    data.messages.forEach(msg => {
+                        const newId = 'msg_' + (++messageIdCounter);
+                        msg.id = newId;
+                        contextHistory.messages.push(msg);
+                        if (msg.role === 'user')
+                            addMessageToChat(msg.content, true, newId, msg.mode);
+                        else
+                            addMessageToChat(msg.content, false, newId, msg.mode);
+                    });
+                    updateContextEstimation();
+                    document.getElementById('sessionsOverlay').style.display = 'none';
+                }
+            } catch (e) { console.error('Session load error:', e); }
+        }
+        
+        async function deleteSession(sessionId, itemElement) {
+            try {
+                await fetch(`${DELETE_SESSION_URL}?id=${sessionId}`, { method: 'DELETE' });
+                itemElement.remove();
+            } catch (e) { alert(tf(45, e.message)); }
+        }
+
+        // =====================================================================
+        // UMLAUT REPLACEMENT (applied to user input and system prompts for DE)
+        // =====================================================================
         function replaceGermanUmlauts(text) {
             if (!text) return text;
             return text
                  .replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
                  .replace(/Ä/g, "Ae").replace(/Ö/g, "Oe").replace(/Ü/g, "Ue");
         }
-        
+
+        // =====================================================================
+        // PDF.JS
+        // =====================================================================
         async function loadPDFJSWorker() {
             const cdnUrls = [
                 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
@@ -855,10 +1251,10 @@
                     const response = await fetch(url, { method: 'HEAD' });
                     if (response.ok) return url;
                 } catch (error) {
-                    console.log(`CDN ${url} nicht erreichbar, versuche naechste...`);
+                    console.log(t(41) + ' ' + url);
                 }
             }
-            console.warn('Kein PDF.js Worker verfuegbar');
+            console.warn(t(42));
             return null;
         }
         
@@ -867,7 +1263,7 @@
                 let timeoutId;
                 try {
                     if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-                        throw new Error(`Datei zu groß. Maximale Größe: ${MAX_FILE_SIZE_MB} MB`);
+                        throw new Error(tf(3, MAX_FILE_SIZE_MB));
                     }
                     const workerUrl = await loadPDFJSWorker();
                     if (workerUrl) pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
@@ -877,7 +1273,7 @@
                     const totalPages = pdf.numPages;
                     const progressInfo = document.getElementById('fileInfo');
                     timeoutId = setTimeout(() => {
-                        reject(new Error('PDF-Extraktion hat zu lange gedauert.'));
+                        reject(new Error(t(4)));
                     }, PDF_EXTRACTION_TIMEOUT);
                     for (let i = 1; i <= totalPages && fullText.length < MAX_FILE_CONTENT_LENGTH; i++) {
                         const page = await pdf.getPage(i);
@@ -894,205 +1290,25 @@
                             const progress = Math.round((i / totalPages) * 100);
                             progressInfo.innerHTML = `
                                 <div class="pdf-processing">
-                                    PDF wird verarbeitet: Seite ${i}/${totalPages}
+                                    PDF: ${file.name} (${i}/${totalPages} pages, ${progress}%)
                                     <div class="pdf-progress">
-                                        <div class="pdf-progress-bar" style="width: ${progress}%"></div>
+                                        <div class="pdf-progress-bar" style="width:${progress}%"></div>
                                     </div>
                                 </div>`;
                         }
                     }
                     clearTimeout(timeoutId);
-                    if (fullText.length > MAX_FILE_CONTENT_LENGTH) fullText = fullText.substring(0, MAX_FILE_CONTENT_LENGTH);
                     resolve(fullText);
                 } catch (error) {
                     if (timeoutId) clearTimeout(timeoutId);
-                    reject(new Error(`PDF-Extraktion fehlgeschlagen: ${error.message}`));
+                    reject(error);
                 }
             });
-        }
-        
-        function getServerIP() {
-            try {
-                const hostname = window.location.hostname;
-                if (!hostname || hostname === 'localhost' || hostname === '127.0.0.1') return 'localhost';
-                return hostname;
-            } catch (error) { return 'Unbekannt'; }
-        }
-        
-        function updateServerTitle() {
-            document.getElementById('serverTitle').textContent = SERVER_NAME;
-            document.getElementById('serverInfo').textContent = `IP: ${getServerIP()}`;
-        }
-        
-        let contextHistory = { systemPromptTokens: 0, messages: [] };
-        
-        function estimateTokens(text) {
-            if (!text) return 0;
-            return Math.ceil(text.length * TOKENS_PER_CHAR);
         }
 
         // =====================================================================
-        // KONTEXT-ANZEIGE: Dynamisch, modellabhängig, Warnung ab 90%
+        // EXPORT FUNCTIONS
         // =====================================================================
-        function updateContextDisplay() {
-            const modelName = (currentMode === 'deepthink') ? 'deepseek-reasoner' : 'deepseek-chat';
-            const maxTokens = MODEL_CONFIG[modelName].maxContextTokens;
-            const usedTokens = contextHistory.totalEstimatedTokens || 0;
-            const percent = Math.min(100, Math.round((usedTokens / maxTokens) * 100));
-            const contextInfo = document.getElementById('contextInfo');
-            contextInfo.textContent = `Kontext: ${percent}% (${modelName})`;
-            if (percent >= 90) {
-                contextInfo.classList.add('warning');
-            } else {
-                contextInfo.classList.remove('warning');
-            }
-        }
-        
-        function updateContextEstimation() {
-            let total = contextHistory.systemPromptTokens;
-            contextHistory.messages.forEach(msg => total += estimateTokens(msg.content));
-            contextHistory.totalEstimatedTokens = total;
-            updateContextDisplay();
-            return total;
-        }
-
-        function getCurrentModelConfig() {
-            const modelName = (currentMode === 'deepthink') ? 'deepseek-reasoner' : 'deepseek-chat';
-            return MODEL_CONFIG[modelName];
-        }
-        
-        function addUserMessageToContext(content, mode, hasFile) {
-            const msgId = ++messageIdCounter;
-            const timestamp = new Date().toISOString();
-            contextHistory.messages.push({
-                id: msgId, role: "user", content, mode, hasFile,
-                timestamp, estimatedTokens: estimateTokens(content)
-            });
-            const cfg = getCurrentModelConfig();
-            while (contextHistory.messages.length > cfg.maxContextMessages * 2) contextHistory.messages.shift();
-            updateContextEstimation();
-            return msgId;
-        }
-        
-        function addAIResponseToContext(content, mode) {
-            const msgId = ++messageIdCounter;
-            const timestamp = new Date().toISOString();
-            contextHistory.messages.push({
-                id: msgId, role: "assistant", content, mode,
-                timestamp, estimatedTokens: estimateTokens(content)
-            });
-            const cfg = getCurrentModelConfig();
-            while (contextHistory.messages.length > cfg.maxContextMessages * 2) contextHistory.messages.shift();
-            updateContextEstimation();
-            return msgId;
-        }
-        
-        function updateSystemPromptTokens(prompt) {
-            contextHistory.systemPromptTokens = estimateTokens(prompt);
-            updateContextEstimation();
-        }
-        
-        async function saveSession() {
-            if (!currentSessionId) currentSessionId = generateSessionId();
-            try {
-                const chatData = {
-                    version: "1.0",
-                    timestamp: new Date().toISOString(),
-                    serverInfo: { name: SERVER_NAME, ip: getServerIP() },
-                    settings: settings,
-                    messages: contextHistory.messages
-                };
-                const response = await fetch(SAVE_SESSION_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ sessionId: currentSessionId, chatData })
-                });
-                if (!response.ok) console.error('Session-Speicherung fehlgeschlagen:', response.status);
-            } catch (error) {
-                console.error('Fehler beim Speichern der Session:', error);
-            }
-        }
-        
-        async function loadSessionsList() {
-            try {
-                const response = await fetch(LOAD_SESSION_URL, { method: 'GET' });
-                if (!response.ok) throw new Error('Laden fehlgeschlagen');
-                const data = await response.json();
-                const sessions = data.sessions || [];
-                const sessionsList = document.getElementById('sessionsList');
-                if (sessions.length === 0) {
-                    sessionsList.innerHTML = '<div class="no-sessions">Keine gespeicherten Chats vorhanden</div>';
-                    return;
-                }
-                sessionsList.innerHTML = sessions.map(session => `
-                    <div class="session-item" data-session-id="${session.sessionId}">
-                        <div class="session-header">
-                            <div class="session-id">${session.sessionId}</div>
-                            <div class="session-date">${session.timestamp}</div>
-                        </div>
-                        <div class="session-preview">"${session.preview}..."</div>
-                        <div class="session-count">${session.messageCount} Nachrichten</div>
-                        <div class="session-actions">
-                            <button class="session-load-btn" onclick="loadSpecificSession('${session.sessionId}')">Laden</button>
-                            <button class="session-delete-btn" onclick="deleteSession('${session.sessionId}')">Löschen</button>
-                        </div>
-                    </div>
-                `).join('');
-            } catch (error) {
-                console.error('Fehler beim Laden der Sessions:', error);
-                document.getElementById('sessionsList').innerHTML = '<div class="no-sessions">Fehler beim Laden der Sessions</div>';
-            }
-        }
-        
-        async function loadSpecificSession(sessionId) {
-            if (confirm('Aktueller Chat wird gespeichert und die ausgewählte Session wird geladen. Fortfahren?')) {
-                await saveSession();
-                try {
-                    const response = await fetch(LOAD_SESSION_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ sessionId })
-                    });
-                    if (!response.ok) throw new Error('Laden fehlgeschlagen');
-                    const data = await response.json();
-                    const chatData = data.chatData;
-                    document.getElementById('chat').innerHTML = '';
-                    currentSessionId = sessionId;
-                    contextHistory.messages = chatData.messages || [];
-                    messageIdCounter = Math.max(...contextHistory.messages.map(m => m.id || 0), 0);
-                    chatData.messages.forEach(msg => {
-                        if (msg.role === 'user') addMessageToChat(msg.content, true, msg.id, msg.mode);
-                        else addMessageToChat(msg.content, false, msg.id, msg.mode);
-                    });
-                    if (chatData.settings) {
-                        settings = chatData.settings;
-                        updateSettingsUI();
-                        setMode(settings.defaultMode);
-                        updateInputPlaceholder();
-                    }
-                    document.getElementById('sessionsOverlay').style.display = 'none';
-                } catch (error) {
-                    alert('Fehler beim Laden der Session: ' + error.message);
-                }
-            }
-        }
-        
-        async function deleteSession(sessionId) {
-            if (confirm(`Session ${sessionId} wirklich löschen?`)) {
-                try {
-                    const response = await fetch(DELETE_SESSION_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ sessionId })
-                    });
-                    if (!response.ok) throw new Error('Loeschen fehlgeschlagen');
-                    await loadSessionsList();
-                } catch (error) {
-                    alert('Fehler beim Löschen der Session: ' + error.message);
-                }
-            }
-        }
-        
         async function exportPDF() {
             try {
                 const chatData = { version: "1.0", timestamp: new Date().toISOString(),
@@ -1102,10 +1318,10 @@
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chatData })
                 });
-                if (!response.ok) throw new Error('PDF-Export fehlgeschlagen');
+                if (!response.ok) throw new Error(t(17));
                 const blob = await response.blob();
                 triggerDownload(blob, `deepseek-chat-${currentSessionId || 'export'}.pdf`);
-            } catch (error) { alert('Fehler beim PDF-Export: ' + error.message); }
+            } catch (error) { alert(tf(16, error.message)); }
         }
         
         async function exportMarkdown() {
@@ -1117,10 +1333,10 @@
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chatData })
                 });
-                if (!response.ok) throw new Error('Markdown-Export fehlgeschlagen');
+                if (!response.ok) throw new Error(t(19));
                 const blob = await response.blob();
                 triggerDownload(blob, `deepseek-chat-${currentSessionId || 'export'}.md`);
-            } catch (error) { alert('Fehler beim Markdown-Export: ' + error.message); }
+            } catch (error) { alert(tf(18, error.message)); }
         }
         
         async function exportTxt() {
@@ -1132,10 +1348,10 @@
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chatData })
                 });
-                if (!response.ok) throw new Error('TXT-Export fehlgeschlagen');
+                if (!response.ok) throw new Error(t(21));
                 const blob = await response.blob();
                 triggerDownload(blob, `deepseek-chat-${currentSessionId || 'export'}.txt`);
-            } catch (error) { alert('Fehler beim TXT-Export: ' + error.message); }
+            } catch (error) { alert(tf(20, error.message)); }
         }
         
         async function exportRtf() {
@@ -1147,10 +1363,10 @@
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chatData })
                 });
-                if (!response.ok) throw new Error('RTF-Export fehlgeschlagen');
+                if (!response.ok) throw new Error(t(23));
                 const blob = await response.blob();
                 triggerDownload(blob, `deepseek-chat-${currentSessionId || 'export'}.rtf`);
-            } catch (error) { alert('Fehler beim RTF-Export: ' + error.message); }
+            } catch (error) { alert(tf(22, error.message)); }
         }
         
         function triggerDownload(blob, filename) {
@@ -1175,32 +1391,31 @@
         function exportSingleAsTxt(msgId) {
             const text = getMsgText(msgId);
             const role = getMsgRole(msgId) === 'user' ? 'User' : 'DeepSeek AI';
-            const timestamp = new Date().toLocaleString('de-DE');
-            const content = `DeepSeek Chat - Einzelnachricht\nExportiert am: ${timestamp}\n\n${role}:\n${'='.repeat(40)}\n${text}\n`;
+            const timestamp = new Date().toLocaleString();
+            const content = `DeepSeek Chat\nExported: ${timestamp}\n\n${role}:\n${'='.repeat(40)}\n${text}\n`;
             const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-            triggerDownload(blob, `nachricht-${msgId}.txt`);
+            triggerDownload(blob, `message-${msgId}.txt`);
         }
         
         function exportSingleAsMarkdown(msgId) {
             const text = getMsgText(msgId);
             const role = getMsgRole(msgId) === 'user' ? 'User' : 'DeepSeek AI';
-            const timestamp = new Date().toLocaleString('de-DE');
-            const content = `# DeepSeek Chat - Einzelnachricht\n\n**Exportiert am:** ${timestamp}\n\n## ${role}\n\n${text}\n`;
+            const timestamp = new Date().toLocaleString();
+            const content = `# DeepSeek Chat\n\n**Exported:** ${timestamp}\n\n## ${role}\n\n${text}\n`;
             const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
-            triggerDownload(blob, `nachricht-${msgId}.md`);
+            triggerDownload(blob, `message-${msgId}.md`);
         }
         
         function exportSingleAsRtf(msgId) {
             const text = getMsgText(msgId);
             const role = getMsgRole(msgId) === 'user' ? 'User' : 'DeepSeek AI';
-            const timestamp = new Date().toLocaleString('de-DE');
+            const timestamp = new Date().toLocaleString();
             const escapedText = text
                 .replace(/\\/g, '\\\\').replace(/\{/g, '\\{').replace(/\}/g, '\\}')
                 .replace(/\n/g, '\\par\n');
-            const escapedRole = role.replace(/\\/g, '\\\\');
-            const rtfContent = `{\\rtf1\\ansi\\deff0\n{\\fonttbl{\\f0 Arial;}}\n{\\colortbl;\\red0\\green86\\blue179;\\red40\\green40\\blue40;}\n\\f0\\fs24\n{\\b\\cf1 DeepSeek Chat - Einzelnachricht}\\par\n{\\cf2 Exportiert am: ${timestamp}}\\par\n\\par\n{\\b\\cf1 ${escapedRole}:}\\par\n${'_'.repeat(40)}\\par\n\\par\n${escapedText}\\par\n}`;
+            const rtfContent = `{\\rtf1\\ansi\\deff0\n{\\fonttbl{\\f0 Arial;}}\n{\\colortbl;\\red0\\green86\\blue179;\\red40\\green40\\blue40;}\n\\f0\\fs24\n{\\b\\cf1 DeepSeek Chat}\\par\n{\\cf2 Exported: ${timestamp}}\\par\n\\par\n{\\b\\cf1 ${role}:}\\par\n${'_'.repeat(40)}\\par\n\\par\n${escapedText}\\par\n}`;
             const blob = new Blob([rtfContent], { type: 'application/rtf' });
-            triggerDownload(blob, `nachricht-${msgId}.rtf`);
+            triggerDownload(blob, `message-${msgId}.rtf`);
         }
         
         async function exportSingleAsPdf(msgId) {
@@ -1214,10 +1429,10 @@
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chatData: singleChatData })
                 });
-                if (!response.ok) throw new Error('PDF-Export fehlgeschlagen');
+                if (!response.ok) throw new Error(t(17));
                 const blob = await response.blob();
-                triggerDownload(blob, `nachricht-${msgId}.pdf`);
-            } catch (error) { alert('Fehler beim PDF-Export: ' + error.message); }
+                triggerDownload(blob, `message-${msgId}.pdf`);
+            } catch (error) { alert(tf(16, error.message)); }
         }
         
         function showSingleExportDropdown(msgId, btnElement) {
@@ -1231,42 +1446,44 @@
                 dropdown = document.createElement('div');
                 dropdown.className = 'single-export-dropdown';
                 dropdown.innerHTML = `
-                    <div class="single-export-item" data-format="txt">Als TXT</div>
-                    <div class="single-export-item" data-format="md">Als Markdown</div>
-                    <div class="single-export-item" data-format="rtf">Als RTF</div>
-                    <div class="single-export-item" data-format="pdf">Als PDF</div>
-                `;
+                    <div class="single-export-item" data-format="txt">${t(225)}</div>
+                    <div class="single-export-item" data-format="md">${t(226)}</div>
+                    <div class="single-export-item" data-format="rtf">${t(227)}</div>
+                    <div class="single-export-item" data-format="pdf">${t(228)}</div>`;
                 dropdown.querySelectorAll('.single-export-item').forEach(item => {
                     item.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        const format = item.getAttribute('data-format');
+                        const fmt = item.getAttribute('data-format');
                         dropdown.classList.remove('show');
                         activeSingleExportDropdown = null;
-                        if (format === 'txt') exportSingleAsTxt(msgId);
-                        else if (format === 'md') exportSingleAsMarkdown(msgId);
-                        else if (format === 'rtf') exportSingleAsRtf(msgId);
-                        else if (format === 'pdf') exportSingleAsPdf(msgId);
+                        if (fmt === 'txt')  exportSingleAsTxt(msgId);
+                        if (fmt === 'md')   exportSingleAsMarkdown(msgId);
+                        if (fmt === 'rtf')  exportSingleAsRtf(msgId);
+                        if (fmt === 'pdf')  exportSingleAsPdf(msgId);
                     });
                 });
                 container.appendChild(dropdown);
             }
-            dropdown.classList.toggle('show');
-            activeSingleExportDropdown = dropdown.classList.contains('show') ? dropdown : null;
+            dropdown.classList.add('show');
+            activeSingleExportDropdown = dropdown;
         }
-        
+
+        // =====================================================================
+        // FEEDBACK
+        // =====================================================================
         async function sendFeedbackLog(type, msgId, preview) {
             try {
                 await fetch(FEEDBACK_LOG_URL, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ type, msgId, preview })
                 });
-            } catch (error) { console.error('Fehler beim Feedback-Logging:', error); }
+            } catch (error) { console.error('Feedback log error:', error); }
         }
 
         function handleLike(msgId, likeBtn, dislikeBtn) {
             const isLiked = likeBtn.classList.contains('liked');
             likeBtn.classList.remove('liked'); dislikeBtn.classList.remove('disliked');
-            likeBtn.textContent = 'Mag ich'; dislikeBtn.textContent = 'Mag ich gar nicht';
+            likeBtn.textContent = t(218); dislikeBtn.textContent = t(219);
             if (!isLiked) {
                 likeBtn.classList.add('liked');
                 sendFeedbackLog('LIKE', msgId, getMsgText(msgId).substring(0, 60));
@@ -1276,7 +1493,7 @@
         function handleDislike(msgId, likeBtn, dislikeBtn) {
             const isDisliked = dislikeBtn.classList.contains('disliked');
             likeBtn.classList.remove('liked'); dislikeBtn.classList.remove('disliked');
-            likeBtn.textContent = 'Mag ich'; dislikeBtn.textContent = 'Mag ich gar nicht';
+            likeBtn.textContent = t(218); dislikeBtn.textContent = t(219);
             if (!isDisliked) {
                 dislikeBtn.classList.add('disliked');
                 sendFeedbackLog('DISLIKE', msgId, getMsgText(msgId).substring(0, 60));
@@ -1286,19 +1503,21 @@
         function handleCopy(msgId, copyBtn) {
             const text = getMsgText(msgId);
             navigator.clipboard.writeText(text).then(() => {
-                copyBtn.classList.add('copied'); copyBtn.textContent = 'Kopiert!';
-                setTimeout(() => { copyBtn.classList.remove('copied'); copyBtn.textContent = 'Kopieren'; }, 2000);
+                copyBtn.classList.add('copied'); copyBtn.textContent = t(14);
+                setTimeout(() => { copyBtn.classList.remove('copied'); copyBtn.textContent = t(217); }, 2000);
             }).catch(() => {
                 const textarea = document.createElement('textarea');
                 textarea.value = text; document.body.appendChild(textarea);
                 textarea.select(); document.execCommand('copy');
                 document.body.removeChild(textarea);
-                copyBtn.classList.add('copied'); copyBtn.textContent = 'Kopiert!';
-                setTimeout(() => { copyBtn.classList.remove('copied'); copyBtn.textContent = 'Kopieren'; }, 2000);
+                copyBtn.classList.add('copied'); copyBtn.textContent = t(14);
+                setTimeout(() => { copyBtn.classList.remove('copied'); copyBtn.textContent = t(217); }, 2000);
             });
         }
 
-        // BUGFIX 2: handleRegenerate() mit Streaming
+        // =====================================================================
+        // REGENERATE
+        // =====================================================================
         async function handleRegenerate(msgId) {
             if (isSending) return;
             const msgIndex = contextHistory.messages.findIndex(m => m.id === msgId);
@@ -1314,14 +1533,9 @@
                 container.remove();
             }
             isSending = true;
-            sendButton.disabled = true; sendButton.textContent = 'Wird gesendet...';
+            sendButton.disabled = true; sendButton.textContent = t(5);
             inputField.disabled = true;
-            let systemPrompt = settings.addressForm === 'sie' ?
-                'Sie sind ein hilfreicher Assistent. Verwenden Sie in allen Antworten konsequent die Sie-Form.' :
-                'Du bist ein hilfreicher Assistent. Verwende in allen Antworten konsequent die Du-Form.';
-            if (userMsg.mode === 'deepthink') systemPrompt += settings.addressForm === 'sie' ?
-                ' Bitte geben Sie eine tiefgehende Analyse mit detaillierten Überlegungen.' :
-                ' Bitte gib eine tiefgehende Analyse mit detaillierten Überlegungen.';
+            const systemPrompt = buildSystemPrompt(userMsg.mode === 'deepthink');
             updateSystemPromptTokens(systemPrompt);
             const processedSystem = replaceGermanUmlauts(systemPrompt);
             const aiContainer = document.createElement('div');
@@ -1343,7 +1557,7 @@
                 });
                 if (!response.ok) {
                     const errorText = await response.text();
-                    throw new Error(`API-Fehler (${response.status}): ${errorText}`);
+                    throw new Error(tf(24, response.status, errorText));
                 }
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
@@ -1373,7 +1587,7 @@
                 const rightButtons = document.createElement('div');
                 rightButtons.className = 'message-buttons-right';
                 const dlBtn = document.createElement('button');
-                dlBtn.className = 'download-message-btn'; dlBtn.textContent = 'Exportieren';
+                dlBtn.className = 'download-message-btn'; dlBtn.textContent = t(221);
                 dlBtn.onclick = (e) => { e.stopPropagation(); showSingleExportDropdown(aiMsgId, dlBtn); };
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'delete-message-btn'; deleteBtn.textContent = 'X';
@@ -1387,12 +1601,12 @@
                 aiContainer.remove();
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'ai-message';
-                errorDiv.textContent = `Fehler: ${replaceGermanUmlauts(error.message)}`;
+                errorDiv.textContent = tf(25, replaceGermanUmlauts(error.message));
                 chat.appendChild(errorDiv);
                 chat.appendChild(document.createElement('div')).className = 'message-divider';
-                console.error('Fehler beim Regenerieren:', error);
+                console.error(t(27), error);
             } finally {
-                isSending = false; sendButton.disabled = false; sendButton.textContent = 'Senden';
+                isSending = false; sendButton.disabled = false; sendButton.textContent = t(205);
                 inputField.disabled = false; chat.scrollTop = chat.scrollHeight;
             }
         }
@@ -1401,16 +1615,16 @@
             const feedbackDiv = document.createElement('div');
             feedbackDiv.className = 'feedback-buttons';
             const copyBtn = document.createElement('button');
-            copyBtn.className = 'feedback-btn'; copyBtn.textContent = 'Kopieren';
+            copyBtn.className = 'feedback-btn'; copyBtn.textContent = t(217);
             copyBtn.onclick = (e) => { e.stopPropagation(); handleCopy(msgId, copyBtn); };
             const likeBtn = document.createElement('button');
-            likeBtn.className = 'feedback-btn'; likeBtn.textContent = 'Mag ich';
+            likeBtn.className = 'feedback-btn'; likeBtn.textContent = t(218);
             const dislikeBtn = document.createElement('button');
-            dislikeBtn.className = 'feedback-btn'; dislikeBtn.textContent = 'Mag ich gar nicht';
+            dislikeBtn.className = 'feedback-btn'; dislikeBtn.textContent = t(219);
             likeBtn.onclick = (e) => { e.stopPropagation(); handleLike(msgId, likeBtn, dislikeBtn); };
             dislikeBtn.onclick = (e) => { e.stopPropagation(); handleDislike(msgId, likeBtn, dislikeBtn); };
             const regenBtn = document.createElement('button');
-            regenBtn.className = 'feedback-btn'; regenBtn.textContent = 'Regenerieren';
+            regenBtn.className = 'feedback-btn'; regenBtn.textContent = t(220);
             regenBtn.onclick = (e) => { e.stopPropagation(); handleRegenerate(msgId); };
             feedbackDiv.appendChild(copyBtn); feedbackDiv.appendChild(likeBtn);
             feedbackDiv.appendChild(dislikeBtn); feedbackDiv.appendChild(regenBtn);
@@ -1419,17 +1633,17 @@
 
         async function fetchLog() {
             const logContent = document.getElementById('logContent');
-            logContent.textContent = 'Lade Log-Dateien...';
+            logContent.textContent = t(6);
             try {
                 const response = await fetch(GET_LOG_URL);
-                if (!response.ok) throw new Error('Fehler beim Laden');
+                if (!response.ok) throw new Error('error');
                 const text = await response.text();
-                logContent.textContent = text || 'Keine Log-Einträge vorhanden';
-            } catch (error) { logContent.textContent = 'Fehler beim Laden der Log-Datei: ' + error.message; }
+                logContent.textContent = text || t(7);
+            } catch (error) { logContent.textContent = tf(8, error.message); }
         }
         
         async function deleteMessage(msgId) {
-            if (!confirm('Diese Nachricht und alle nachfolgenden Nachrichten löschen?')) return;
+            if (!confirm(t(9))) return;
             const msgIndex = contextHistory.messages.findIndex(m => m.id === msgId);
             if (msgIndex !== -1) contextHistory.messages = contextHistory.messages.slice(0, msgIndex);
             updateContextEstimation();
@@ -1442,24 +1656,28 @@
             }
             await saveSession();
         }
-        
+
+        // =====================================================================
+        // SETTINGS
+        // =====================================================================
         function migrateSettings(oldSettings) {
             if (!oldSettings || typeof oldSettings !== 'object') {
-                return { version: SETTINGS_VERSION, addressForm: 'sie', defaultMode: 'chat', noTraining: true };
+                return { version: SETTINGS_VERSION, language: 'en', addressForm: 'sie', defaultMode: 'chat', noTraining: true };
             }
             let defaultMode = oldSettings.defaultMode || 'chat';
             if (defaultMode === 'search') defaultMode = 'chat';
             return {
-                version: SETTINGS_VERSION,
+                version:     SETTINGS_VERSION,
+                language:    oldSettings.language || 'en',
                 addressForm: oldSettings.addressForm || 'sie',
                 defaultMode: defaultMode,
-                noTraining: oldSettings.noTraining !== undefined ? oldSettings.noTraining : true
+                noTraining:  oldSettings.noTraining !== undefined ? oldSettings.noTraining : true
             };
         }
         
-        let settings = { version: SETTINGS_VERSION, addressForm: 'sie', defaultMode: 'chat', noTraining: true };
+        let settings = { version: SETTINGS_VERSION, language: 'en', addressForm: 'sie', defaultMode: 'chat', noTraining: true };
         let currentMode = 'chat';
-        
+
         const sendButton = document.getElementById('sendButton');
         const settingsButton = document.getElementById('settingsButton');
         const deepThinkButton = document.getElementById('deepThinkButton');
@@ -1501,6 +1719,10 @@
         let selectedFile = null;
         let fileTextContent = null;
         let eventListeners = [];
+        let isSending = false;
+        let currentSessionId = null;
+        let messageIdCounter = 0;
+        let activeSingleExportDropdown = null;
         
         function addEventListenerWithCleanup(element, event, handler) {
             element.addEventListener(event, handler);
@@ -1513,10 +1735,73 @@
             });
             eventListeners = [];
         }
+
+        /**
+         * Build the system prompt based on current language and address form.
+         * id29 = formal/no-form system prompt
+         * id30 = informal system prompt
+         * id31 = deepthink addition (formal/no-form)
+         * id32 = deepthink addition (informal)
+         */
+        function buildSystemPrompt(isDeepThink) {
+            const meta = langMeta[currentLang];
+            let base;
+            if (!meta || !meta.has_address_form) {
+                base = t(29); // no distinction (English, Custom without form)
+            } else {
+                base = (settings.addressForm === 'sie') ? t(29) : t(30);
+            }
+            if (isDeepThink) {
+                if (!meta || !meta.has_address_form) {
+                    base += t(31);
+                } else {
+                    base += (settings.addressForm === 'sie') ? t(31) : t(32);
+                }
+            }
+            return base;
+        }
         
         function updateInputPlaceholder() {
-            inputField.placeholder = settings.addressForm === 'sie' ?
-                'Ihre Nachricht hier eingeben...' : 'Deine Nachricht hier eingeben...';
+            const meta = langMeta[currentLang];
+            if (!meta || !meta.has_address_form) {
+                inputField.placeholder = t(201); // English / no-form
+            } else {
+                inputField.placeholder = (settings.addressForm === 'sie') ? t(202) : t(203);
+            }
+        }
+
+        function updateNoTrainingDescription() {
+            const noTrainingDesc = document.getElementById('noTrainingDescription');
+            if (!noTrainingDesc) return;
+            const meta = langMeta[currentLang];
+            let dataText;
+            if (!meta || !meta.has_address_form) {
+                dataText = t(43);
+            } else if (currentLang === 'de') {
+                dataText = (settings.addressForm === 'sie') ? t('43_sie') : t('43_du');
+            } else if (currentLang === 'es') {
+                dataText = (settings.addressForm === 'sie') ? t('43_formal') : t('43_informal');
+            } else {
+                dataText = t(43);
+            }
+            const rawTemplate = t(120);
+            noTrainingDesc.innerHTML = rawTemplate.replace('{0}', dataText)
+                .replace(/&lt;br&gt;/g, '<br>');
+        }
+
+        function updateSettingsInfoText() {
+            const settingsInfoText = document.getElementById('settingsInfoText');
+            if (!settingsInfoText) return;
+            const meta = langMeta[currentLang];
+            if (!meta || !meta.has_address_form) {
+                settingsInfoText.textContent = t(122);
+            } else if (currentLang === 'de') {
+                settingsInfoText.textContent = (settings.addressForm === 'sie') ? t('122_sie') : t('122_du');
+            } else if (currentLang === 'es') {
+                settingsInfoText.textContent = (settings.addressForm === 'sie') ? t('122_formal') : t('122_informal');
+            } else {
+                settingsInfoText.textContent = t(122);
+            }
         }
         
         function setMode(mode) {
@@ -1539,7 +1824,11 @@
             duFormToggle.checked = (value === 'du');
             sieFormItem.classList.toggle('toggle-active-blue', value === 'sie');
             duFormItem.classList.toggle('toggle-active-blue', value === 'du');
-            addressFormStatus.textContent = value === 'sie' ? 'Sie-Form' : 'Du-Form';
+            const meta = langMeta[currentLang];
+            if (meta && meta.has_address_form) {
+                addressFormStatus.textContent = value === 'sie'
+                    ? meta.form_formal_status : meta.form_informal_status;
+            }
         }
 
         function setDefaultModeToggle(value) {
@@ -1547,7 +1836,7 @@
             deepthinkModeToggle.checked = (value === 'deepthink');
             chatModeItem.classList.toggle('toggle-active-blue', value === 'chat');
             deepthinkModeItem.classList.toggle('toggle-active-blue', value === 'deepthink');
-            defaultModeStatus.textContent = value === 'chat' ? 'Normaler Chat' : 'DeepThink Modus';
+            defaultModeStatus.textContent = value === 'chat' ? t(130) : t(129);
         }
         
         function loadSettings() {
@@ -1556,67 +1845,55 @@
                 if (savedData) {
                     const parsedSettings = JSON.parse(savedData);
                     settings = migrateSettings(parsedSettings);
+                    // Apply language from settings
+                    if (settings.language && langMeta[settings.language]) {
+                        currentLang = settings.language;
+                    }
                     updateSettingsUI();
                     setMode(settings.defaultMode);
                     updateInputPlaceholder();
                 }
             } catch (e) {
-                console.error('Fehler beim Laden der Einstellungen:', e);
-                settings = { version: SETTINGS_VERSION, addressForm: 'sie', defaultMode: 'chat', noTraining: true };
+                console.error(tf(39, e.message));
+                settings = { version: SETTINGS_VERSION, language: 'en', addressForm: 'sie', defaultMode: 'chat', noTraining: true };
             }
         }
         
         function saveSettings() {
             settings.version = SETTINGS_VERSION;
             localStorage.setItem('deepseekSettings', JSON.stringify(settings));
-            saveSettingsButton.textContent = 'Gespeichert!';
-            setTimeout(() => saveSettingsButton.textContent = 'Einstellungen übernehmen', 1500);
+            saveSettingsButton.textContent = t(28);
+            setTimeout(() => saveSettingsButton.textContent = t(123), 1500);
         }
         
         function updateSettingsUI() {
+            setLanguageToggle(currentLang);
             setAddressFormToggle(settings.addressForm);
             setDefaultModeToggle(settings.defaultMode);
             noTrainingToggle.checked = (settings.noTraining !== false);
-            noTrainingStatus.textContent = settings.noTraining !== false ? 'Aktiv' : 'Inaktiv';
-            if (settings.noTraining !== false) {
-                noTrainingItem.classList.add('toggle-active');
-            } else {
-                noTrainingItem.classList.remove('toggle-active');
-            }
-            const noTrainingDesc = document.getElementById('noTrainingDescription');
-            if (noTrainingDesc) {
-                const daten = settings.addressForm === 'sie' ? 'Ihre Daten' : 'Deine Daten';
-                noTrainingDesc.innerHTML = `Sendet den Header X-No-Training: true an die API.<br>
-                        Soweit von der API unterstützt werden ${daten} nicht für das Training verwendet.<br>
-                        Standard: Eingeschaltet (Opt-Out aktiv).`;
-            }
-            const settingsInfoText = document.getElementById('settingsInfoText');
-            if (settingsInfoText) {
-                settingsInfoText.textContent = settings.addressForm === 'sie' ?
-                    'Ihre Einstellungen werden lokal in Ihrem Browser gespeichert und bleiben auch nach dem Schließen der Seite erhalten.' :
-                    'Deine Einstellungen werden lokal in deinem Browser gespeichert und bleiben auch nach dem Schließen der Seite erhalten.';
-            }
+            noTrainingStatus.textContent = settings.noTraining !== false ? t(117) : t(118);
+            if (settings.noTraining !== false) noTrainingItem.classList.add('toggle-active');
+            else noTrainingItem.classList.remove('toggle-active');
+            applyLanguage();
         }
-        
+
+        // =====================================================================
+        // SEND MESSAGE
+        // =====================================================================
         async function sendMessage() {
             if (isSending) return;
             const message = inputField.value.trim();
             if (!message && !fileTextContent) return;
             isSending = true;
-            sendButton.disabled = true; sendButton.textContent = 'Wird gesendet...';
+            sendButton.disabled = true; sendButton.textContent = t(5);
             inputField.disabled = true;
             let userMessage = message;
-            if (fileTextContent) userMessage = `Datei-Inhalt:\n${fileTextContent}\n\nFrage: ${message}`;
+            if (fileTextContent) userMessage = `${t(12)}\n${fileTextContent}\n\n${t(13)} ${message}`;
             const hasFile = !!fileTextContent;
             const msgId = addUserMessageToContext(userMessage, currentMode, hasFile);
             addMessageToChat(message, true, msgId, currentMode);
             inputField.value = '';
-            let systemPrompt = settings.addressForm === 'sie' ?
-                'Sie sind ein hilfreicher Assistent. Verwenden Sie in allen Antworten konsequent die Sie-Form.' :
-                'Du bist ein hilfreicher Assistent. Verwende in allen Antworten konsequent die Du-Form.';
-            if (currentMode === 'deepthink') systemPrompt += settings.addressForm === 'sie' ?
-                ' Bitte geben Sie eine tiefgehende Analyse mit detaillierten Überlegungen.' :
-                ' Bitte gib eine tiefgehende Analyse mit detaillierten Überlegungen.';
+            const systemPrompt = buildSystemPrompt(currentMode === 'deepthink');
             updateSystemPromptTokens(systemPrompt);
             const processedSystem = replaceGermanUmlauts(systemPrompt);
             const aiContainer = document.createElement('div');
@@ -1636,7 +1913,7 @@
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ model: modelName, messages, max_tokens: maxTokens, no_training: settings.noTraining })
                 });
-                if (!response.ok) throw new Error(`API-Fehler (${response.status})`);
+                if (!response.ok) throw new Error(tf(24, response.status, ''));
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 let fullText = '';
@@ -1665,7 +1942,7 @@
                 const rightButtons = document.createElement('div');
                 rightButtons.className = 'message-buttons-right';
                 const dlBtn = document.createElement('button');
-                dlBtn.className = 'download-message-btn'; dlBtn.textContent = 'Exportieren';
+                dlBtn.className = 'download-message-btn'; dlBtn.textContent = t(221);
                 dlBtn.onclick = (e) => { e.stopPropagation(); showSingleExportDropdown(aiMsgId, dlBtn); };
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'delete-message-btn'; deleteBtn.textContent = 'X';
@@ -1679,13 +1956,17 @@
                 aiContainer.remove();
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'ai-message';
-                errorDiv.textContent = `Fehler: ${replaceGermanUmlauts(error.message)}`;
+                errorDiv.textContent = tf(25, replaceGermanUmlauts(error.message));
                 chat.appendChild(errorDiv);
                 chat.appendChild(document.createElement('div')).className = 'message-divider';
-                console.error('Fehler beim Senden:', error);
+                console.error(t(26), error);
             } finally {
-                isSending = false; sendButton.disabled = false; sendButton.textContent = 'Senden';
-                inputField.disabled = false; chat.scrollTop = chat.scrollHeight;
+                isSending = false; sendButton.disabled = false; sendButton.textContent = t(205);
+                inputField.disabled = false;
+                selectedFile = null; fileTextContent = null;
+                fileInfo.innerHTML = ''; fileInfo.classList.remove('visible');
+                fileUpload.value = '';
+                chat.scrollTop = chat.scrollHeight;
             }
         }
         
@@ -1701,7 +1982,7 @@
             const rightButtons = document.createElement('div');
             rightButtons.className = 'message-buttons-right';
             const dlBtn = document.createElement('button');
-            dlBtn.className = 'download-message-btn'; dlBtn.textContent = 'Exportieren';
+            dlBtn.className = 'download-message-btn'; dlBtn.textContent = t(221);
             dlBtn.onclick = (e) => { e.stopPropagation(); showSingleExportDropdown(msgId, dlBtn); };
             const deleteBtn = document.createElement('button');
             deleteBtn.className = 'delete-message-btn'; deleteBtn.textContent = 'X';
@@ -1726,7 +2007,7 @@
             { bytes: [0xFE, 0xED, 0xFA, 0xCE],                                                                                                             platform: "macOS/iOS ARM 32 Bit",     format: "Mach-O 32 Bit Big Endian" },
             { bytes: [0xFE, 0xED, 0xFA, 0xCF],                                                                                                             platform: "macOS/iOS ARM 64 Bit",     format: "Mach-O 64 Bit Big Endian" },
             { bytes: [0x23, 0x21],                                                                                                                         platform: "Linux/macOS/Unix",         format: "Shell Script (#!)" },
-            { bytes: [0x55, 0x0D, 0x0D, 0x0A],                                                                                                            platform: "Python (plattformunabh.)", format: "Python Bytecode (.pyc)" },
+            { bytes: [0x55, 0x0D, 0x0D, 0x0A],                                                                                                            platform: "Python (cross-platform)", format: "Python Bytecode (.pyc)" },
         ];
 
         async function checkMagicBytes(file) {
@@ -1750,17 +2031,17 @@
             selectedFile = file; fileTextContent = null;
             const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
             if (!ACCEPTED_FILE_FORMATS.includes(fileExtension)) {
-                alert(`Format nicht unterstützt: ${fileExtension}\n\nUnterstützte Formate:\n${ACCEPTED_FILE_FORMATS.join(', ')}`);
+                alert(tf(10, fileExtension, ACCEPTED_FILE_FORMATS.join(', ')));
                 selectedFile = null; fileUpload.value = ''; return;
             }
             const execSig = await checkMagicBytes(file);
             if (execSig) {
-                fileInfo.innerHTML = `<div class="pdf-error">Sicherheitsfehler: Ausführbare Datei erkannt!<br>Datei: ${file.name}<br>Plattform: ${execSig.platform}<br>Format: ${execSig.format}<br>Upload wurde blockiert.</div>`;
+                fileInfo.innerHTML = `<div class="pdf-error">${t(11)}<br>${t(34).replace('{0}', file.name).replace('{1}', '')}<br>Platform: ${execSig.platform}<br>Format: ${execSig.format}</div>`;
                 fileInfo.classList.add('visible'); selectedFile = null; fileUpload.value = ''; return;
             }
             const isProcessable = SUPPORTED_FILE_FORMATS.includes(fileExtension);
             if (!isProcessable) {
-                fileInfo.innerHTML = `<div class="pdf-processing">Datei: ${file.name} - Format wird akzeptiert, aber nicht verarbeitet.</div><button id="removeFile">Entfernen</button>`;
+                fileInfo.innerHTML = `<div class="pdf-processing">${tf(33, file.name)}</div><button id="removeFile">${t(222)}</button>`;
                 fileInfo.classList.add('visible');
                 const removeBtn = document.getElementById('removeFile');
                 if (removeBtn) {
@@ -1774,23 +2055,23 @@
                 }
                 return;
             }
-            fileInfo.innerHTML = `Datei: ${file.name} (${(file.size / 1024).toFixed(2)} KB) <button id="removeFile">Entfernen</button>`;
+            fileInfo.innerHTML = `${tf(34, file.name, (file.size / 1024).toFixed(2))} <button id="removeFile">${t(222)}</button>`;
             fileInfo.classList.add('visible');
             try {
                 if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
                     fileTextContent = await extractTextFromPDF(file);
-                    fileInfo.innerHTML = `Datei: ${file.name} - PDF verarbeitet (${fileTextContent.length} Zeichen) <button id="removeFile">Entfernen</button>`;
+                    fileInfo.innerHTML = `${tf(35, file.name, fileTextContent.length)} <button id="removeFile">${t(222)}</button>`;
                 } else if (file.type.startsWith('text/') || file.name.toLowerCase().endsWith('.txt')) {
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         fileTextContent = e.target.result;
                         if (fileTextContent.length > MAX_FILE_CONTENT_LENGTH) fileTextContent = fileTextContent.substring(0, MAX_FILE_CONTENT_LENGTH);
-                        fileInfo.innerHTML = `Datei: ${file.name} - Textdatei geladen (${fileTextContent.length} Zeichen) <button id="removeFile">Entfernen</button>`;
+                        fileInfo.innerHTML = `${tf(36, file.name, fileTextContent.length)} <button id="removeFile">${t(222)}</button>`;
                     };
                     reader.readAsText(file);
                 }
             } catch (error) {
-                fileInfo.innerHTML = `<div class="pdf-error">Fehler: ${replaceGermanUmlauts(error.message)}</div>`;
+                fileInfo.innerHTML = `<div class="pdf-error">${tf(25, replaceGermanUmlauts(error.message))}</div>`;
             }
             const removeBtn = document.getElementById('removeFile');
             if (removeBtn) {
@@ -1840,6 +2121,30 @@
                     if (activeSingleExportDropdown) { activeSingleExportDropdown.classList.remove('show'); activeSingleExportDropdown = null; }
                 }
             });
+
+            // --- Language toggles ---
+            const langItems = [
+                { id: 'langEn', lang: 'en' },
+                { id: 'langDe', lang: 'de' },
+                { id: 'langEs', lang: 'es' },
+                { id: 'langCustom', lang: 'custom' }
+            ];
+            langItems.forEach(({ id, lang }) => {
+                const toggle = document.getElementById(id + 'Toggle');
+                const item   = document.getElementById(id + 'Item');
+                if (toggle) {
+                    addEventListenerWithCleanup(toggle, 'change', () => {
+                        if (toggle.checked) setLanguageSelection(lang);
+                    });
+                }
+                if (item) {
+                    addEventListenerWithCleanup(item, 'click', (e) => {
+                        if (e.target !== toggle) setLanguageSelection(lang);
+                    });
+                }
+            });
+
+            // --- Address form toggles ---
             addEventListenerWithCleanup(sieFormToggle, 'change', () => {
                 setAddressFormToggle(sieFormToggle.checked ? 'sie' : 'du');
             });
@@ -1865,15 +2170,17 @@
                 if (e.target !== deepthinkModeToggle) { deepthinkModeToggle.checked = true; setDefaultModeToggle('deepthink'); }
             });
             addEventListenerWithCleanup(noTrainingToggle, 'change', () => {
-                noTrainingStatus.textContent = noTrainingToggle.checked ? 'Aktiv' : 'Inaktiv';
+                noTrainingStatus.textContent = noTrainingToggle.checked ? t(117) : t(118);
                 if (noTrainingToggle.checked) noTrainingItem.classList.add('toggle-active');
                 else noTrainingItem.classList.remove('toggle-active');
             });
-            // BUGFIX 3: Settings speichern
+
+            // --- Save button ---
             const saveHandler = function() {
+                settings.language    = currentLang;
                 settings.addressForm = duFormToggle.checked ? 'du' : 'sie';
                 settings.defaultMode = deepthinkModeToggle.checked ? 'deepthink' : 'chat';
-                settings.noTraining = noTrainingToggle.checked;
+                settings.noTraining  = noTrainingToggle.checked;
                 saveSettings();
                 setMode(settings.defaultMode);
                 updateInputPlaceholder();
@@ -1881,16 +2188,32 @@
                 settingsOverlay.style.display = 'none';
             };
             addEventListenerWithCleanup(saveSettingsButton, 'click', saveHandler);
+
+            // --- DeepThink button ---
             addEventListenerWithCleanup(deepThinkButton, 'click', () => {
                 setMode(currentMode === 'deepthink' ? 'chat' : 'deepthink');
             });
         }
+
+        /**
+         * Switch to a different language (without saving – save happens on "Apply Settings").
+         */
+        function setLanguageSelection(langId) {
+            if (!langMeta[langId]) return;
+            currentLang = langId;
+            setLanguageToggle(langId);
+            applyLanguage();
+            updateInputPlaceholder();
+        }
         
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Load language file FIRST, before applying any UI
+            await loadLanguage();
+
             updateServerTitle();
-            loadSettings();
+            loadSettings();         // applies currentLang from saved settings
             initializeEventListeners();
-            updateSettingsUI();
+            updateSettingsUI();     // calls applyLanguage() internally
             updateContextDisplay();
             currentSessionId = generateSessionId();
         });
@@ -1901,4 +2224,3 @@
     </script>
 </body>
 </html>
-

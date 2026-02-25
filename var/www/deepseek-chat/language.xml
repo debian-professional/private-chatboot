@@ -1,0 +1,537 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+==============================================================================
+DeepSeek Chat - Language File
+==============================================================================
+Structure:
+  ID   1-100  : System messages (errors, status, confirmations)
+  ID 101-200  : Settings panel texts
+  ID 201-300  : Chat interface texts (buttons, labels, placeholders)
+
+Placeholder syntax: {0}, {1}, {2} for dynamic values
+
+Languages:
+  en     : English  (default)
+  de     : Deutsch
+  es     : Español
+  custom : User-defined language (visible only when populated)
+           Pre-filled with English as fallback.
+           To activate: set visible="true" and replace texts with your language.
+
+Adding a new language:
+  1. Copy the <language id="custom" ...> block
+  2. Set a new unique id (e.g. id="fr")
+  3. Set visible="true"
+  4. Set name to the display name (e.g. "Français")
+  5. Translate all <text> elements
+==============================================================================
+-->
+<languages default="en">
+
+  <!-- ========================================================== -->
+  <!-- ENGLISH                                                      -->
+  <!-- ========================================================== -->
+  <language id="en" name="English" visible="true" has_address_form="false">
+
+    <!-- 1-100: System messages -->
+    <text id="1">Loading server information...</text>
+    <text id="2">Context:</text>
+    <text id="3">File too large. Maximum size: {0} MB</text>
+    <text id="4">PDF extraction timed out.</text>
+    <text id="5">Sending...</text>
+    <text id="6">Loading log files...</text>
+    <text id="7">No log entries available</text>
+    <text id="8">Error loading log file: {0}</text>
+    <text id="9">Delete this message and all subsequent messages?</text>
+    <text id="10">Format not supported: {0}\n\nSupported formats:\n{1}</text>
+    <text id="11">Security error: Executable file detected!</text>
+    <text id="12">File content:</text>
+    <text id="13">Question:</text>
+    <text id="14">Copied!</text>
+    <text id="15">Copy</text>
+    <text id="16">Error during PDF export: {0}</text>
+    <text id="17">PDF export failed</text>
+    <text id="18">Error during Markdown export: {0}</text>
+    <text id="19">Markdown export failed</text>
+    <text id="20">Error during TXT export: {0}</text>
+    <text id="21">TXT export failed</text>
+    <text id="22">Error during RTF export: {0}</text>
+    <text id="23">RTF export failed</text>
+    <text id="24">API error ({0}): {1}</text>
+    <text id="25">Error: {0}</text>
+    <text id="26">Error sending:</text>
+    <text id="27">Error regenerating:</text>
+    <text id="28">Saved!</text>
+    <!-- System prompt: English has no address form distinction -->
+    <text id="29">You are a helpful assistant.</text>
+    <text id="30">You are a helpful assistant.</text>
+    <text id="31"> Please provide an in-depth analysis with detailed reasoning.</text>
+    <text id="32"> Please provide an in-depth analysis with detailed reasoning.</text>
+    <text id="33">File: {0} - Format accepted but not processed.</text>
+    <text id="34">File: {0} ({1} KB)</text>
+    <text id="35">File: {0} - PDF processed ({1} characters)</text>
+    <text id="36">File: {0} - Text file loaded ({1} characters)</text>
+    <text id="37">No saved chats found.</text>
+    <text id="38">{0} messages</text>
+    <text id="39">Error loading settings: {0}</text>
+    <text id="40">File loading error:</text>
+    <text id="41">CDN not reachable, trying next...</text>
+    <text id="42">No PDF.js Worker available</text>
+    <text id="43">Your data</text>
+    <text id="44">Error loading chat history: {0}</text>
+    <text id="45">Error deleting session: {0}</text>
+
+    <!-- 101-200: Settings texts -->
+    <text id="101">Chat Settings</text>
+    <text id="102">Close</text>
+    <text id="103">Form of Address</text>
+    <text id="104">Formal</text>
+    <text id="105">Informal</text>
+    <text id="106">Formal</text>
+    <text id="107">You are addressed formally.</text>
+    <text id="108">Informal</text>
+    <text id="109">You are addressed informally.</text>
+    <text id="110">Default Mode</text>
+    <text id="111">Normal Chat</text>
+    <text id="112">Normal Chat</text>
+    <text id="113">Standard conversation mode for general questions. (deepseek-chat)</text>
+    <text id="114">DeepThink Mode</text>
+    <text id="115">In-depth analysis with reasoning. (deepseek-reasoner)</text>
+    <text id="116">Privacy</text>
+    <text id="117">Active</text>
+    <text id="118">Inactive</text>
+    <text id="119">Do not use data for training</text>
+    <text id="120">Sends the header X-No-Training: true to the API.&lt;br&gt;As far as supported by the API, {0} will not be used for training.&lt;br&gt;Default: Enabled (Opt-Out active).</text>
+    <text id="121">Settings are saved automatically</text>
+    <text id="122">Your settings are saved locally in your browser and persist after closing the page.</text>
+    <text id="123">Apply Settings</text>
+    <text id="124">Language</text>
+    <text id="125">English</text>
+    <text id="126">German</text>
+    <text id="127">Spanish</text>
+    <text id="128">Custom</text>
+    <text id="129">DeepThink Mode</text>
+    <text id="130">Normal Chat</text>
+
+    <!-- 201-300: Chat interface texts -->
+    <text id="201">Enter your message here...</text>
+    <text id="202">Enter your message here...</text>
+    <text id="203">Enter your message here...</text>
+    <text id="204">DeepThink Mode active: In-depth analysis in progress</text>
+    <text id="205">Send</text>
+    <text id="206">Upload file</text>
+    <text id="207">Export</text>
+    <text id="208">Download as PDF</text>
+    <text id="209">Download as Markdown</text>
+    <text id="210">Download as TXT</text>
+    <text id="211">Download as RTF</text>
+    <text id="212">Load chat history</text>
+    <text id="213">Settings</text>
+    <text id="214">Log Files</text>
+    <text id="215">Saved Chats</text>
+    <text id="216">Refresh</text>
+    <text id="217">Copy</text>
+    <text id="218">Like</text>
+    <text id="219">Dislike</text>
+    <text id="220">Regenerate</text>
+    <text id="221">Export</text>
+    <text id="222">Remove</text>
+    <text id="223">Load</text>
+    <text id="224">Delete</text>
+    <text id="225">As TXT</text>
+    <text id="226">As Markdown</text>
+    <text id="227">As RTF</text>
+    <text id="228">As PDF</text>
+    <text id="229">DeepThink</text>
+    <text id="230">Thinking...</text>
+
+  </language>
+
+  <!-- ========================================================== -->
+  <!-- DEUTSCH                                                      -->
+  <!-- ========================================================== -->
+  <language id="de" name="Deutsch" visible="true" has_address_form="true"
+            form_formal_label="Sie-Form (formell)"
+            form_informal_label="Du-Form (informell)"
+            form_formal_status="Sie-Form"
+            form_informal_status="Du-Form">
+
+    <!-- 1-100: Systemmeldungen -->
+    <text id="1">Lade Server-Informationen...</text>
+    <text id="2">Kontext:</text>
+    <text id="3">Datei zu groß. Maximale Größe: {0} MB</text>
+    <text id="4">PDF-Extraktion hat zu lange gedauert.</text>
+    <text id="5">Wird gesendet...</text>
+    <text id="6">Lade Log-Dateien...</text>
+    <text id="7">Keine Log-Einträge vorhanden</text>
+    <text id="8">Fehler beim Laden der Log-Datei: {0}</text>
+    <text id="9">Diese Nachricht und alle nachfolgenden Nachrichten löschen?</text>
+    <text id="10">Format nicht unterstützt: {0}\n\nUnterstützte Formate:\n{1}</text>
+    <text id="11">Sicherheitsfehler: Ausführbare Datei erkannt!</text>
+    <text id="12">Datei-Inhalt:</text>
+    <text id="13">Frage:</text>
+    <text id="14">Kopiert!</text>
+    <text id="15">Kopieren</text>
+    <text id="16">Fehler beim PDF-Export: {0}</text>
+    <text id="17">PDF-Export fehlgeschlagen</text>
+    <text id="18">Fehler beim Markdown-Export: {0}</text>
+    <text id="19">Markdown-Export fehlgeschlagen</text>
+    <text id="20">Fehler beim TXT-Export: {0}</text>
+    <text id="21">TXT-Export fehlgeschlagen</text>
+    <text id="22">Fehler beim RTF-Export: {0}</text>
+    <text id="23">RTF-Export fehlgeschlagen</text>
+    <text id="24">API-Fehler ({0}): {1}</text>
+    <text id="25">Fehler: {0}</text>
+    <text id="26">Fehler beim Senden:</text>
+    <text id="27">Fehler beim Regenerieren:</text>
+    <text id="28">Gespeichert!</text>
+    <!-- Systemprompt: Sie-Form (formell) -->
+    <text id="29">Sie sind ein hilfreicher Assistent. Verwenden Sie in allen Antworten konsequent die Sie-Form.</text>
+    <!-- Systemprompt: Du-Form (informell) -->
+    <text id="30">Du bist ein hilfreicher Assistent. Verwende in allen Antworten konsequent die Du-Form.</text>
+    <!-- DeepThink-Zusatz: Sie-Form -->
+    <text id="31"> Bitte geben Sie eine tiefgehende Analyse mit detaillierten Überlegungen.</text>
+    <!-- DeepThink-Zusatz: Du-Form -->
+    <text id="32"> Bitte gib eine tiefgehende Analyse mit detaillierten Überlegungen.</text>
+    <text id="33">Datei: {0} - Format wird akzeptiert, aber nicht verarbeitet.</text>
+    <text id="34">Datei: {0} ({1} KB)</text>
+    <text id="35">Datei: {0} - PDF verarbeitet ({1} Zeichen)</text>
+    <text id="36">Datei: {0} - Textdatei geladen ({1} Zeichen)</text>
+    <text id="37">Keine gespeicherten Chats gefunden.</text>
+    <text id="38">{0} Nachrichten</text>
+    <text id="39">Fehler beim Laden der Einstellungen: {0}</text>
+    <text id="40">Fehler beim Laden der Datei:</text>
+    <text id="41">CDN nicht erreichbar, versuche nächste...</text>
+    <text id="42">Kein PDF.js Worker verfügbar</text>
+    <!-- Dynamisch: "Ihre Daten" (Sie) oder "Deine Daten" (Du) – wird per JS gesetzt -->
+    <text id="43_sie">Ihre Daten</text>
+    <text id="43_du">Deine Daten</text>
+    <text id="43">Ihre Daten</text>
+    <text id="44">Fehler beim Laden des Chat-Verlaufs: {0}</text>
+    <text id="45">Fehler beim Löschen der Session: {0}</text>
+
+    <!-- 101-200: Einstellungstexte -->
+    <text id="101">Chat Einstellungen</text>
+    <text id="102">Schliessen</text>
+    <text id="103">Anredeform</text>
+    <text id="104">Sie-Form</text>
+    <text id="105">Du-Form</text>
+    <text id="106">Sie-Form (formell)</text>
+    <text id="107">Sie werden mit der formellen Anrede "Sie" angesprochen.</text>
+    <text id="108">Du-Form (informell)</text>
+    <text id="109">Du wirst mit der informellen Anrede "Du" angesprochen.</text>
+    <text id="110">Standard Modus</text>
+    <text id="111">Normaler Chat</text>
+    <text id="112">Normaler Chat</text>
+    <text id="113">Standard-Gesprächsmodus für allgemeine Fragen. (deepseek-chat)</text>
+    <text id="114">DeepThink Modus</text>
+    <text id="115">Tiefgehende Analyse mit Reasoning. (deepseek-reasoner)</text>
+    <text id="116">Datenschutz</text>
+    <text id="117">Aktiv</text>
+    <text id="118">Inaktiv</text>
+    <text id="119">Daten nicht für Training verwenden</text>
+    <text id="120">Sendet den Header X-No-Training: true an die API.&lt;br&gt;Soweit von der API unterstützt werden {0} nicht für das Training verwendet.&lt;br&gt;Standard: Eingeschaltet (Opt-Out aktiv).</text>
+    <text id="121">Einstellungen werden automatisch gespeichert</text>
+    <!-- Dynamisch: Wird per JS je nach Anredeform gesetzt -->
+    <text id="122_sie">Ihre Einstellungen werden lokal in Ihrem Browser gespeichert und bleiben auch nach dem Schließen der Seite erhalten.</text>
+    <text id="122_du">Deine Einstellungen werden lokal in deinem Browser gespeichert und bleiben auch nach dem Schließen der Seite erhalten.</text>
+    <text id="122">Ihre Einstellungen werden lokal in Ihrem Browser gespeichert und bleiben auch nach dem Schließen der Seite erhalten.</text>
+    <text id="123">Einstellungen übernehmen</text>
+    <text id="124">Sprache</text>
+    <text id="125">Englisch</text>
+    <text id="126">Deutsch</text>
+    <text id="127">Spanisch</text>
+    <text id="128">Benutzerdefiniert</text>
+    <text id="129">DeepThink Modus</text>
+    <text id="130">Normaler Chat</text>
+
+    <!-- 201-300: Chat-Interface-Texte -->
+    <text id="201">Ihre Nachricht hier eingeben...</text>
+    <text id="202">Ihre Nachricht hier eingeben...</text>
+    <text id="203">Deine Nachricht hier eingeben...</text>
+    <text id="204">DeepThink Modus aktiv: Tiefgehende Analyse wird durchgeführt</text>
+    <text id="205">Senden</text>
+    <text id="206">Datei hochladen</text>
+    <text id="207">Exportieren</text>
+    <text id="208">Als PDF herunterladen</text>
+    <text id="209">Als Markdown herunterladen</text>
+    <text id="210">Als TXT herunterladen</text>
+    <text id="211">Als RTF herunterladen</text>
+    <text id="212">Chat-Verlauf laden</text>
+    <text id="213">Einstellungen</text>
+    <text id="214">Log-Dateien</text>
+    <text id="215">Gespeicherte Chats</text>
+    <text id="216">Aktualisieren</text>
+    <text id="217">Kopieren</text>
+    <text id="218">Mag ich</text>
+    <text id="219">Mag ich gar nicht</text>
+    <text id="220">Regenerieren</text>
+    <text id="221">Exportieren</text>
+    <text id="222">Entfernen</text>
+    <text id="223">Laden</text>
+    <text id="224">Löschen</text>
+    <text id="225">Als TXT</text>
+    <text id="226">Als Markdown</text>
+    <text id="227">Als RTF</text>
+    <text id="228">Als PDF</text>
+    <text id="229">DeepThink</text>
+    <text id="230">Denkt...</text>
+
+  </language>
+
+  <!-- ========================================================== -->
+  <!-- ESPAÑOL                                                      -->
+  <!-- ========================================================== -->
+  <language id="es" name="Español" visible="true" has_address_form="true"
+            form_formal_label="Usted (formal)"
+            form_informal_label="Tú (informal)"
+            form_formal_status="Usted"
+            form_informal_status="Tú">
+
+    <!-- 1-100: Mensajes del sistema -->
+    <text id="1">Cargando información del servidor...</text>
+    <text id="2">Contexto:</text>
+    <text id="3">Archivo demasiado grande. Tamaño máximo: {0} MB</text>
+    <text id="4">La extracción del PDF tardó demasiado.</text>
+    <text id="5">Enviando...</text>
+    <text id="6">Cargando archivos de registro...</text>
+    <text id="7">No hay entradas de registro disponibles</text>
+    <text id="8">Error al cargar el archivo de registro: {0}</text>
+    <text id="9">¿Eliminar este mensaje y todos los mensajes siguientes?</text>
+    <text id="10">Formato no compatible: {0}\n\nFormatos compatibles:\n{1}</text>
+    <text id="11">Error de seguridad: ¡Archivo ejecutable detectado!</text>
+    <text id="12">Contenido del archivo:</text>
+    <text id="13">Pregunta:</text>
+    <text id="14">¡Copiado!</text>
+    <text id="15">Copiar</text>
+    <text id="16">Error en la exportación PDF: {0}</text>
+    <text id="17">Error en la exportación PDF</text>
+    <text id="18">Error en la exportación Markdown: {0}</text>
+    <text id="19">Error en la exportación Markdown</text>
+    <text id="20">Error en la exportación TXT: {0}</text>
+    <text id="21">Error en la exportación TXT</text>
+    <text id="22">Error en la exportación RTF: {0}</text>
+    <text id="23">Error en la exportación RTF</text>
+    <text id="24">Error de API ({0}): {1}</text>
+    <text id="25">Error: {0}</text>
+    <text id="26">Error al enviar:</text>
+    <text id="27">Error al regenerar:</text>
+    <text id="28">¡Guardado!</text>
+    <!-- Prompt del sistema: Usted (formal) -->
+    <text id="29">Usted es un asistente útil. Use siempre el tratamiento formal de Usted en todas las respuestas.</text>
+    <!-- Prompt del sistema: Tú (informal) -->
+    <text id="30">Eres un asistente útil. Usa siempre el trato informal de tú en todas las respuestas.</text>
+    <!-- Adición DeepThink: Usted -->
+    <text id="31"> Por favor, proporcione un análisis profundo con razonamiento detallado.</text>
+    <!-- Adición DeepThink: Tú -->
+    <text id="32"> Por favor, proporciona un análisis profundo con razonamiento detallado.</text>
+    <text id="33">Archivo: {0} - Formato aceptado pero no procesado.</text>
+    <text id="34">Archivo: {0} ({1} KB)</text>
+    <text id="35">Archivo: {0} - PDF procesado ({1} caracteres)</text>
+    <text id="36">Archivo: {0} - Archivo de texto cargado ({1} caracteres)</text>
+    <text id="37">No hay chats guardados.</text>
+    <text id="38">{0} mensajes</text>
+    <text id="39">Error al cargar la configuración: {0}</text>
+    <text id="40">Error al cargar el archivo:</text>
+    <text id="41">CDN no accesible, intentando el siguiente...</text>
+    <text id="42">No hay Worker de PDF.js disponible</text>
+    <text id="43_formal">Sus datos</text>
+    <text id="43_informal">Tus datos</text>
+    <text id="43">Sus datos</text>
+    <text id="44">Error al cargar el historial de chat: {0}</text>
+    <text id="45">Error al eliminar la sesión: {0}</text>
+
+    <!-- 101-200: Textos de configuración -->
+    <text id="101">Configuración del Chat</text>
+    <text id="102">Cerrar</text>
+    <text id="103">Tratamiento</text>
+    <text id="104">Usted</text>
+    <text id="105">Tú</text>
+    <text id="106">Usted (formal)</text>
+    <text id="107">Se le trata formalmente de Usted.</text>
+    <text id="108">Tú (informal)</text>
+    <text id="109">Se te trata informalmente de tú.</text>
+    <text id="110">Modo predeterminado</text>
+    <text id="111">Chat normal</text>
+    <text id="112">Chat normal</text>
+    <text id="113">Modo de conversación estándar para preguntas generales. (deepseek-chat)</text>
+    <text id="114">Modo DeepThink</text>
+    <text id="115">Análisis profundo con razonamiento. (deepseek-reasoner)</text>
+    <text id="116">Privacidad</text>
+    <text id="117">Activo</text>
+    <text id="118">Inactivo</text>
+    <text id="119">No usar datos para entrenamiento</text>
+    <text id="120">Envía el encabezado X-No-Training: true a la API.&lt;br&gt;En la medida en que la API lo soporte, {0} no se usarán para el entrenamiento.&lt;br&gt;Por defecto: Activado (Opt-Out activo).</text>
+    <text id="121">Los ajustes se guardan automáticamente</text>
+    <text id="122_formal">Su configuración se guarda localmente en su navegador y se mantiene después de cerrar la página.</text>
+    <text id="122_informal">Tu configuración se guarda localmente en tu navegador y se mantiene después de cerrar la página.</text>
+    <text id="122">Su configuración se guarda localmente en su navegador y se mantiene después de cerrar la página.</text>
+    <text id="123">Aplicar ajustes</text>
+    <text id="124">Idioma</text>
+    <text id="125">Inglés</text>
+    <text id="126">Alemán</text>
+    <text id="127">Español</text>
+    <text id="128">Personalizado</text>
+    <text id="129">Modo DeepThink</text>
+    <text id="130">Chat normal</text>
+
+    <!-- 201-300: Textos de la interfaz del chat -->
+    <text id="201">Escriba su mensaje aquí...</text>
+    <text id="202">Escriba su mensaje aquí...</text>
+    <text id="203">Escribe tu mensaje aquí...</text>
+    <text id="204">Modo DeepThink activo: Se está realizando un análisis profundo</text>
+    <text id="205">Enviar</text>
+    <text id="206">Subir archivo</text>
+    <text id="207">Exportar</text>
+    <text id="208">Descargar como PDF</text>
+    <text id="209">Descargar como Markdown</text>
+    <text id="210">Descargar como TXT</text>
+    <text id="211">Descargar como RTF</text>
+    <text id="212">Cargar historial de chat</text>
+    <text id="213">Configuración</text>
+    <text id="214">Archivos de registro</text>
+    <text id="215">Chats guardados</text>
+    <text id="216">Actualizar</text>
+    <text id="217">Copiar</text>
+    <text id="218">Me gusta</text>
+    <text id="219">No me gusta</text>
+    <text id="220">Regenerar</text>
+    <text id="221">Exportar</text>
+    <text id="222">Eliminar</text>
+    <text id="223">Cargar</text>
+    <text id="224">Eliminar</text>
+    <text id="225">Como TXT</text>
+    <text id="226">Como Markdown</text>
+    <text id="227">Como RTF</text>
+    <text id="228">Como PDF</text>
+    <text id="229">DeepThink</text>
+    <text id="230">Pensando...</text>
+
+  </language>
+
+  <!-- ========================================================== -->
+  <!-- CUSTOM (User-defined language)                               -->
+  <!-- To activate: set visible="true" and translate all texts      -->
+  <!-- Pre-filled with English as fallback                          -->
+  <!-- has_address_form: set to "true" if your language has a       -->
+  <!--   formal/informal distinction (like German or Spanish)       -->
+  <!-- If has_address_form="true", also set:                        -->
+  <!--   form_formal_label, form_informal_label                     -->
+  <!--   form_formal_status, form_informal_status                   -->
+  <!-- ========================================================== -->
+  <language id="custom" name="Custom" visible="false" has_address_form="false">
+
+    <!-- 1-100: System messages -->
+    <text id="1">Loading server information...</text>
+    <text id="2">Context:</text>
+    <text id="3">File too large. Maximum size: {0} MB</text>
+    <text id="4">PDF extraction timed out.</text>
+    <text id="5">Sending...</text>
+    <text id="6">Loading log files...</text>
+    <text id="7">No log entries available</text>
+    <text id="8">Error loading log file: {0}</text>
+    <text id="9">Delete this message and all subsequent messages?</text>
+    <text id="10">Format not supported: {0}\n\nSupported formats:\n{1}</text>
+    <text id="11">Security error: Executable file detected!</text>
+    <text id="12">File content:</text>
+    <text id="13">Question:</text>
+    <text id="14">Copied!</text>
+    <text id="15">Copy</text>
+    <text id="16">Error during PDF export: {0}</text>
+    <text id="17">PDF export failed</text>
+    <text id="18">Error during Markdown export: {0}</text>
+    <text id="19">Markdown export failed</text>
+    <text id="20">Error during TXT export: {0}</text>
+    <text id="21">TXT export failed</text>
+    <text id="22">Error during RTF export: {0}</text>
+    <text id="23">RTF export failed</text>
+    <text id="24">API error ({0}): {1}</text>
+    <text id="25">Error: {0}</text>
+    <text id="26">Error sending:</text>
+    <text id="27">Error regenerating:</text>
+    <text id="28">Saved!</text>
+    <text id="29">You are a helpful assistant.</text>
+    <text id="30">You are a helpful assistant.</text>
+    <text id="31"> Please provide an in-depth analysis with detailed reasoning.</text>
+    <text id="32"> Please provide an in-depth analysis with detailed reasoning.</text>
+    <text id="33">File: {0} - Format accepted but not processed.</text>
+    <text id="34">File: {0} ({1} KB)</text>
+    <text id="35">File: {0} - PDF processed ({1} characters)</text>
+    <text id="36">File: {0} - Text file loaded ({1} characters)</text>
+    <text id="37">No saved chats found.</text>
+    <text id="38">{0} messages</text>
+    <text id="39">Error loading settings: {0}</text>
+    <text id="40">File loading error:</text>
+    <text id="41">CDN not reachable, trying next...</text>
+    <text id="42">No PDF.js Worker available</text>
+    <text id="43">Your data</text>
+    <text id="44">Error loading chat history: {0}</text>
+    <text id="45">Error deleting session: {0}</text>
+
+    <!-- 101-200: Settings texts -->
+    <text id="101">Chat Settings</text>
+    <text id="102">Close</text>
+    <text id="103">Form of Address</text>
+    <text id="104">Formal</text>
+    <text id="105">Informal</text>
+    <text id="106">Formal</text>
+    <text id="107">You are addressed formally.</text>
+    <text id="108">Informal</text>
+    <text id="109">You are addressed informally.</text>
+    <text id="110">Default Mode</text>
+    <text id="111">Normal Chat</text>
+    <text id="112">Normal Chat</text>
+    <text id="113">Standard conversation mode for general questions. (deepseek-chat)</text>
+    <text id="114">DeepThink Mode</text>
+    <text id="115">In-depth analysis with reasoning. (deepseek-reasoner)</text>
+    <text id="116">Privacy</text>
+    <text id="117">Active</text>
+    <text id="118">Inactive</text>
+    <text id="119">Do not use data for training</text>
+    <text id="120">Sends the header X-No-Training: true to the API.&lt;br&gt;As far as supported by the API, {0} will not be used for training.&lt;br&gt;Default: Enabled (Opt-Out active).</text>
+    <text id="121">Settings are saved automatically</text>
+    <text id="122">Your settings are saved locally in your browser and persist after closing the page.</text>
+    <text id="123">Apply Settings</text>
+    <text id="124">Language</text>
+    <text id="125">English</text>
+    <text id="126">German</text>
+    <text id="127">Spanish</text>
+    <text id="128">Custom</text>
+    <text id="129">DeepThink Mode</text>
+    <text id="130">Normal Chat</text>
+
+    <!-- 201-300: Chat interface texts -->
+    <text id="201">Enter your message here...</text>
+    <text id="202">Enter your message here...</text>
+    <text id="203">Enter your message here...</text>
+    <text id="204">DeepThink Mode active: In-depth analysis in progress</text>
+    <text id="205">Send</text>
+    <text id="206">Upload file</text>
+    <text id="207">Export</text>
+    <text id="208">Download as PDF</text>
+    <text id="209">Download as Markdown</text>
+    <text id="210">Download as TXT</text>
+    <text id="211">Download as RTF</text>
+    <text id="212">Load chat history</text>
+    <text id="213">Settings</text>
+    <text id="214">Log Files</text>
+    <text id="215">Saved Chats</text>
+    <text id="216">Refresh</text>
+    <text id="217">Copy</text>
+    <text id="218">Like</text>
+    <text id="219">Dislike</text>
+    <text id="220">Regenerate</text>
+    <text id="221">Export</text>
+    <text id="222">Remove</text>
+    <text id="223">Load</text>
+    <text id="224">Delete</text>
+    <text id="225">As TXT</text>
+    <text id="226">As Markdown</text>
+    <text id="227">As RTF</text>
+    <text id="228">As PDF</text>
+    <text id="229">DeepThink</text>
+    <text id="230">Thinking...</text>
+
+  </language>
+
+</languages>
