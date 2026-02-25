@@ -32,13 +32,16 @@ echo "Datum: $(date '+%d.%m.%Y %H:%M:%S')"
 cp "$PROD_DIR/index.html"        "$SOURCE_DIR/index.html"
 cp "$PROD_DIR/manifest"          "$SOURCE_DIR/manifest"
 cp "$PROD_DIR/files-directorys"  "$SOURCE_DIR/files-directorys"
+cp "$PROD_DIR/language.xml"      "$SOURCE_DIR/language.xml"
 cp "$PROD_DIR/cgi-bin/"*.py      "$SOURCE_DIR/cgi-bin/"
 
 chown "$1":"$1" "$SOURCE_DIR/index.html"
 chown "$1":"$1" "$SOURCE_DIR/manifest"
 chown "$1":"$1" "$SOURCE_DIR/files-directorys"
+chown "$1":"$1" "$SOURCE_DIR/language.xml"
 chown "$1":"$1" "$SOURCE_DIR/cgi-bin/"*.py
 chmod 755 "$SOURCE_DIR/cgi-bin/"*.py
 
 echo "=== Sync-Back abgeschlossen ==="
 echo "Bitte danach manuell: git add, git commit, git push"
+
