@@ -1541,7 +1541,7 @@
             inputField.disabled = true;
             const systemPrompt = buildSystemPrompt(userMsg.mode === 'deepthink');
             updateSystemPromptTokens(systemPrompt);
-            const processedSystem = replaceGermanUmlauts(systemPrompt);
+            const processedSystem = userMsg.hasFile ? systemPrompt : replaceGermanUmlauts(systemPrompt);
             const aiContainer = document.createElement('div');
             aiContainer.className = 'message-container';
             const aiText = document.createElement('div');
@@ -1918,7 +1918,7 @@
             inputField.value = '';
             const systemPrompt = buildSystemPrompt(currentMode === 'deepthink');
             updateSystemPromptTokens(systemPrompt);
-            const processedSystem = replaceGermanUmlauts(systemPrompt);
+            const processedSystem = hasFile ? systemPrompt : replaceGermanUmlauts(systemPrompt);
             const aiContainer = document.createElement('div');
             aiContainer.className = 'message-container';
             const aiText = document.createElement('div');
