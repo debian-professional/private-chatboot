@@ -872,7 +872,7 @@
         // =====================================================================
 
         const TOKENS_PER_CHAR = 0.25;
-        const MAX_FILE_CONTENT_LENGTH = 250000;
+        const MAX_FILE_CONTENT_LENGTH = 50000;
         const MAX_FILE_SIZE_MB = 10;
         const PDF_EXTRACTION_TIMEOUT = 30000;
         const SETTINGS_VERSION = '1.3';
@@ -1911,7 +1911,7 @@
             sendButton.disabled = true; sendButton.textContent = t(5);
             inputField.disabled = true;
             let userMessage = message;
-            if (fileTextContent) userMessage = `${t(12)}\n${fileTextContent}\n\n${t(13)} ${message}`;
+            if (fileTextContent) userMessage = `${t(12)}\n${fileTextContent}\n\n${t(13)} ${message}\n\nIMPORTANT: Display ALL file content EXACTLY as-is. Do NOT replace or modify any characters, especially German umlauts (ä, ö, ü, ß, Ä, Ö, Ü). Preserve every single character without exception.`;
             const hasFile = !!fileTextContent;
             const msgId = addUserMessageToContext(userMessage, currentMode, hasFile);
             addMessageToChat(message, true, msgId, currentMode);
