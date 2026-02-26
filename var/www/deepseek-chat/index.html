@@ -1255,13 +1255,13 @@
 
         function decodeUmlautsFromAI(text) {
             if (!text) return text;
-            text = text.split('[[AE]]').join('ä');
-            text = text.split('[[OE]]').join('ö');
-            text = text.split('[[UE]]').join('ü');
-            text = text.split('[[SS]]').join('ß');
-            text = text.split('[[CAE]]').join('Ä');
-            text = text.split('[[COE]]').join('Ö');
-            text = text.split('[[CUE]]').join('Ü');
+            text = text.split('[[AE]]').join('\u00e4');
+            text = text.split('[[OE]]').join('\u00f6');
+            text = text.split('[[UE]]').join('\u00fc');
+            text = text.split('[[SS]]').join('\u00df');
+            text = text.split('[[CAE]]').join('\u00c4');
+            text = text.split('[[COE]]').join('\u00d6');
+            text = text.split('[[CUE]]').join('\u00dc');
             return text;
         }
 
