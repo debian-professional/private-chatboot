@@ -1243,6 +1243,25 @@
         }
 
         // =====================================================================
+        // UMLAUT PLACEHOLDER FUNCTIONS (for file uploads)
+        // =====================================================================
+        function encodeUmlautsForAI(text) {
+            if (!text) return text;
+            return text
+                .replace(/ä/g, '[[AE]]').replace(/ö/g, '[[OE]]').replace(/ü/g, '[[UE]]')
+                .replace(/ß/g, '[[SS]]').replace(/Ä/g, '[[CAE]]').replace(/Ö/g, '[[COE]]')
+                .replace(/Ü/g, '[[CUE]]');
+        }
+
+        function decodeUmlautsFromAI(text) {
+            if (!text) return text;
+            return text
+                .replace(/\[\[AE\]\]/g, 'ä').replace(/\[\[OE\]\]/g, 'ö').replace(/\[\[UE\]\]/g, 'ü')
+                .replace(/\[\[SS\]\]/g, 'ß').replace(/\[\[CAE\]\]/g, 'Ä').replace(/\[\[COE\]\]/g, 'Ö')
+                .replace(/\[\[CUE\]\]/g, 'Ü');
+        }
+
+        // =====================================================================
         // PDF.JS
         // =====================================================================
         async function loadPDFJSWorker() {
@@ -1597,10 +1616,8 @@
                 // 3. Entferne Markdown-Codeblock-Markierungen am Anfang und Ende, falls vorhanden
                 fullText = fullText.replace(/^```[a-z]*\n?/i, '');
                 fullText = fullText.replace(/\n?```$/, '');
-                // 4. Entferne eventuellen nachfolgenden Text nach dem Dateiende (z.B. "Ich hoffe, das hilft")
-                //    Wir suchen nach dem letzten Zeilenumbruch, der einer typischen Dateistruktur folgt,
-                //    aber einfacher: Alles nach einer Leerzeile und einem neuen "FILE:" behalten wir,
-                //    sonst lassen wir es weg. Hier belassen wir es erstmal.
+                // 4. Stelle Umlaute wieder her (Platzhalter -> echte Umlaute)
+                if (userMsg.hasFile) fullText = decodeUmlautsFromAI(fullText);
                 
                 const aiMsgId = addAIResponseToContext(fullText, userMsg.mode);
                 aiContainer.setAttribute('data-msg-id', aiMsgId);
@@ -1911,7 +1928,7 @@
             sendButton.disabled = true; sendButton.textContent = t(5);
             inputField.disabled = true;
             let userMessage = message;
-            if (fileTextContent) userMessage = `${t(12)}\n${fileTextContent}\n\n${t(13)} ${message}\n\nIMPORTANT: Display ALL file content EXACTLY as-is. Do NOT replace or modify any characters, especially German umlauts (ä, ö, ü, ß, Ä, Ö, Ü). Preserve every single character without exception.`;
+            if (fileTextContent) userMessage = `${t(12)}\n${encodeUmlautsForAI(fileTextContent)}\n\n${t(13)} ${message}`;
             const hasFile = !!fileTextContent;
             const msgId = addUserMessageToContext(userMessage, currentMode, hasFile);
             addMessageToChat(message, true, msgId, currentMode);
@@ -1971,6 +1988,8 @@
                 // 3. Entferne Markdown-Codeblock-Markierungen am Anfang und Ende, falls vorhanden
                 fullText = fullText.replace(/^```[a-z]*\n?/i, '');
                 fullText = fullText.replace(/\n?```$/, '');
+                // 4. Stelle Umlaute wieder her (Platzhalter -> echte Umlaute)
+                if (hasFile) fullText = decodeUmlautsFromAI(fullText);
                 
                 const aiMsgId = addAIResponseToContext(fullText, currentMode);
                 aiContainer.setAttribute('data-msg-id', aiMsgId);
@@ -2260,6 +2279,7 @@
     </script>
 </body>
 </html>
+
 
 
 
