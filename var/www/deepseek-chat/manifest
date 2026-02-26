@@ -891,5 +891,51 @@
         - Grund: Internationale Ausrichtung des Projekts, konsistent
           mit den englischen/spanischen README-Versionen.
 
+     65. [26.02.2026] - ERKENNTNISSE ZU KI-KONTEXT-LIMITIERUNGEN UND EXPORT-OPTIMIERUNG:
+
+        A) TOGGLE-FARBEN KORRIGIERT (index.html):
+           - Language-Gruppe und Anredeform-Gruppe verwenden nun toggle-active (grün)
+             statt toggle-active-blue (blau)
+           - Betrifft: setLanguageToggle(), setAddressFormToggle()
+           - CSS .lang-active angepasst: Hintergrund #155724, Knopf #90ee90 (grün)
+           - Initiales HTML langEnItem: toggle-active-blue -> toggle-active
+           - Begründung: Grün kennzeichnet persönliche Präferenzen (Sprache, Anredeform),
+             Blau kennzeichnet technische Modi (Chat/DeepThink)
+
+        B) DATEI-UPLOAD LIMIT ERHÖHT (index.html):
+           - MAX_FILE_CONTENT_LENGTH: 50.000 -> 250.000 Zeichen
+           - Begründung: Repo-Export ca. 270.000 Zeichen, vorher wurde Datei
+             nach ca. 7 von 26 Dateien abgeschnitten
+
+        C) UMLAUT-ERSETZUNG BEI DATEI-UPLOADS DEAKTIVIERT (index.html):
+           - replaceGermanUmlauts() wird nicht mehr auf hochgeladene Dateiinhalte angewendet
+           - Betrifft: sendMessage() und handleRegenerate() - Context-Schleifen
+           - Vorher: messages.push({ role: msg.role, content: replaceGermanUmlauts(msg.content) })
+           - Nachher: const content = msg.hasFile ? msg.content : replaceGermanUmlauts(msg.content)
+           - Begründung: Umlaut-Ersetzung entstellt hochgeladene Texte (ä->ae, ö->oe usw.)
+             und verhindert zuverlässige Wiedergabe von Dateiinhalten durch die KI
+
+        D) "LOST IN THE MIDDLE" - BEKANNTE KI-LIMITIERUNG (WICHTIG):
+           - Wissenschaftlich dokumentiertes Problem aller aktuellen Sprachmodelle
+             (Liu et al., 2023: "Lost in the Middle: How Language Models Use Long Contexts")
+           - Beschreibung: KI-Modelle erinnern sich zuverlässig an Inhalte am ANFANG
+             und am ENDE eines langen Kontexts - Inhalte in der MITTE werden oft
+             übersehen oder halluziniert
+           - Konkrete Auswirkung auf dieses Projekt:
+             * Repo-Export ~270.000 Zeichen = ~67.500 Tokens
+             * DeepSeek Kontextfenster: 100.000 Tokens (MODEL_CONFIG)
+             * Auslastung: ~67% -> Manifest liegt tief in der Mitte -> Halluzination
+             * Claude Kontextfenster: ~200.000 Tokens -> nur ~34% Auslastung -> zuverlässig
+           - LÖSUNG: Repo-Export optimiert durch Entfernen nicht relevanter Dateien
+             aus Git-Tracking (.gitignore):
+             * Entfernt: LICENSE, Readme.md, Readme_DE.md, Readme_EN.md, Readme_ES.md
+             * Ergebnis: 26 -> 22 Dateien, 343.983 -> 268.742 Bytes (-22%)
+             * Tokens: ~85.800 -> ~67.000 (-18.800 Tokens)
+           - EMPFEHLUNG FÜR DIE PRAXIS:
+             * Bei komplexen Aufgaben: Nur relevante Dateien einzeln hochladen
+             * Nie den gesamten Repo-Export hochladen wenn nur einzelne Dateien
+               bearbeitet werden sollen
+             * Je kleiner der Kontext, desto zuverlässiger die KI-Antwort
+
     ============================================================================
 
