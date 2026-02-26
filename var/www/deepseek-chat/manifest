@@ -937,5 +937,142 @@
                bearbeitet werden sollen
              * Je kleiner der Kontext, desto zuverlässiger die KI-Antwort
 
+
+     66: [26.02.2026 23:30 ] - UMLAUT-PROBLEM BEI DATEI-UPLOADS BEHOBEN
+
+     PROBLEM:
+     --------
+     Beim Hochladen von Dateien mit deutschen Umlauten (ä, ö, ü, ß, Ä, Ö, Ü) wurden
+     diese von DeepSeek in der Antwort ersetzt:
+     - Ä → AeNDERUNG
+     - Ü → MUeSSEN
+     - ü → fuer
+
+     Dieses Verhalten ist tief im DeepSeek-Modell verankert und kann NICHT durch
+     System-Prompt-Anweisungen oder API-Parameter unterdrückt werden.
+
+     URSACHE:
+     --------
+     DeepSeek ersetzt intern deutsche Umlaute in Dateiinhalten durch ASCII-Äquivalente.
+     Alle Versuche, dieses Verhalten per Anweisung zu unterdrücken, schlugen fehl.
+
+     LÖSUNG: UMLAUT-PLATZHALTER-SYSTEM
+     -----------------------------------
+     Vor dem Senden an DeepSeek werden Umlaute im Dateiinhalt durch eindeutige
+     Platzhalter ersetzt. DeepSeek gibt diese Platzhalter unverändert zurück.
+     JavaScript ersetzt die Platzhalter nach Empfang wieder durch echte Umlaute.
+
+     Encode (vor dem Senden):
+     ä → [[AE]]    ö → [[OE]]    ü → [[UE]]    ß → [[SS]]
+     Ä → [[CAE]]   Ö → [[COE]]   Ü → [[CUE]]
+
+     Decode (nach dem Empfang):
+     [[AE]] → ä    [[OE]] → ö    [[UE]] → ü    [[SS]] → ß
+     [[CAE]] → Ä   [[COE]] → Ö   [[CUE]] → Ü
+
+     IMPLEMENTIERUNG:
+     ----------------
+     Zwei neue JavaScript-Funktionen in index.html:
+
+     function encodeUmlautsForAI(text) {
+      text = text.split('\u00e4').join('[[AE]]');
+      text = text.split('\u00f6').join('[[OE]]');
+      text = text.split('\u00fc').join('[[UE]]');
+      text = text.split('\u00df').join('[[SS]]');
+      text = text.split('\u00c4').join('[[CAE]]');
+      text = text.split('\u00d6').join('[[COE]]');
+      text = text.split('\u00dc').join('[[CUE]]');
+      return text;
+     }
+
+     function decodeUmlautsFromAI(text) {
+      text = text.split('[[AE]]').join('\u00e4');
+      text = text.split('[[OE]]').join('\u00f6');
+      text = text.split('[[UE]]').join('\u00fc');
+      text = text.split('[[SS]]').join('\u00df');
+      text = text.split('[[CAE]]').join('\u00c4');
+      text = text.split('[[COE]]').join('\u00d6');
+      text = text.split('[[CUE]]').join('\u00dc');
+      return text;
+     }
+
+     WICHTIG - TECHNISCHE DETAILS:
+     ------------------------------
+
+     - Beide Funktionen verwenden AUSSCHLIESSLICH JavaScript Unicode-Escape-Sequenzen
+       (\u00e4 statt ä, \u00c4 statt Ä usw.) und split/join statt Regex.
+     - Kein einziger Umlaut darf im Funktionscode als Literal-Zeichen stehen!
+     - Decode läuft sowohl während des Streamings (Token für Token) als auch
+       nach Abschluss des Streamings.
+     - encodeUmlautsForAI() wird nur auf Dateiinhalte angewendet, NICHT auf
+       normale Benutzereingaben oder System-Prompts.
+
+     STREAMING-FIX:
+     --------------
+     Das Decode muss auch während des Streamings aktiv sein, da DeepSeek
+     Tokens einzeln sendet und der Text sonst mit Platzhaltern angezeigt wird:
+
+     // Im Streaming-Loop:
+     aiText.textContent = hasFile ? decodeUmlautsFromAI(fullText) : fullText;
+
+     // Nach dem Streaming:
+     fullText = decodeUmlautsFromAI(fullText);
+     aiText.textContent = fullText;
+
+     MAX_FILE_CONTENT_LENGTH:
+     ------------------------
+     Wurde von 50.000 auf 250.000 Zeichen erhöht, damit auch große Dateien
+     wie das manifest (55.625 Bytes) vollständig verarbeitet werden können.
+
+     ==============================================================================
+     !!! KRITISCHE WARNUNG: NANO UND CLIPBOARD !!!
+     ==============================================================================
+
+     NIEMALS code mit Unicode-Escape-Sequenzen oder Sonderzeichen über nano
+     oder Clipboard (Copy/Paste) auf den Server übertragen!
+
+     PROBLEM: nano und das Linux-Terminal korrumpieren beim Einfügen von Text
+     Unicode-Escape-Sequenzen und Sonderzeichen:
+     - \u00e4 wird zu M-CM-$ (korrumpiert, funktioniert nicht)
+     - Literal-Umlaute (ä, ö, ü) werden zu M-CM-$ (unleserlich für JavaScript)
+     - Das Ergebnis sieht im Editor korrekt aus, ist aber binär kaputt!
+
+     SYMPTOM: cat -A zeigt M-CM-$ statt \u00e4 oder ä
+     Beispiel einer KAPUTTEN Zeile:
+     .replace(/M-CM-$/g, '[[AE]]')   ← FALSCH, funktioniert nicht!
+
+     Beispiel einer KORREKTEN Zeile:
+     text = text.split('\u00e4').join('[[AE]]');   ← RICHTIG
+
+     DER EINZIG SICHERE WEG FÜR CODEÄNDERUNGEN:
+     -------------------------------------------
+     1. Änderungen NUR auf dem LOKALEN RECHNER durchführen
+     2. Datei lokal bearbeiten (z.B. mit gedit, kate, VS Code)
+     3. git add / git commit / git push vom lokalen Rechner
+     4. Auf dem Server: git pull (im source-Repo)
+     5. Als root: ./deploy.sh source
+
+     NIEMALS:
+     ✗ nano auf dem Server für Code mit Unicode oder Sonderzeichen
+     ✗ Copy/Paste von index.html in nano
+     ✗ Direkte Bearbeitung von index.html auf dem Server
+
+     IMMER:
+     ✓ Lokal bearbeiten → git push → git pull → deploy.sh
+
+     VERIFIZIERUNG nach Deploy:
+     grep -A 10 "function encodeUmlautsForAI" /var/www/deepseek-chat/index.html | cat -A
+     → Korrekt: text.split('\u00e4')
+     → Kaputt:  M-CM-$ oder Ã¤
+
+     ==============================================================================
+     GESAMTAUFWAND DIESER SITZUNG (26.02.2026):
+     ==============================================================================
+     - Über 6 Stunden Debugging
+     - 10+ Deploy-Zyklen
+     - Kernproblem war nicht der JavaScript-Code, sondern die nano/Clipboard-
+       Korrumpierung von Unicode-Zeichen beim Übertragen auf den Server.
+     - Lösung: Lokale Entwicklung + git-Workflow ist PFLICHT für dieses Projekt.
+
     ============================================================================
 
