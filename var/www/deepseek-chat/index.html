@@ -1617,7 +1617,7 @@
                 fullText = fullText.replace(/^```[a-z]*\n?/i, '');
                 fullText = fullText.replace(/\n?```$/, '');
                 // 4. Stelle Umlaute wieder her (Platzhalter -> echte Umlaute)
-                if (userMsg.hasFile) { fullText = decodeUmlautsFromAI(fullText); aiText.textContent = fullText; }
+                fullText = decodeUmlautsFromAI(fullText); aiText.textContent = fullText;
                 
                 const aiMsgId = addAIResponseToContext(fullText, userMsg.mode);
                 aiContainer.setAttribute('data-msg-id', aiMsgId);
@@ -1989,7 +1989,7 @@
                 fullText = fullText.replace(/^```[a-z]*\n?/i, '');
                 fullText = fullText.replace(/\n?```$/, '');
                 // 4. Stelle Umlaute wieder her (Platzhalter -> echte Umlaute)
-                if (hasFile) { fullText = decodeUmlautsFromAI(fullText); aiText.textContent = fullText; }
+                fullText = decodeUmlautsFromAI(fullText); aiText.textContent = fullText;
                 
                 const aiMsgId = addAIResponseToContext(fullText, currentMode);
                 aiContainer.setAttribute('data-msg-id', aiMsgId);
