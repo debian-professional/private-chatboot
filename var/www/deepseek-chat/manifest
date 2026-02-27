@@ -1074,5 +1074,27 @@
        Korrumpierung von Unicode-Zeichen beim Übertragen auf den Server.
      - Lösung: Lokale Entwicklung + git-Workflow ist PFLICHT für dieses Projekt.
 
+    67. [27.02.2026 13:00] - NEUE FEATURES: CTRL+V, DATEI-KARTE, MODELL-ANZEIGE:
+
+        A) CTRL+V ZWISCHENABLAGE-HANDLER:
+           - Text in Zwischenablage: Dialog erscheint mit 2 Optionen:
+             * "An Cursor-Position einfügen" → Text direkt ins Eingabefeld
+             * "Als Datei anhängen" → Text wird als clipboard.txt behandelt
+           - Bild in Zwischenablage: Vorschau-Box mit Thumbnail erscheint
+           - Browser-Limitation: Kopierte Dateipfade (Ctrl+C auf Dateien)
+             landen nur als Text, nicht als Dateiinhalt
+
+        B) DATEI-KARTE IN USER-NACHRICHTEN:
+           - Hochgeladene Dateien werden als Mini-Karte im Chat angezeigt
+           - Karte zeigt: Dateiname, Dateityp-Badge (TXT, PDF usw.)
+           - Gilt für: echte Datei-Uploads und Clipboard-Text ("clipboard.txt")
+
+        C) MODELL-VERSION ANZEIGE:
+           - Neues CGI-Script deepseek-models.py fragt /v1/models ab
+           - Ergebnis wird beim Start angezeigt: "Modell: deepseek-chat, deepseek-reasoner"
+           - Position: eigene Zeile unter Kontext-Anzeige im Server-Header
+           - Bilder werden blockiert wenn Modell keine Bilder unterstützt (alert)
+           - MODEL_CAPABILITIES Map: bereit für DeepSeek V4
+
     ============================================================================
 
