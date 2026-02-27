@@ -603,6 +603,87 @@
             margin-top: 15px;
         }
         
+        /* =====================================================================
+           PASTE OVERLAY: Dialog für Text/Bild aus Zwischenablage
+           ===================================================================== */
+        #pasteOverlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 1002;
+            align-items: center;
+            justify-content: center;
+        }
+        #pastePanel {
+            background: #1e1e1e;
+            border: 2px solid #0056b3;
+            border-radius: 10px;
+            padding: 25px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .paste-header {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4dabf7;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+        .paste-preview {
+            background: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            color: #aaa;
+            max-height: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .paste-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        /* IMAGE PREVIEW BOX above input */
+        #clipboardImagePreview {
+            display: none;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 8px;
+            align-items: center;
+            gap: 10px;
+        }
+        #clipboardImagePreview.visible { display: flex; }
+        #clipboardImageThumb {
+            width: 48px;
+            height: 48px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid #555;
+        }
+        .clipboard-image-info { font-size: 13px; color: #aaa; flex: 1; }
+        .clipboard-image-remove {
+            background: #dc3545;
+            color: white;
+            border: 1px solid #dc3545;
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            font-family: Arial;
+        }
+        .clipboard-image-remove:hover { background: #c82333; }
+
         /* === ZEILENUMBRUCH-FIX: Alle Nachrichteninhalte sollen Zeilenumbrüche erhalten === */
         .message-container * {
             white-space: pre-wrap !important;
@@ -657,8 +738,28 @@
         </button>
     </div>
 
+    <div id="clipboardImagePreview">
+        <img id="clipboardImageThumb" src="" alt="Clipboard image">
+        <div class="clipboard-image-info" id="clipboardImageInfo">Image from clipboard</div>
+        <button class="clipboard-image-remove" id="clipboardImageRemove">X</button>
+    </div>
     <div id="fileInfo"></div>
     
+    <!-- =====================================================================
+         PASTE OVERLAY
+         ===================================================================== -->
+    <div id="pasteOverlay">
+        <div id="pastePanel">
+            <div class="paste-header" id="pasteTitleText">Clipboard Content</div>
+            <div class="paste-preview" id="pastePreview"></div>
+            <div class="paste-buttons">
+                <button class="pill-button" id="pasteAtCursorBtn">Insert at cursor</button>
+                <button class="pill-button" id="pasteAsFileBtn">Attach as file</button>
+                <button class="pill-button" style="background:#dc3545;border-color:#dc3545;" id="pasteCancelBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <!-- =====================================================================
          SETTINGS OVERLAY
          ===================================================================== -->
@@ -1049,6 +1150,13 @@
 
             // Language status
             document.getElementById('languageStatus').textContent = meta.name;
+
+            // Paste overlay
+            document.getElementById('pasteTitleText').textContent = t(232);
+            document.getElementById('pasteAtCursorBtn').textContent = t(233);
+            document.getElementById('pasteAsFileBtn').textContent = t(234);
+            document.getElementById('pasteCancelBtn').textContent = t(235);
+            document.getElementById('clipboardImageInfo').textContent = t(231);
 
             // Input placeholder
             updateInputPlaceholder();
@@ -1764,6 +1872,7 @@
         
         let selectedFile = null;
         let fileTextContent = null;
+        let clipboardImageFile = null;   // Image pasted from clipboard
         let eventListeners = [];
         let isSending = false;
         let currentSessionId = null;
@@ -2148,6 +2257,58 @@
             }
         }
         
+        // =====================================================================
+        // CLIPBOARD PASTE HANDLER (Ctrl+V)
+        // =====================================================================
+        function handlePaste(e) {
+            const items = (e.clipboardData || window.clipboardData).items;
+            if (!items) return;
+
+            // Check for image first
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    e.preventDefault();
+                    const file = item.getAsFile();
+                    if (!file) return;
+                    clipboardImageFile = file;
+                    const reader = new FileReader();
+                    reader.onload = function(ev) {
+                        const thumb = document.getElementById('clipboardImageThumb');
+                        const info = document.getElementById('clipboardImageInfo');
+                        const preview = document.getElementById('clipboardImagePreview');
+                        thumb.src = ev.target.result;
+                        info.textContent = t(231) + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+                        preview.classList.add('visible');
+                    };
+                    reader.readAsDataURL(file);
+                    return;
+                }
+            }
+
+            // Check for text
+            for (const item of items) {
+                if (item.type === 'text/plain') {
+                    item.getAsString(function(text) {
+                        if (!text || text.length === 0) return;
+                        // Show paste dialog
+                        const preview = document.getElementById('pastePreview');
+                        preview.textContent = text.length > 300 ? text.substring(0, 300) + '...' : text;
+                        document.getElementById('pasteOverlay').style.display = 'flex';
+                        // Store text for later use
+                        document.getElementById('pasteOverlay')._pendingText = text;
+                        document.getElementById('pasteOverlay')._cursorPos = inputField.selectionStart;
+                    });
+                    e.preventDefault();
+                    return;
+                }
+            }
+        }
+
+        function closePasteOverlay() {
+            document.getElementById('pasteOverlay').style.display = 'none';
+            document.getElementById('pasteOverlay')._pendingText = null;
+        }
+
         function initializeEventListeners() {
             cleanupEventListeners();
             addEventListenerWithCleanup(sendButton, 'click', sendMessage);
@@ -2177,6 +2338,55 @@
                     activeSingleExportDropdown.classList.remove('show'); activeSingleExportDropdown = null;
                 }
             });
+            // Paste handler
+            addEventListenerWithCleanup(inputField, 'paste', handlePaste);
+
+            // Clipboard image remove
+            const clipboardRemoveBtn = document.getElementById('clipboardImageRemove');
+            addEventListenerWithCleanup(clipboardRemoveBtn, 'click', () => {
+                clipboardImageFile = null;
+                document.getElementById('clipboardImagePreview').classList.remove('visible');
+                document.getElementById('clipboardImageThumb').src = '';
+            });
+
+            // Paste overlay buttons
+            addEventListenerWithCleanup(document.getElementById('pasteAtCursorBtn'), 'click', () => {
+                const overlay = document.getElementById('pasteOverlay');
+                const text = overlay._pendingText;
+                const pos = overlay._cursorPos || inputField.value.length;
+                if (text) {
+                    const before = inputField.value.substring(0, pos);
+                    const after = inputField.value.substring(pos);
+                    inputField.value = before + text + after;
+                    inputField.setSelectionRange(pos + text.length, pos + text.length);
+                    inputField.focus();
+                }
+                closePasteOverlay();
+            });
+
+            addEventListenerWithCleanup(document.getElementById('pasteAsFileBtn'), 'click', () => {
+                const overlay = document.getElementById('pasteOverlay');
+                const text = overlay._pendingText;
+                if (text) {
+                    fileTextContent = text.length > MAX_FILE_CONTENT_LENGTH ? text.substring(0, MAX_FILE_CONTENT_LENGTH) : text;
+                    fileInfo.innerHTML = `${t(236)} (${fileTextContent.length} ${t(237)}) <button id="removeFile">${t(222)}</button>`;
+                    fileInfo.classList.add('visible');
+                    const removeBtn = document.getElementById('removeFile');
+                    if (removeBtn) {
+                        const removeHandler = function() {
+                            selectedFile = null; fileTextContent = null;
+                            fileInfo.innerHTML = ''; fileInfo.classList.remove('visible');
+                            fileUpload.value = ''; removeBtn.removeEventListener('click', removeHandler);
+                        };
+                        removeBtn.addEventListener('click', removeHandler);
+                        eventListeners.push({ element: removeBtn, event: 'click', handler: removeHandler });
+                    }
+                }
+                closePasteOverlay();
+            });
+
+            addEventListenerWithCleanup(document.getElementById('pasteCancelBtn'), 'click', closePasteOverlay);
+
             addEventListenerWithCleanup(document, 'keydown', (e) => {
                 if (e.key === 'Escape') {
                     logOverlay.style.display = 'none'; sessionsOverlay.style.display = 'none';

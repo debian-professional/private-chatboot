@@ -144,6 +144,13 @@ Adding a new language:
     <text id="228">As PDF</text>
     <text id="229">DeepThink</text>
     <text id="230">Thinking...</text>
+    <text id="231">Image from clipboard</text>
+    <text id="232">Clipboard content</text>
+    <text id="233">Insert at cursor</text>
+    <text id="234">Attach as file</text>
+    <text id="235">Cancel</text>
+    <text id="236">Text from clipboard</text>
+    <text id="237">characters</text>
 
   </language>
 
@@ -276,6 +283,13 @@ Adding a new language:
     <text id="228">Als PDF</text>
     <text id="229">DeepThink</text>
     <text id="230">Denkt...</text>
+    <text id="231">Bild aus Zwischenablage</text>
+    <text id="232">Zwischenablage-Inhalt</text>
+    <text id="233">An Cursor-Position einfügen</text>
+    <text id="234">Als Datei anhängen</text>
+    <text id="235">Abbrechen</text>
+    <text id="236">Text aus Zwischenablage</text>
+    <text id="237">Zeichen</text>
 
   </language>
 
@@ -406,6 +420,13 @@ Adding a new language:
     <text id="228">Como PDF</text>
     <text id="229">DeepThink</text>
     <text id="230">Pensando...</text>
+    <text id="231">Imagen del portapapeles</text>
+    <text id="232">Contenido del portapapeles</text>
+    <text id="233">Insertar en el cursor</text>
+    <text id="234">Adjuntar como archivo</text>
+    <text id="235">Cancelar</text>
+    <text id="236">Texto del portapapeles</text>
+    <text id="237">caracteres</text>
 
   </language>
 
@@ -531,6 +552,13 @@ Adding a new language:
     <text id="228">As PDF</text>
     <text id="229">DeepThink</text>
     <text id="230">Thinking...</text>
+    <text id="231"></text>
+    <text id="232"></text>
+    <text id="233"></text>
+    <text id="234"></text>
+    <text id="235"></text>
+    <text id="236"></text>
+    <text id="237"></text>
 
   </language>
 
