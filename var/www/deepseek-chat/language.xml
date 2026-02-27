@@ -153,6 +153,7 @@ Adding a new language:
     <text id="237">characters</text>
     <text id="238">Model:</text>
     <text id="239">Images are not supported by the current DeepSeek model. Please use a text file instead.</text>
+    <text id="240">Files copied in the file manager cannot be read by the browser. Please use the "Upload file" button instead.</text>
 
   </language>
 
@@ -294,6 +295,7 @@ Adding a new language:
     <text id="237">Zeichen</text>
     <text id="238">Modell:</text>
     <text id="239">Bilder werden vom aktuellen DeepSeek-Modell nicht unterstützt. Bitte verwende eine Textdatei.</text>
+    <text id="240">Im Dateimanager kopierte Dateien können vom Browser nicht gelesen werden. Bitte verwende stattdessen den Button "Datei hochladen".</text>
 
   </language>
 
@@ -433,6 +435,7 @@ Adding a new language:
     <text id="237">caracteres</text>
     <text id="238">Modelo:</text>
     <text id="239">Las imágenes no son compatibles con el modelo DeepSeek actual. Usa un archivo de texto.</text>
+    <text id="240">Los archivos copiados en el gestor de archivos no pueden ser leídos por el navegador. Usa el botón "Subir archivo".</text>
 
   </language>
 
@@ -567,6 +570,7 @@ Adding a new language:
     <text id="237"></text>
     <text id="238"></text>
     <text id="239"></text>
+    <text id="240"></text>
 
   </language>
 
