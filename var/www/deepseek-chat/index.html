@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
     <title>DeepSeek Chat</title>
+    <meta charset="UTF-8">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     
     <!-- 
@@ -2514,19 +2514,18 @@
             // Paste handler
             addEventListenerWithCleanup(inputField, 'paste', handlePaste);
 
-            // X11/Linux/Firefox workaround: preventDefault() does not block paste on Linux.
-            // Instead: let paste happen, then check content after 0ms and undo if file paths.
+            // X11/Linux fix: let paste happen, then check and undo via setTimeout
             document.addEventListener('paste', function() {
                 if (document.activeElement !== inputField) return;
                 setTimeout(function() {
                     var val = inputField.value;
                     var lines = val.trim().split(/[\r\n]+/).filter(Boolean);
-                    var looksLikePaths = lines.length >= 2 && lines.every(function(l) {
+                    var isFilePaths = lines.length >= 2 && lines.every(function(l) {
                         return /^\s*\//.test(l) || /^\s*file:\/\//.test(l);
                     });
-                    if (looksLikePaths) {
+                    if (isFilePaths) {
                         inputField.value = '';
-                        alert(t(240));
+                        requestAnimationFrame(function() { alert(t(240)); });
                     }
                 }, 0);
             }, true);
