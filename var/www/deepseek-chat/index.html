@@ -1,9 +1,8 @@
----------------------------------------------------------
 <!DOCTYPE html>
 <html>
 <head>
-    <title>DeepSeek Chat</title>
     <meta charset="UTF-8">
+    <title>DeepSeek Chat</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     
     <!-- 
@@ -2128,8 +2127,7 @@
             const message = inputField.value.trim();
             if (!message && !fileTextContent) return;
             // Block file paths from being sent (last resort)
-            const msgLines = message.split(/[
-]+/).filter(Boolean);
+            const msgLines = message.split(/[\r\n]+/).filter(Boolean);
             if (msgLines.length >= 2 && msgLines.every(function(l) {
                 return /^\s*\//.test(l) || /^\s*file:\/\//.test(l);
             })) {
@@ -2536,8 +2534,7 @@
             addEventListenerWithCleanup(inputField, 'paste', handlePaste);
             // Layer 2: input event - catches anything that slips through
             inputField.addEventListener('input', function() {
-                const lines = inputField.value.trim().split(/[
-]+/).filter(Boolean);
+                const lines = inputField.value.trim().split(/[\r\n]+/).filter(Boolean);
                 if (lines.length >= 2 && lines.every(function(l) {
                     return /^\s*\//.test(l) || /^\s*file:\/\//.test(l);
                 })) {
