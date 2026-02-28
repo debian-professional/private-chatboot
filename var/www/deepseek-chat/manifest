@@ -1,0 +1,376 @@
+============================================================================
+    DEEPSEEK CHAT - DESIGN-MANIFEST & KONVENTIONEN
+    ============================================================================
+    
+    DIESES MANIFEST DOKUMENTIERT ALLE GETROFFENEN DESIGN-ENTSCHEIDUNGEN UND
+    MUSS BEI JEDER ERWEITERUNG ODER ÄNDERUNG BEACHTET WERDEN.
+    ALLE ÄNDERUNGEN AM PROJEKT MÜSSEN IN DIESER DATEI DOKUMENTIERT WERDEN !!!
+    
+    ALLGEMEINE PRINZIPIEN:
+    1. BENUTZERZENTRIERT: Alle Entscheidungen dienen der Benutzerfreundlichkeit
+    2. KONSISTENZ: Einheitliches Design und Verhalten im gesamten Interface
+    3. PRAKTIKABILITÄT: Funktion geht vor dekorativen Elementen
+    
+    KONKRETE DESIGN-VORSCHRIFTEN:
+    
+    A) VISUELLES DESIGN:
+    --------------------
+    1. DARK MODE: Immer aktiv, keine Option für Light Mode
+       - Hintergrund: #121212
+       - Text: #f0f0f0
+       - Akzentfarbe: #0056b3 (Blau)
+    
+    2. TYPOGRAFIE:
+       - Schriftart: Arial (systemüblich, gut lesbar)
+       - Keine Symbole/Emojis in Buttons oder Text
+       - Nur reiner Text für alle Beschriftungen
+    
+    3. BUTTON-DESIGN (VERBINDLICH, GILT FÜR ALLE BUTTONS IM GESAMTEN INTERFACE):
+    ============================================================================
+    DIESE BUTTON-DEFINITIONEN SIND ENDGÜLTIG, UNUMSTÖSSLICH UND GELTEN
+    FÜR ALLE BESTEHENDEN UND ZUKÜNFTIGEN BUTTONS OHNE AUSNAHME.
+    JEDER NEU EINGEFÜHRTE BUTTON MUSS EXAKT DIESER SPEZIFIKATION ENTSPRECHEN.
+    ============================================================================
+
+       PILL-STYLE (STANDARD FÜR ALLE BUTTONS):
+       - Form:        border-radius: 20px  (Pill-Form, keine eckigen Buttons)
+       - Höhe:        36px  (height: 36px)
+       - Padding:     8px 16px
+       - Schrift:     font-family: Arial, font-size: 14px
+       - Transition:  all 0.2s
+       - CSS-Klassen: .pill-button (Aktions), .pill-button-mode (Toggle)
+
+       A) AKTIONS-BUTTONS (blau) - CSS-Klasse: .pill-button
+          Verwendet für: Senden, Datei hochladen, Exportieren, Einstellungen,
+                         Log-Dateien, Einstellungen übernehmen, Aktualisieren
+          - Normal:  background #0056b3, border #0056b3, color #ffffff
+          - Hover:   background #003d82, border #003d82
+          - Active:  background #002a5c, border #002a5c
+
+       B) TOGGLE-MODUS-BUTTON (dunkel/blau) - CSS-Klasse: .pill-button-mode
+          Verwendet für: DeepThink (und alle zukünftigen Toggle-Modus-Buttons)
+          - Inaktiv: background #2d2d2d, border #555, color #f0f0f0
+          - Hover:   background #3a3a3a, border #888
+          - Aktiv:   background #1e3a5f, border #4dabf7, color #4dabf7
+
+       C) DESTRUKTIVE BUTTONS (rot) - Inline-Style oder eigene Klasse
+          Verwendet für: Schliessen-X, Löschen (Sessions), Entfernen (Datei),
+                         X (Nachricht löschen)
+          - Normal:  background #dc3545, border #dc3545, color #ffffff
+          - Hover:   background #c82333, border #c82333
+          - Active:  background #a01c28, border #a01c28
+          - Schliessen-X: zusätzlich border-radius: 50% (rund), 36x36px
+
+       D) KONSTRUKTIVE BUTTONS (grün)
+          Verwendet für: Laden (Sessions)
+          - Normal:  background #28a745, border #28a745, color #ffffff
+          - Hover:   background #218838, border #218838
+          - Active:  background #1a6b2e, border #1a6b2e
+
+       E) FEEDBACK-BUTTONS (blau) - CSS-Klasse: .feedback-btn
+          Verwendet für: Kopieren, Mag ich, Mag ich gar nicht, Regenerieren
+          - Normal:  background #0056b3, border #0056b3, color #ffffff
+          - Hover:   background #003d82, border #003d82
+          - Active:  background #002a5c
+          - Liked:   background #0a2f44, color #9ac7ff, border #007bff
+          - Disliked:background #5a1e1e, color #ffb3b3, border #dc3545
+          - Copied:  background #003366, color #99ccff, border #0056b3
+          - Padding: 8px 16px, font-size: 14px, height: 36px
+
+       F) EINSTELLUNGS-TOGGLES (VERBINDLICH UND UNUMSTÖSSLICH):
+          * Alle Auswahlmöglichkeiten in den Einstellungen verwenden
+            ausschließlich Toggle-Switches (Links-nach-Rechts Schieberegler)
+          * Kein Radio-Button, Checkbox oder sonstiger Button-Typ erlaubt
+          * Toggle-Masse: Breite 46px, Höhe 24px, Knopf 18px
+          * Toggle-Farben aktiver Zustand je nach Gruppe:
+            - Anredeform (sieFormItem, duFormItem): toggle-active (grün, #155724)
+            - Standard Modus (chatModeItem, deepthinkModeItem): toggle-active-blue (blau, #1e3a5f)
+            - Datenschutz (noTrainingItem): toggle-active (grün, #155724)
+          * Toggle-Farben inaktiver Zustand: #444/grauer Knopf
+          * Radio-Gruppen-Verhalten: bei mehreren Optionen wird beim Aktivieren
+            eines Toggles der vorherige automatisch deaktiviert
+          * CSS-Klassen: .toggle-switch, .toggle-slider, .toggle-label
+          * Diese Konvention gilt für alle zukünftigen Einstellungen ohne Ausnahme
+
+    B) FUNKTIONALE KONVENTIONEN:
+    -----------------------------
+    1. DEUTSCHE UMLAUTE:
+       - Automatische Ersetzung: ä->ae, ö->oe, ü->ue, ß->ss
+       - Gilt für: Benutzereingaben, Dateiinhalt, System-Prompts
+       - Funktion: replaceGermanUmlauts(text)
+       - AI-Antworten behalten Umlaute (bessere Lesbarkeit)
+    
+    2. DATEI-UPLOAD:
+       - Unterstützte Formate: .txt, .pdf, .doc, .docx, .jpg, .png, .csv, .xlsx, .pptx
+       - PDFs: Text-Extraktion mit pdf.js im Browser
+       - Große Dateien: Automatische Kürzung auf 50.000 Zeichen
+       - Fortschrittsanzeige bei PDF-Verarbeitung
+    
+    3. CHAT-INTERAKTION:
+       - Benutzer-Nachrichten: Blau (#4dabf7)
+       - AI-Antworten: Weiß (#f0f0f0)
+       - Trennung: Graue Linie zwischen Nachrichten
+       - Formatierung: AI-Antworten behalten Zeilenumbrüche (white-space: pre-wrap)
+       - Hover-Buttons zum Löschen einzelner Nachrichten (kleines [X] rechts)
+    
+    4. MODUS-SYSTEM:
+       - Standard: Normaler Chat (deepseek-chat)
+       - DeepThink: Blaue Pill-Markierung, echtes Reasoning (deepseek-reasoner)
+       - Modus wird in jeder Nachricht gekennzeichnet
+       - Search wurde entfernt (nicht in der DeepSeek API verfügbar)
+    
+    5. ANREDEFORM-KONSISTENZ (ENDEUTIG UND UNUMSTÖSSLICH):
+       - Die gewählte Anredeform (Sie/Du) wird im gesamten Interface konsequent angewendet
+       - Gilt für: System-Prompts, Platzhaltertexte, Beschriftungen, KI-Antworten, Fehlermeldungen
+       - System-Prompt muss strikte Anweisung enthalten: "Verwenden Sie/verwende in allen Antworten konsequent die Sie-/Du-Form."
+       - KI-Antworten müssen der gewählten Anredeform entsprechen (Bei "Hallo" -> "Wie kann ich Ihnen/dir helfen?")
+       - Platzhaltertexte müssen angepasst sein ("Ihre/Deine Nachricht hier eingeben...")
+       - Einstellungsbeschreibungen müssen in der korrekten Anredeform formuliert sein
+       - Diese Konvention ist endgültig und wird nicht weiter diskutiert oder in Frage gestellt
+    
+    6. SESSION-MANAGEMENT:
+       - Automatisches Speichern nach jeder Nachricht
+       - Session-ID Format: YYYY-MM-DD_HHMMSS_random (z.B. 2026-02-16_143045_abc123)
+       - Client erzeugt Session-ID, Server validiert
+       - Sessions werden in /var/www/deepseek-chat/sessions/ gespeichert (Rechte 700)
+       - Einzelne Nachrichten können per Hover-Button gelöscht werden
+       - Löschen erfolgt sofort auch auf dem Server (Session wird aktualisiert)
+       - Jede Nachricht erhält eindeutige ID für Referenzierung
+    
+    7. EXPORT-FUNKTIONALITÄT:
+       - Dropdown-Button "Exportieren" in Zeile 1
+       - Optionen: PDF herunterladen, Markdown herunterladen, TXT, RTF, Chat-Verlauf laden
+       - PDF: Server-seitig mit ReportLab (professionelles Layout)
+       - Markdown: Server-seitig (identische Struktur wie PDF)
+       - Beide Formate enthalten:
+         * Header mit Server-Info, Datum, Einstellungen
+         * Statistiken-Bereich (Nachrichtenanzahl, Modi, Dateien, Token, Dauer)
+         * Inhaltsverzeichnis mit allen Nachrichten
+         * Vollständiger Chat-Verlauf mit Timestamps und Modi-Kennzeichnung
+
+    8. EINGABEFELD (TEXTAREA):
+       - Element: <textarea id="input" rows="1">
+       - Inaktiv: 40px hoch, einzeilig, grauer Rand (#444)
+       - Fokus: 120px hoch, mehrzeilig, blauer Rand (#0056b3)
+       - Animation: transition height 0.2s ease, border-color 0.2s ease
+       - resize: none
+       - Enter = Senden, Shift+Enter = neue Zeile
+
+    9. KONTEXT-ANZEIGE:
+       - Position: direkt unter der IP-Adresse im Server-Header
+       - CSS-Klasse: .context-info (normal: #aaa), .context-info.warning (rot, blinkend)
+       - Format: "Kontext: XX% (modellname)"
+       - Warnung ab 90%: roter Text + CSS-Animation blink (opacity 0→1, 1s)
+       - Dynamisch: passt sich automatisch an Modellwechsel an
+       - Aktualisiert bei: jeder Nachricht, jedem Löschen, jedem Modellwechsel
+       - Funktion: updateContextDisplay() - aufgerufen aus updateContextEstimation() und setMode()
+    
+    C) LAYOUT-VORSCHRIFTEN:
+    -----------------------
+    1. TITEL-ANZEIGE:
+       - Linksbündige Ausrichtung
+       - Zeigt Server-Name, interne IP-Adresse und Kontext-Auslastung
+       - Format Zeile 1: "Server-Name"
+       - Format Zeile 2: "IP: xxx.xxx.xxx.xxx"
+       - Format Zeile 3: "Kontext: XX% (modellname)"
+    
+    2. BUTTON-ANORDNUNG:
+       - Zeile 1: Senden | Datei hochladen | Exportieren (Dropdown) | Einstellungen | Log-Dateien
+       - Zeile 2: DeepThink (Pill-Toggle)
+       - Alle Buttons: Höhe 36px, Pill-Form (border-radius: 20px)
+       - Farben gemäss Abschnitt A.3 (verbindlich)
+    
+    3. EINSTELLUNGS-BEREICH:
+       - Overlay-Design mit dunklem Hintergrund
+       - Klare Gruppen-Trennung mit Überschriften
+       - Toggle-Switches als einziger Auswahltyp (siehe A.3.F)
+       - Status-Anzeige für aktive Einstellungen
+    
+    4. CHAT-BEREICH:
+       - Feste Höhe: 400px mit Scrollbalken
+       - Automatisches Scrollen zur neuesten Nachricht
+       - Trennlinien für bessere Lesbarkeit
+       - Hover-Buttons zum Löschen einzelner Nachrichten (kleines [X] rechts unten)
+       - Hover-Buttons Exportieren links neben X (rechts unten)
+       - Feedback-Buttons links unten (gleiche Höhe wie Exportieren/X)
+       - Alle 6 Hover-Buttons auf gleicher Höhe (bottom: 5px)
+       - Jede Nachricht in Container mit data-msg-id Attribut
+    
+    5. LOG-ANZEIGE-BEREICH:
+       - Overlay-Design analog zu Einstellungen
+       - Dunkler Hintergrund (#1e1e1e) mit weisser Schrift (#f0f0f0)
+       - Monospace-Schriftart (Consolas, Monaco, monospace) für Log-Darstellung
+       - Feste Breite: 90% des Viewports, maximale Höhe: 80vh
+       - Integrierter Scrollbalken bei Überlauf
+       - Schliessen-Button oben rechts (rot, rund, 36x36px, border-radius: 50%)
+       - Aktualisieren-Button (blau, Pill-Style)
+       - Zeilenumbrüche werden beibehalten (white-space: pre-wrap)
+    
+    6. SESSION-LADE-MODAL:
+       - Overlay-Design wie Einstellungen und Log-Anzeige
+       - Liste aller gespeicherten Sessions
+       - Anzeige pro Session:
+         * Session-ID (blau, fett)
+         * Datum/Uhrzeit (grau, klein)
+         * Vorschau erste Nachricht (kursiv, max 50 Zeichen)
+         * Nachrichtenanzahl
+       - Buttons pro Session: [Laden] (grün, Pill) [Löschen] (rot, Pill)
+       - Beim Laden: Automatisches Speichern des aktuellen Chats, dann Session laden
+       - Beim Löschen: Bestätigung "Session wirklich löschen?", dann Liste neu laden
+       - Bei keinen Sessions: Hinweis "Keine gespeicherten Chats vorhanden"
+    
+    7. DROPDOWN-MENU:
+       - Erscheint unter Export-Button
+       - Dunkler Hintergrund (#2d2d2d)
+       - Border-radius: 8px
+       - Border und Shadow für Abhebung
+       - Hover-Effekt bei Items (#3d3d3d)
+       - Schließt automatisch bei Klick außerhalb oder Escape-Taste
+    
+    D) TECHNISCHE KONVENTIONEN:
+    ----------------------------
+    1. API-KOMMUNIKATION:
+       - Endpoint: /cgi-bin/deepseek-api.py (lokaler Proxy)
+       - Backend: https://api.deepseek.com/v1/chat/completions (über Proxy)
+       - Modell: deepseek-chat (Chat) / deepseek-reasoner (DeepThink)
+       - MODEL_CONFIG Objekt steuert alle Token-Limits je Modell (siehe Eintrag 56)
+       - System-Prompt basierend auf Anredeform und Modus
+       - API-KEY SPEICHERUNG: Der API-Key wird NICHT im Client-Code gespeichert
+       - SICHERHEITSVERBESSERUNG (13.02.2026): API-Key wurde in serverseitige Umgebungsvariable ausgelagert
+       - Ein Python CGI-Script unter /cgi-bin/deepseek-api.py verwaltet die sichere Kommunikation
+       - Der Client sendet Anfragen an den lokalen Proxy, niemals direkt an die externe API
+    
+    2. DATENSPEICHERUNG:
+       - localStorage für Einstellungen
+       - Key: 'deepseekSettings'
+       - Struktur: {version, addressForm, defaultMode, noTraining}
+       - SETTINGS_VERSION: 1.2
+       - Server-seitige Session-Speicherung in JSON-Format
+       - Sessions-Verzeichnis: /var/www/deepseek-chat/sessions/
+       - Session-Datei-Format: {sessionId}.json
+       - Automatisches Speichern nach jeder Nachricht
+    
+    3. SERVER-INFORMATIONEN:
+       - Titel zeigt Server-Name und interne IP
+       - IP wird aus window.location.hostname ermittelt
+       - Bei localhost wird "localhost" angezeigt
+    
+    4. FEHLERBEHANDLUNG:
+       - User-freundliche Fehlermeldungen
+       - Console-Logging für Debugging
+       - Visuelle Rückmeldung bei Verarbeitung
+       - Try-catch Blöcke in allen async-Funktionen
+    
+    5. LOG-ANZEIGE-FUNKTION:
+       - Button "Log-Dateien" in Zeile 1 (Pill-Style, blau)
+       - Endpoint: /cgi-bin/get-log.py zum Abrufen der Log-Datei
+       - Log-Datei-Pfad: /var/www/deepseek-chat/cgi-bin/deepseek-chat.log
+       - Alle Pfade und Dateien sind genau definiert in /var/www/deepseek-chat/files-directorys
+       - Bei erfolgreichem Abruf: Anzeige im Log-Overlay
+       - Bei Fehler: Anzeige einer benutzerfreundlichen Fehlermeldung
+       - Bei leerem Log: Hinweis "Keine Log-Einträge vorhanden"
+       - Overlay schliesst mit Escape-Taste oder Klick auf Schliessen-Button
+    
+    6. SESSION-MANAGEMENT-FUNKTIONEN:
+       - /cgi-bin/save-session.py - Speichert Chat-Verlauf nach jeder Nachricht
+         * Validiert Session-ID Format
+         * Erstellt Sessions-Verzeichnis falls nicht vorhanden (700 Rechte)
+         * Speichert JSON mit Rechten 600
+       - /cgi-bin/load-session.py - Lädt Session-Liste (GET) oder spezifische Session (POST)
+         * GET: Gibt Array aller Sessions mit Vorschau zurück
+         * POST: Lädt vollständige Chat-Daten einer Session
+       - /cgi-bin/delete-session.py - Löscht einzelne Session nach Bestätigung
+         * Entfernt JSON-Datei vom Server
+       - /cgi-bin/export-pdf.py - Generiert professionelles PDF mit ReportLab
+         * Statistiken-Berechnung
+         * Inhaltsverzeichnis mit Page-Referenzen
+         * Farbcodierung nach Modi
+         * UTF-8 Support für Umlaute
+         * Binäre Ausgabe über sys.stdout.buffer (korrigiert 17.02.2026)
+       - /cgi-bin/export-markdown.py - Generiert Markdown-Datei
+         * Identische Struktur wie PDF
+         * Markdown-Anchors für Inhaltsverzeichnis
+       - /cgi-bin/export-txt.py - Generiert TXT-Datei
+       - /cgi-bin/export-rtf.py - Generiert RTF-Datei (ohne externe Library, Umlaute als RTF-Codes)
+       - Sessions-Verzeichnis: /var/www/deepseek-chat/sessions/ (Rechte 700, auto-create)
+    
+    7. APACHE-KONFIGURATION:
+       - Aktive Konfigurationsdatei: /etc/apache2/sites-available/deepseek-chat-ssl.conf
+       - Inaktive (deaktivierte) Datei: deepseek-chat.conf (redundant, via a2dissite deaktiviert)
+       - CGI-Konfiguration: ScriptAlias /cgi-bin/ /var/www/deepseek-chat/cgi-bin/
+       - Alle CGI-Scripts werden über /cgi-bin/ Pfad erreichbar gemacht
+       - KEIN einzelner ScriptAlias pro Script notwendig
+       - Bei neuen Scripts: Keine Apache-Konfigurationsänderung nötig
+    
+    E) ERWEITERUNGSRICHTLINIEN:
+    ----------------------------
+    1. NEUE FUNKTIONEN:
+       - Müssen mit Dark Mode kompatibel sein
+       - Keine Symbole einführen (Ausnahme: DeepThink Icon ✦)
+       - Umlaut-Ersetzung für Eingaben beibehalten
+       - BUTTON-KONVENTION EINHALTEN (ABSOLUT VERBINDLICH):
+         * JEDER neue Button MUSS Pill-Style verwenden (border-radius: 20px, height: 36px)
+         * Aktions-Buttons: .pill-button (blau, #0056b3)
+         * Toggle-Modus-Buttons: .pill-button-mode (dunkel/blau)
+         * Destruktive Buttons: rot (#dc3545)
+         * Konstruktive Buttons: grün (#28a745)
+         * Kein Button darf eckig sein (border-radius: 0 oder 4px ist verboten)
+         * Kein Button darf eine andere Höhe als 36px haben (ausser Feedback-Buttons 4px 12px)
+         * Kein Button darf eine andere Grundfarbe als die definierten verwenden
+       - ANREDEFORM-KONSISTENZ EINHALTEN: Alle neuen Texte müssen der gewählten Anredeform entsprechen
+       - TOGGLE-KONVENTION EINHALTEN: Neue Einstellungen ausschließlich als Toggle-Switch (siehe A.3.F)
+    
+    2. CODE-QUALITÄT:
+       - Kommentare für komplexe Logik
+       - Funktionen sollten eine klare Aufgabe haben
+       - Fehlerbehandlung in allen async-Funktionen
+       - Keinerlei Verwendung von PHP Code !!!!
+       - Sofern möglich nur JavaScript und Python !!!
+    
+    3. PERFORMANCE:
+       - Große Dateien kürzen oder streamen
+       - Keine Blockierung der UI
+       - Fortschrittsanzeige bei langer Verarbeitung
+    
+    F) STRENGE VERBOTE UND VORSCHRIFTEN:
+    -------------------------------------
+    1. MANIFEST-SCHUTZ:
+       - Das Manifest darf niemals entfernt oder reduziert werden
+       - Jede Änderung muss zwingend im Manifest dokumentiert werden
+       - Das Manifest ist integraler Bestandteil des Projekts und muss immer vorhanden sein
+       - Das Manifest ist eine SEPARATE DATEI und gehört NICHT in die index.html
+    
+    2. CODE-INTEGRITÄT:
+       - Es dürfen keine ungewünschten Funktionen hinzugefügt werden
+       - Nur explizit angeforderten Code implementieren
+       - Keine eigenmächtigen Erweiterungen oder "Verbesserungen"
+       - Die bereits vorhandenen Formatierungen und Einrückungen im HTML Code
+         dürfen unter gar keinen Umständen geändert werden. Dies ist verbindlich und
+         ultimativ !!!!
+    
+    3. AUSGABE-FORMAT:
+       - Bei Code-Anfragen muss der gesamte Code als ein einziger zusammenhängender Markdown-Codeblock zurückgegeben werden
+       - Keine Aufteilung, keine Unterbrechungen, kein Weglassen von Code
+       - Diese Regel gilt für immer und ist unumstößlich
+    
+    4. API-KEY BEHANDLUNG:
+       - Der API-Key wird NICHT im Client-Code gespeichert
+       - SICHERHEITSARCHITEKTUR (13.02.2026):
+         * API-Key wird als Umgebungsvariable auf dem Server gespeichert
+         * Python CGI-Script verwaltet die Authentifizierung
+         * Client hat keinen direkten Zugriff auf den API-Key
+         * Diese Architektur entspricht modernen Sicherheitsstandards
+
+    5. BUTTON-VERBOT:
+       - Eckige Buttons (border-radius: 0 oder 4px) sind VERBOTEN
+       - Buttons mit anderen Grundfarben als in A.3 definiert sind VERBOTEN
+       - Buttons mit anderer Höhe als 36px (bzw. Feedback 8px 16px) sind VERBOTEN
+       - Diese Regel gilt für alle bestehenden und zukünftigen Buttons ohne Ausnahme
+    
+    WICHTIG: Jede Änderung an diesem Manifest muss hier dokumentiert werden!
+    ============================================================================
+
+    changelog manifest :
+
+
+================================================================================
