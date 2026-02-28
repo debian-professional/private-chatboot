@@ -2416,8 +2416,10 @@
         // CLIPBOARD PASTE HANDLER (Ctrl+V)
         // =====================================================================
         function handlePaste(e) {
+            // ALWAYS prevent default first - we handle everything manually
+            e.preventDefault();
             const items = (e.clipboardData || window.clipboardData).items;
-            if (!items) return;
+            if (!items || items.length === 0) return;
 
             // Check for image first
             for (const item of items) {
@@ -2445,33 +2447,22 @@
                 }
             }
 
-            // Check for file paths:
-            // text/uri-list = standard, x-special/gnome-copied-files = GNOME/KDE Dolphin
-            const itemTypes = Array.from(items).map(i => i.type);
-            const hasUriList = itemTypes.includes('text/uri-list') ||
-                               itemTypes.some(t => t.includes('gnome-copied') || t.includes('kde'));
-
-            if (hasUriList) {
-                e.preventDefault();
-                alert(t(240));
-                return;
+            // Check for file paths (text/uri-list) - files copied in file manager
+            for (const item of items) {
+                if (item.type === 'text/uri-list') {
+                    e.preventDefault();
+                    alert(t(240));
+                    return;
+                }
             }
 
             // Check for text
             for (const item of items) {
                 if (item.type === 'text/plain') {
-                    // Prevent default FIRST (synchronous) before async getAsString
-                    e.preventDefault();
                     item.getAsString(function(text) {
                         if (!text || text.length === 0) return;
-                        // Detect file paths: absolute paths (/home/...) or file:// URIs or Windows paths
-                        const trimmed = text.trim();
-                        const looksLikePaths =
-                            trimmed.startsWith('file://') ||
-                            /^([A-Za-z]:\\[^\n]+\n?)+$/.test(trimmed) ||
-                            /^(\/[^\n\r]+[\n\r]?){2,}$/.test(trimmed) ||
-                            (trimmed.includes('\n') && trimmed.split('\n').filter(Boolean).every(line => line.trim().startsWith('/')));
-                        if (looksLikePaths) {
+                        // Check if text looks like file paths (file:// URIs)
+                        if (text.trim().startsWith('file://') || /^(\/[^\n]+\n?)+$/.test(text.trim())) {
                             alert(t(240));
                             return;
                         }
@@ -2479,9 +2470,11 @@
                         const preview = document.getElementById('pastePreview');
                         preview.textContent = text.length > 300 ? text.substring(0, 300) + '...' : text;
                         document.getElementById('pasteOverlay').style.display = 'flex';
+                        // Store text for later use
                         document.getElementById('pasteOverlay')._pendingText = text;
                         document.getElementById('pasteOverlay')._cursorPos = inputField.selectionStart;
                     });
+                    e.preventDefault();
                     return;
                 }
             }
