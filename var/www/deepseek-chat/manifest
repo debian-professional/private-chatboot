@@ -1096,5 +1096,24 @@
            - Bilder werden blockiert wenn Modell keine Bilder unterstützt (alert)
            - MODEL_CAPABILITIES Map: bereit für DeepSeek V4
 
+    68. [28.02.2026 18:50] - BUGFIX: CTRL+V DATEIPFAD-ERKENNUNG (XFCE/THUNAR):
+        PROBLEM:
+           - Beim Kopieren von Dateien in Thunar (XFCE) und Ctrl+V im Eingabefeld
+             wurden die Dateipfade als Text eingefügt statt blockiert zu werden
+           - Ursache: Linux/X11/Firefox übergibt beim Einfügen von Thunar-Dateien
+             keine verwertbaren clipboard.items (MIME-Types fehlen)
+           - e.preventDefault() blockiert den Paste-Vorgang auf Linux nicht zuverlässig
+        LÖSUNG:
+           - Neuer Ansatz: Paste-Vorgang zulassen, danach sofort via setTimeout(0)
+             den Inhalt prüfen und bei Dateipfaden rückgängig machen
+           - Erkennung: 2+ Zeilen, alle beginnend mit "/" oder "file://"
+           - Eingabefeld wird sofort geleert, dann erscheint Alert via
+             requestAnimationFrame (Browser-Repaint vor Dialog)
+           - Zusätzlich: Absicherung in sendMessage() als letzte Sicherheitsstufe
+        WEITERE FIXES:
+           - Führende "---" Trennlinie vor <!DOCTYPE html> entfernt (Quirks Mode)
+           - <meta charset="UTF-8"> als erstes Element in <head> verschoben
+
+
     ============================================================================
 
