@@ -1,8 +1,9 @@
+---------------------------------------------------------
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
     <title>DeepSeek Chat</title>
+    <meta charset="UTF-8">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     
     <!-- 
@@ -2415,8 +2416,11 @@
         // CLIPBOARD PASTE HANDLER (Ctrl+V)
         // =====================================================================
         function handlePaste(e) {
-            const items = (e.clipboardData || window.clipboardData).items;
-            if (!items) return;
+            // Prevent default immediately - before any async operations
+            e.preventDefault();
+            const cd = e.clipboardData || window.clipboardData;
+            if (!cd) return;
+            const items = cd.items ? Array.from(cd.items) : [];
 
             // Check for image first
             for (const item of items) {
@@ -2513,6 +2517,19 @@
             });
             // Paste handler
             addEventListenerWithCleanup(inputField, 'paste', handlePaste);
+
+            // FALLBACK for XFCE/Thunar: check textarea content after every change
+            // If file paths appear (e.g. from Thunar Ctrl+C paste), clear and warn
+            addEventListenerWithCleanup(inputField, 'input', function() {
+                const val = inputField.value;
+                const lines = val.trim().split('\n').filter(Boolean);
+                if (lines.length >= 2 && lines.every(function(line) {
+                    return line.trim().startsWith('/') || line.trim().startsWith('file://');
+                })) {
+                    inputField.value = '';
+                    alert(t(240));
+                }
+            });
 
             // Clipboard image remove
             const clipboardRemoveBtn = document.getElementById('clipboardImageRemove');
