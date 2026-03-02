@@ -119,6 +119,7 @@ Adding a new language:
     <text id="135">Free</text>
     <text id="136">Paid</text>
     <text id="137">Model</text>
+    <text id="138">Google Gemini</text>
 
     <!-- 201-300: Chat interface texts -->
     <text id="201">Enter your message here...</text>
@@ -268,6 +269,7 @@ Adding a new language:
     <text id="135">Kostenlos</text>
     <text id="136">Bezahlt</text>
     <text id="137">Modell</text>
+    <text id="138">Google Gemini</text>
 
     <!-- 201-300: Chat-Interface-Texte -->
     <text id="201">Ihre Nachricht hier eingeben...</text>
@@ -415,6 +417,7 @@ Adding a new language:
     <text id="135">Gratuito</text>
     <text id="136">De pago</text>
     <text id="137">Modelo</text>
+    <text id="138">Google Gemini</text>
 
     <!-- 201-300: Textos de la interfaz del chat -->
     <text id="201">Escriba su mensaje aquí...</text>
@@ -557,6 +560,7 @@ Adding a new language:
     <text id="135">Free</text>
     <text id="136">Paid</text>
     <text id="137">Model</text>
+    <text id="138">Google Gemini</text>
 
     <!-- 201-300: Chat interface texts -->
     <text id="201">Enter your message here...</text>

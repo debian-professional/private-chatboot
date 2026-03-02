@@ -417,6 +417,7 @@
     - Abschnitt D.1: API-Kommunikation um Google-Endpoint erweitert
     - MODEL_CONFIG: Google-Modelle gemini-2.0-flash, gemini-1.5-pro, gemini-2.5-pro hinzugefügt
     - Abschnitt F.6: Neue verbindliche Sprach-Pflicht – alle Texte zwingend in language.xml
+    - language.xml IDs 131-138: Neue Texte für API-Dienst-Gruppe ergänzt (alle 4 Sprachen)
 
 
 ================================================================================

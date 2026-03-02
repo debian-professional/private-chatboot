@@ -779,6 +779,8 @@
            - Abschnitt B.4b: Neuer Abschnitt API-Dienst-Auswahl
            - Abschnitt D.1: API-Kommunikation erweitert
            - Abschnitt F.6: Neue verbindliche Sprach-Pflicht – alle Texte zwingend in language.xml
+           - language.xml IDs 131-138 ergänzt (alle 4 Sprachen): API-Dienst, DeepSeek, Google,
+             Google Plan, Kostenlos/Free, Bezahlt/Paid, Modell, Google Gemini
 
 
     ============================================================================
