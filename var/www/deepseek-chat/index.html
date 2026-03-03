@@ -2458,11 +2458,33 @@
                     : (currentMode === 'deepthink') ? 'deepseek-reasoner' : 'deepseek-chat';
                 const activeApiUrl = (settings.apiService === 'google') ? GOOGLE_API_URL : API_URL;
                 const maxTokens = (MODEL_CONFIG[modelName] || MODEL_CONFIG['deepseek-chat']).maxOutputTokens;
-                const response = await fetch(activeApiUrl, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ model: modelName, messages, max_tokens: maxTokens, no_training: settings.noTraining })
-                });
-                if (!response.ok) throw new Error(tf(24, response.status, ''));
+                const requestBody = JSON.stringify({ model: modelName, messages, max_tokens: maxTokens, no_training: settings.noTraining });
+
+                // Retry-Logik für Google 429
+                const MAX_RETRIES = 3;
+                const RETRY_WAIT = 15; // Sekunden
+                let response = null;
+                for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+                    response = await fetch(activeApiUrl, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: requestBody
+                    });
+                    if (response.ok) break;
+                    if (response.status === 429 && settings.apiService === 'google') {
+                        if (attempt < MAX_RETRIES) {
+                            // Countdown anzeigen
+                            for (let s = RETRY_WAIT; s > 0; s--) {
+                                aiText.textContent = tf(142, s, attempt, MAX_RETRIES);
+                                await new Promise(r => setTimeout(r, 1000));
+                            }
+                            aiText.textContent = '';
+                        } else {
+                            throw new Error(t(143));
+                        }
+                    } else {
+                        throw new Error(tf(24, response.status, ''));
+                    }
+                }
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 let fullText = '';
