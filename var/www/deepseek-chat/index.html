@@ -1338,10 +1338,14 @@
 
             // Model info
             const modelInfoEl = document.getElementById('modelInfo');
-            if (modelInfoEl && detectedModels.length > 0) {
-                modelInfoEl.textContent = t(238) + ' ' + detectedModels.join(', ');
-            } else if (modelInfoEl) {
-                modelInfoEl.textContent = t(238) + ' ...';
+            if (modelInfoEl) {
+                if (settings && settings.apiService === 'google') {
+                    modelInfoEl.textContent = t(238) + ' ' + (settings.selectedModel || 'gemini-2.0-flash');
+                } else if (detectedModels.length > 0) {
+                    modelInfoEl.textContent = t(238) + ' ' + detectedModels.join(', ');
+                } else {
+                    modelInfoEl.textContent = t(238) + ' ...';
+                }
             }
 
             // Paste overlay
@@ -2231,6 +2235,18 @@
             // Falls Google aktiv und DeepThink läuft: auf Chat zurückschalten
             if (isGoogle && currentMode === 'deepthink') {
                 setMode('chat');
+            }
+            // modelInfo Header aktualisieren
+            const modelInfoEl = document.getElementById('modelInfo');
+            if (modelInfoEl) {
+                if (isGoogle) {
+                    const selModel = modelSelect.value || 'gemini-2.0-flash';
+                    modelInfoEl.textContent = t(238) + ' ' + selModel;
+                } else if (detectedModels.length > 0) {
+                    modelInfoEl.textContent = t(238) + ' ' + detectedModels.join(', ');
+                } else {
+                    modelInfoEl.textContent = t(238) + ' ...';
+                }
             }
         }
 
