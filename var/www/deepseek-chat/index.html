@@ -1205,8 +1205,10 @@
                 maxContextMessages: 100
             }
         };
-        const DEEPSEEK_MODELS = ['deepseek-chat', 'deepseek-reasoner'];
-        const GOOGLE_MODELS   = ['gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-2.5-pro'];
+        const DEEPSEEK_MODELS      = ['deepseek-chat', 'deepseek-reasoner'];
+        const GOOGLE_MODELS_FREE   = ['gemini-2.0-flash', 'gemini-1.5-flash'];
+        const GOOGLE_MODELS_PAID   = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.5-pro'];
+        const GOOGLE_MODELS        = GOOGLE_MODELS_FREE; // Fallback
         // =====================================================================
 
         const TOKENS_PER_CHAR = 0.25;
@@ -2287,17 +2289,30 @@
         }
 
         function setGoogleTierToggle(value) {
-            settings.googleTier = value;  // sofort in settings schreiben
+            settings.googleTier = value;
             googleFreeTierToggle.checked = (value === 'free');
             googlePaidTierToggle.checked = (value === 'paid');
             googleFreeTierItem.classList.toggle('toggle-active', value === 'free');
             googlePaidTierItem.classList.toggle('toggle-active', value === 'paid');
-            // Slider visuell aktualisieren
             const freeSlider = googleFreeTierToggle.nextElementSibling;
             const paidSlider = googlePaidTierToggle.nextElementSibling;
             if (freeSlider) freeSlider.classList.toggle('lang-active', value === 'free');
             if (paidSlider) paidSlider.classList.toggle('lang-active', value === 'paid');
             document.getElementById('googleTierStatus').textContent = (value === 'paid') ? t(136) : t(135);
+            // Modell-Dropdown bei Tier-Wechsel aktualisieren
+            if (settings.apiService === 'google') {
+                const models = (value === 'paid') ? GOOGLE_MODELS_PAID : GOOGLE_MODELS_FREE;
+                const currentModel = modelSelect.value;
+                modelSelect.innerHTML = '';
+                models.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m; opt.textContent = m;
+                    modelSelect.appendChild(opt);
+                });
+                // Altes Modell wieder auswählen falls noch verfügbar
+                const exists = models.includes(currentModel);
+                if (exists) modelSelect.value = currentModel;
+            }
         }
 
         function updateApiServiceUI(service) {
@@ -2311,7 +2326,12 @@
             if (dsGroup) dsGroup.style.display = isGoogle ? 'none' : '';
             if (gGroup)  gGroup.style.display  = isGoogle ? '' : 'none';
             // Modell-Dropdown befüllen
-            const models = isGoogle ? GOOGLE_MODELS : DEEPSEEK_MODELS;
+            let models;
+            if (isGoogle) {
+                models = (settings.googleTier === 'paid') ? GOOGLE_MODELS_PAID : GOOGLE_MODELS_FREE;
+            } else {
+                models = DEEPSEEK_MODELS;
+            }
             modelSelect.innerHTML = '';
             models.forEach(m => {
                 const opt = document.createElement('option');
