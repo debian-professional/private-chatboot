@@ -519,7 +519,32 @@
         .save-button:hover { background: #003d82; border-color: #003d82; }
         .save-button:active { background: #002a5c; border-color: #002a5c; }
 
-        #sessionsOverlay {
+        #llmSettingsOverlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1001;
+            align-items: center;
+            justify-content: center;
+        }
+        #llmSettingsPanel {
+            background: #1e1e1e;
+            border: 2px solid #0056b3;
+            border-radius: 10px;
+            padding: 25px;
+            width: 90%;
+            max-width: 450px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .setting-item.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+            cursor: default;
+        }
             display: none;
             position: fixed;
             top: 0; left: 0;
@@ -812,6 +837,7 @@
         </div>
 
         <button id="settingsButton" class="pill-button">Settings</button>
+        <button id="llmSettingsButton" class="pill-button">LLM Settings</button>
         <button id="logButton" class="pill-button">Log Files</button>
     </div>
 
@@ -852,7 +878,33 @@
                 <div class="settings-title" id="settingsTitleText">Chat Settings</div>
                 <button class="close-settings" id="closeSettings" title="Close">&times;</button>
             </div>
-            
+
+            <!-- LLM AUSWAHL GROUP (ganz oben) -->
+            <div class="settings-group" id="llmSelectionGroup">
+                <div class="group-header">
+                    <div class="group-title" id="llmSelectionGroupTitle">LLM Selection</div>
+                    <div class="group-status" id="apiServiceStatus">DeepSeek</div>
+                </div>
+                <div class="setting-item toggle-active" id="deepseekServiceItem">
+                    <label class="toggle-label" for="deepseekServiceToggle">
+                        <span class="setting-name" id="deepseekServiceLabel">DeepSeek</span>
+                        <span class="toggle-switch">
+                            <input type="checkbox" id="deepseekServiceToggle" checked>
+                            <span class="toggle-slider"></span>
+                        </span>
+                    </label>
+                </div>
+                <div class="setting-item" id="googleServiceItem">
+                    <label class="toggle-label" for="googleServiceToggle">
+                        <span class="setting-name" id="googleServiceLabel">Google Gemini</span>
+                        <span class="toggle-switch">
+                            <input type="checkbox" id="googleServiceToggle">
+                            <span class="toggle-slider"></span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
             <!-- LANGUAGE GROUP -->
             <div class="settings-group" id="languageGroup">
                 <div class="group-header">
@@ -886,7 +938,6 @@
                         </span>
                     </label>
                 </div>
-                <!-- Custom language slot - only visible when custom language is activated in language.xml -->
                 <div class="setting-item" id="langCustomItem" style="display:none;">
                     <label class="toggle-label" for="langCustomToggle">
                         <span class="setting-name" id="langCustomLabel">Custom</span>
@@ -898,11 +949,17 @@
                 </div>
             </div>
 
-            <!-- ADDRESS FORM GROUP (hidden for English) -->
+            <!-- ADDRESS FORM GROUP (immer sichtbar, bei Englisch ausgegraut) -->
             <div class="settings-group" id="addressFormGroup">
                 <div class="group-header">
                     <div class="group-title" id="addressFormGroupTitle">Form of Address</div>
                     <div class="group-status" id="addressFormStatus">Formal</div>
+                </div>
+                <!-- Hinweis bei Englisch -->
+                <div id="addressFormHint" style="display:none;">
+                    <div class="setting-description" id="addressFormHintText" style="padding:10px;color:#888;font-style:italic;">
+                        Form of address is not available for English.
+                    </div>
                 </div>
                 <div class="setting-item" id="sieFormItem">
                     <label class="toggle-label" for="sieFormToggle">
@@ -929,86 +986,90 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- DEFAULT MODE GROUP -->
-            <div class="settings-group">
-                <div class="group-header">
-                    <div class="group-title" id="defaultModeGroupTitle">Default Mode</div>
-                    <div class="group-status" id="defaultModeStatus">Normal Chat</div>
+
+            <div class="settings-info">
+                <div class="info-title" id="settingsInfoTitle">Settings are saved automatically</div>
+                <div class="info-text" id="settingsInfoText">
+                    Your settings are saved locally in your browser and persist after closing the page.
                 </div>
-                <div class="setting-item" id="chatModeItem">
-                    <label class="toggle-label" for="chatModeToggle">
-                        <span class="setting-name" id="chatModeLabel">Normal Chat</span>
-                        <span class="toggle-switch">
-                            <input type="checkbox" id="chatModeToggle">
-                            <span class="toggle-slider"></span>
-                        </span>
-                    </label>
-                    <div class="setting-description" id="chatModeDescription">
-                        Standard conversation mode for general questions. (deepseek-chat)
+            </div>
+
+            <button class="save-button" id="saveSettings">
+                Apply Settings
+            </button>
+        </div>
+    </div>
+
+    <!-- =====================================================================
+         LLM SETTINGS OVERLAY
+         ===================================================================== -->
+    <div id="llmSettingsOverlay">
+        <div id="llmSettingsPanel">
+            <div class="settings-header">
+                <div class="settings-title" id="llmSettingsTitleText">LLM Settings</div>
+                <button class="close-settings" id="closeLlmSettings" title="Close">&times;</button>
+            </div>
+
+            <!-- DEEPSEEK GRUPPE (nur bei DeepSeek sichtbar) -->
+            <div id="llmDeepSeekGroup">
+                <!-- DEFAULT MODE GROUP -->
+                <div class="settings-group">
+                    <div class="group-header">
+                        <div class="group-title" id="defaultModeGroupTitle">Default Mode</div>
+                        <div class="group-status" id="defaultModeStatus">Normal Chat</div>
+                    </div>
+                    <div class="setting-item" id="chatModeItem">
+                        <label class="toggle-label" for="chatModeToggle">
+                            <span class="setting-name" id="chatModeLabel">Normal Chat</span>
+                            <span class="toggle-switch">
+                                <input type="checkbox" id="chatModeToggle">
+                                <span class="toggle-slider"></span>
+                            </span>
+                        </label>
+                        <div class="setting-description" id="chatModeDescription">
+                            Standard conversation mode for general questions. (deepseek-chat)
+                        </div>
+                    </div>
+                    <div class="setting-item" id="deepthinkModeItem">
+                        <label class="toggle-label" for="deepthinkModeToggle">
+                            <span class="setting-name" id="deepthinkModeLabel">DeepThink Mode</span>
+                            <span class="toggle-switch">
+                                <input type="checkbox" id="deepthinkModeToggle">
+                                <span class="toggle-slider"></span>
+                            </span>
+                        </label>
+                        <div class="setting-description" id="deepthinkModeDescription">
+                            In-depth analysis with reasoning. (deepseek-reasoner)
+                        </div>
                     </div>
                 </div>
-                <div class="setting-item" id="deepthinkModeItem">
-                    <label class="toggle-label" for="deepthinkModeToggle">
-                        <span class="setting-name" id="deepthinkModeLabel">DeepThink Mode</span>
-                        <span class="toggle-switch">
-                            <input type="checkbox" id="deepthinkModeToggle">
-                            <span class="toggle-slider"></span>
-                        </span>
-                    </label>
-                    <div class="setting-description" id="deepthinkModeDescription">
-                        In-depth analysis with reasoning. (deepseek-reasoner)
+
+                <!-- PRIVACY GROUP -->
+                <div class="settings-group">
+                    <div class="group-header">
+                        <div class="group-title" id="privacyGroupTitle">Privacy</div>
+                        <div class="group-status" id="noTrainingStatus">Active</div>
+                    </div>
+                    <div class="setting-item" id="noTrainingItem">
+                        <label class="toggle-label" for="noTrainingToggle">
+                            <span class="setting-name" id="noTrainingLabel">Do not use data for training</span>
+                            <span class="toggle-switch">
+                                <input type="checkbox" id="noTrainingToggle" checked>
+                                <span class="toggle-slider"></span>
+                            </span>
+                        </label>
+                        <div class="setting-description" id="noTrainingDescription">
+                            Sends the header X-No-Training: true to the API.
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- PRIVACY GROUP -->
-            <div class="settings-group">
-                <div class="group-header">
-                    <div class="group-title" id="privacyGroupTitle">Privacy</div>
-                    <div class="group-status" id="noTrainingStatus">Active</div>
-                </div>
-                <div class="setting-item" id="noTrainingItem">
-                    <label class="toggle-label" for="noTrainingToggle">
-                        <span class="setting-name" id="noTrainingLabel">Do not use data for training</span>
-                        <span class="toggle-switch">
-                            <input type="checkbox" id="noTrainingToggle" checked>
-                            <span class="toggle-slider"></span>
-                        </span>
-                    </label>
-                    <div class="setting-description" id="noTrainingDescription">
-                        Sends the header X-No-Training: true to the API.
-                    </div>
-                </div>
-            </div>
-
-            <!-- API SERVICE GROUP -->
-            <div class="settings-group" id="apiServiceGroup">
-                <div class="group-header">
-                    <div class="group-title" id="apiServiceGroupTitle">API Service</div>
-                    <div class="group-status" id="apiServiceStatus">DeepSeek</div>
-                </div>
-                <div class="setting-item toggle-active-blue" id="deepseekServiceItem">
-                    <label class="toggle-label" for="deepseekServiceToggle">
-                        <span class="setting-name" id="deepseekServiceLabel">DeepSeek</span>
-                        <span class="toggle-switch">
-                            <input type="checkbox" id="deepseekServiceToggle" checked>
-                            <span class="toggle-slider"></span>
-                        </span>
-                    </label>
-                </div>
-                <div class="setting-item" id="googleServiceItem">
-                    <label class="toggle-label" for="googleServiceToggle">
-                        <span class="setting-name" id="googleServiceLabel">Google Gemini</span>
-                        <span class="toggle-switch">
-                            <input type="checkbox" id="googleServiceToggle">
-                            <span class="toggle-slider"></span>
-                        </span>
-                    </label>
-                </div>
-                <!-- Google Tier (nur sichtbar wenn Google aktiv) -->
-                <div id="googleTierGroup" style="display:none;">
-                    <div class="group-header" style="margin-top:15px;">
+            <!-- GOOGLE GRUPPE (nur bei Google sichtbar) -->
+            <div id="llmGoogleGroup" style="display:none;">
+                <!-- GOOGLE PLAN -->
+                <div class="settings-group">
+                    <div class="group-header">
                         <div class="group-title" id="googleTierGroupTitle">Google Plan</div>
                         <div class="group-status" id="googleTierStatus">Free</div>
                     </div>
@@ -1031,24 +1092,29 @@
                         </label>
                     </div>
                 </div>
-                <!-- Modell-Auswahl Dropdown (Manifest-Ausnahme: Dropdown statt Toggle) -->
+            </div>
+
+            <!-- MODELL-AUSWAHL (immer sichtbar, Inhalt je nach LLM) -->
+            <div class="settings-group">
+                <div class="group-header">
+                    <div class="group-title" id="modelGroupTitle">Model</div>
+                </div>
                 <div class="model-select-wrapper">
-                    <div class="model-select-label" id="modelSelectLabel">Model</div>
                     <select id="modelSelect">
                         <option value="deepseek-chat">deepseek-chat</option>
                         <option value="deepseek-reasoner">deepseek-reasoner</option>
                     </select>
                 </div>
             </div>
-            
+
             <div class="settings-info">
-                <div class="info-title" id="settingsInfoTitle">Settings are saved automatically</div>
-                <div class="info-text" id="settingsInfoText">
+                <div class="info-title" id="llmSettingsInfoTitle">Settings are saved automatically</div>
+                <div class="info-text" id="llmSettingsInfoText">
                     Your settings are saved locally in your browser and persist after closing the page.
                 </div>
             </div>
-            
-            <button class="save-button" id="saveSettings">
+
+            <button class="save-button" id="saveLlmSettings">
                 Apply Settings
             </button>
         </div>
@@ -1280,24 +1346,53 @@
             document.getElementById('langCustomItem').style.display =
                 (customMeta && customMeta.visible) ? 'block' : 'none';
 
-            // Address form group
-            const addressFormGroup = document.getElementById('addressFormGroup');
-            if (meta.has_address_form) {
-                addressFormGroup.style.display = 'block';
-                document.getElementById('addressFormGroupTitle').textContent = t(103);
-                document.getElementById('sieFormLabel').textContent = meta.form_formal_label;
+            // LLM Auswahl group
+            document.getElementById('llmSelectionGroupTitle').textContent = t(139);
+            document.getElementById('llmSettingsTitleText').textContent = t(140);
+            document.getElementById('llmSettingsButton').textContent = t(140);
+            document.getElementById('deepseekServiceLabel').textContent = t(132);
+            document.getElementById('googleServiceLabel').textContent = t(138);
+            const svc = settings ? (settings.apiService || 'deepseek') : 'deepseek';
+            document.getElementById('apiServiceStatus').textContent = (svc === 'google') ? t(133) : t(132);
+
+            // Address form group - immer sichtbar, bei Englisch ausgegraut
+            document.getElementById('addressFormGroupTitle').textContent = t(103);
+            const meta2 = langMeta[currentLang];
+            const hasForm = meta2 && meta2.has_address_form;
+            const hintEl = document.getElementById('addressFormHint');
+            const sieItem = document.getElementById('sieFormItem');
+            const duItem  = document.getElementById('duFormItem');
+            if (hasForm) {
+                if (hintEl) hintEl.style.display = 'none';
+                if (sieItem) sieItem.classList.remove('disabled');
+                if (duItem)  duItem.classList.remove('disabled');
+                document.getElementById('sieFormLabel').textContent = meta2.form_formal_label;
                 document.getElementById('sieFormDescription').textContent = t(107);
-                document.getElementById('duFormLabel').textContent = meta.form_informal_label;
+                document.getElementById('duFormLabel').textContent = meta2.form_informal_label;
                 document.getElementById('duFormDescription').textContent = t(109);
-                // Update status
                 const addressFormStatus = document.getElementById('addressFormStatus');
                 addressFormStatus.textContent = (settings && settings.addressForm === 'sie')
-                    ? meta.form_formal_status : meta.form_informal_status;
+                    ? meta2.form_formal_status : meta2.form_informal_status;
             } else {
-                addressFormGroup.style.display = 'none';
+                if (hintEl) hintEl.style.display = 'block';
+                if (sieItem) sieItem.classList.add('disabled');
+                if (duItem)  duItem.classList.add('disabled');
+                document.getElementById('addressFormHintText').textContent = t(141);
+                document.getElementById('addressFormStatus').textContent = '';
             }
 
-            // Default mode group
+            // LLM Settings panel
+            document.getElementById('llmSettingsInfoTitle').textContent = t(121);
+            document.getElementById('llmSettingsInfoText').textContent = t(122);
+            document.getElementById('saveLlmSettings').textContent = t(123);
+            document.getElementById('modelGroupTitle').textContent = t(137);
+            document.getElementById('googleTierGroupTitle').textContent = t(134);
+            document.getElementById('googleFreeTierLabel').textContent = t(135);
+            document.getElementById('googlePaidTierLabel').textContent = t(136);
+            const tier = settings ? (settings.googleTier || 'free') : 'free';
+            document.getElementById('googleTierStatus').textContent = (tier === 'paid') ? t(136) : t(135);
+
+            // Default mode group (im LLM-Panel)
             document.getElementById('defaultModeGroupTitle').textContent = t(110);
             document.getElementById('chatModeLabel').textContent = t(112);
             document.getElementById('chatModeDescription').textContent = t(113);
@@ -1306,25 +1401,13 @@
             document.getElementById('defaultModeStatus').textContent =
                 (settings && settings.defaultMode === 'deepthink') ? t(129) : t(130);
 
-            // Privacy group
+            // Privacy group (im LLM-Panel)
             document.getElementById('privacyGroupTitle').textContent = t(116);
             document.getElementById('noTrainingLabel').textContent = t(119);
+
+            // Settings info (Haupt-Panel)
             document.getElementById('settingsInfoTitle').textContent = t(121);
             document.getElementById('saveSettings').textContent = t(123);
-
-            // API Service group
-            document.getElementById('apiServiceGroupTitle').textContent = t(131);
-            document.getElementById('deepseekServiceLabel').textContent = t(132);
-            document.getElementById('googleServiceLabel').textContent = t(138);
-            document.getElementById('googleTierGroupTitle').textContent = t(134);
-            document.getElementById('googleFreeTierLabel').textContent = t(135);
-            document.getElementById('googlePaidTierLabel').textContent = t(136);
-            document.getElementById('modelSelectLabel').textContent = t(137);
-            // Status texts aktualisieren
-            const svc = settings ? (settings.apiService || 'deepseek') : 'deepseek';
-            document.getElementById('apiServiceStatus').textContent = (svc === 'google') ? t(133) : t(132);
-            const tier = settings ? (settings.googleTier || 'free') : 'free';
-            document.getElementById('googleTierStatus').textContent = (tier === 'paid') ? t(136) : t(135);
 
             // Sessions overlay
             document.getElementById('sessionsTitleText').textContent = t(215);
@@ -2047,6 +2130,10 @@
 
         const sendButton = document.getElementById('sendButton');
         const settingsButton = document.getElementById('settingsButton');
+        const llmSettingsButton = document.getElementById('llmSettingsButton');
+        const llmSettingsOverlay = document.getElementById('llmSettingsOverlay');
+        const closeLlmSettings = document.getElementById('closeLlmSettings');
+        const saveLlmSettingsButton = document.getElementById('saveLlmSettings');
         const deepThinkButton = document.getElementById('deepThinkButton');
         const settingsOverlay = document.getElementById('settingsOverlay');
         const closeSettings = document.getElementById('closeSettings');
@@ -2218,14 +2305,11 @@
             // DeepThink-Button auf Hauptseite ein-/ausblenden
             deepThinkButton.style.display = isGoogle ? 'none' : '';
             deepThinkIndicator.style.display = isGoogle ? 'none' : '';
-            // Standard-Modus-Gruppe (DeepThink) in Settings ein-/ausblenden
-            const defaultModeGroup = document.getElementById('defaultModeGroupTitle').closest('.settings-group');
-            if (defaultModeGroup) defaultModeGroup.style.display = isGoogle ? 'none' : '';
-            // noTraining-Gruppe ein-/ausblenden
-            const privacyGroup = document.getElementById('noTrainingItem').closest('.settings-group');
-            if (privacyGroup) privacyGroup.style.display = isGoogle ? 'none' : '';
-            // Google-Tier-Gruppe ein-/ausblenden
-            document.getElementById('googleTierGroup').style.display = isGoogle ? '' : 'none';
+            // LLM-Panel: DeepSeek- bzw. Google-Gruppe ein-/ausblenden
+            const dsGroup = document.getElementById('llmDeepSeekGroup');
+            const gGroup  = document.getElementById('llmGoogleGroup');
+            if (dsGroup) dsGroup.style.display = isGoogle ? 'none' : '';
+            if (gGroup)  gGroup.style.display  = isGoogle ? '' : 'none';
             // Modell-Dropdown befüllen
             const models = isGoogle ? GOOGLE_MODELS : DEEPSEEK_MODELS;
             modelSelect.innerHTML = '';
@@ -2710,6 +2794,8 @@
             addEventListenerWithCleanup(fileUpload, 'change', handleFileUpload);
             addEventListenerWithCleanup(settingsButton, 'click', () => settingsOverlay.style.display = 'flex');
             addEventListenerWithCleanup(closeSettings, 'click', () => settingsOverlay.style.display = 'none');
+            addEventListenerWithCleanup(llmSettingsButton, 'click', () => llmSettingsOverlay.style.display = 'flex');
+            addEventListenerWithCleanup(closeLlmSettings, 'click', () => llmSettingsOverlay.style.display = 'none');
             addEventListenerWithCleanup(exportButton, 'click', () => exportMenu.classList.toggle('show'));
             addEventListenerWithCleanup(exportPdfBtn, 'click', () => { exportMenu.classList.remove('show'); exportPDF(); });
             addEventListenerWithCleanup(exportMarkdownBtn, 'click', () => { exportMenu.classList.remove('show'); exportMarkdown(); });
@@ -2799,7 +2885,8 @@
             addEventListenerWithCleanup(document, 'keydown', (e) => {
                 if (e.key === 'Escape') {
                     logOverlay.style.display = 'none'; sessionsOverlay.style.display = 'none';
-                    settingsOverlay.style.display = 'none'; exportMenu.classList.remove('show');
+                    settingsOverlay.style.display = 'none'; llmSettingsOverlay.style.display = 'none';
+                    exportMenu.classList.remove('show');
                     if (activeSingleExportDropdown) { activeSingleExportDropdown.classList.remove('show'); activeSingleExportDropdown = null; }
                 }
             });
@@ -2901,6 +2988,18 @@
                 settingsOverlay.style.display = 'none';
             };
             addEventListenerWithCleanup(saveSettingsButton, 'click', saveHandler);
+
+            // --- LLM Save button ---
+            const llmSaveHandler = function() {
+                settings.defaultMode   = deepthinkModeToggle.checked ? 'deepthink' : 'chat';
+                settings.noTraining    = noTrainingToggle.checked;
+                settings.selectedModel = modelSelect.value;
+                saveSettings();
+                setMode(settings.defaultMode);
+                updateSettingsUI();
+                llmSettingsOverlay.style.display = 'none';
+            };
+            addEventListenerWithCleanup(saveLlmSettingsButton, 'click', llmSaveHandler);
 
             // --- DeepThink button ---
             addEventListenerWithCleanup(deepThinkButton, 'click', () => {

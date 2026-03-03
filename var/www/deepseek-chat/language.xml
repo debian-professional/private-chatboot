@@ -120,6 +120,9 @@ Adding a new language:
     <text id="136">Paid</text>
     <text id="137">Model</text>
     <text id="138">Google Gemini</text>
+    <text id="139">LLM Selection</text>
+    <text id="140">LLM Settings</text>
+    <text id="141">Form of address is not available for English.</text>
 
     <!-- 201-300: Chat interface texts -->
     <text id="201">Enter your message here...</text>
@@ -270,6 +273,9 @@ Adding a new language:
     <text id="136">Bezahlt</text>
     <text id="137">Modell</text>
     <text id="138">Google Gemini</text>
+    <text id="139">LLM Auswahl</text>
+    <text id="140">LLM Einstellungen</text>
+    <text id="141">Anredeform ist für Englisch nicht verfügbar.</text>
 
     <!-- 201-300: Chat-Interface-Texte -->
     <text id="201">Ihre Nachricht hier eingeben...</text>
@@ -418,6 +424,9 @@ Adding a new language:
     <text id="136">De pago</text>
     <text id="137">Modelo</text>
     <text id="138">Google Gemini</text>
+    <text id="139">Selección LLM</text>
+    <text id="140">Configuración LLM</text>
+    <text id="141">El tratamiento no está disponible para el inglés.</text>
 
     <!-- 201-300: Textos de la interfaz del chat -->
     <text id="201">Escriba su mensaje aquí...</text>
@@ -561,6 +570,9 @@ Adding a new language:
     <text id="136">Paid</text>
     <text id="137">Model</text>
     <text id="138">Google Gemini</text>
+    <text id="139">LLM Selection</text>
+    <text id="140">LLM Settings</text>
+    <text id="141">Form of address is not available for English.</text>
 
     <!-- 201-300: Chat interface texts -->
     <text id="201">Enter your message here...</text>

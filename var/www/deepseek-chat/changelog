@@ -785,3 +785,29 @@
 
     ============================================================================
 
+    70. [03.03.2026] - EINSTELLUNGEN REDESIGN:
+
+        SETTINGS PANEL (Haupt-Einstellungen):
+           - LLM Auswahl (umbenannt von "API-Dienst") jetzt an erster Stelle
+           - Toggle-Farbe: grün (wie Sprach-Toggles) statt blau
+           - Anredeform immer sichtbar; bei Englisch ausgegraut + Hinweistext
+           - Standard-Modus und Datenschutz aus Haupt-Panel entfernt
+
+        NEUES LLM SETTINGS PANEL:
+           - Neuer Button "LLM Einstellungen" in der Button-Leiste
+           - Bei DeepSeek: Standard-Modus (Chat/DeepThink) + Datenschutz
+           - Bei Google Gemini: Google Plan (Kostenlos/Bezahlt)
+           - Modell-Auswahl (Dropdown) immer sichtbar, Inhalt je nach LLM
+
+        LANGUAGE.XML:
+           - ID 139: LLM Auswahl / LLM Selection / Selección LLM
+           - ID 140: LLM Einstellungen / LLM Settings / Configuración LLM
+           - ID 141: Hinweis Anredeform bei Englisch (alle 4 Sprachen)
+
+        CSS:
+           - .setting-item.disabled: ausgegraut, nicht klickbar
+           - #llmSettingsOverlay / #llmSettingsPanel: neues Overlay
+
+
+    ============================================================================
+
