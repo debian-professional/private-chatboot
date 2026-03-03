@@ -2272,16 +2272,15 @@
         }
         
         function setApiServiceToggle(value) {
-            settings.apiService = value;  // sofort in settings schreiben
+            settings.apiService = value;
             deepseekServiceToggle.checked = (value === 'deepseek');
             googleServiceToggle.checked  = (value === 'google');
-            deepseekServiceItem.classList.toggle('toggle-active-blue', value === 'deepseek');
-            googleServiceItem.classList.toggle('toggle-active-blue',  value === 'google');
-            // Slider visuell aktualisieren (blau)
+            deepseekServiceItem.classList.toggle('toggle-active', value === 'deepseek');
+            googleServiceItem.classList.toggle('toggle-active',  value === 'google');
             const dsSlider = deepseekServiceToggle.nextElementSibling;
             const gSlider  = googleServiceToggle.nextElementSibling;
-            if (dsSlider) { dsSlider.classList.toggle('blue-active', value === 'deepseek'); dsSlider.classList.remove('lang-active'); }
-            if (gSlider)  { gSlider.classList.toggle('blue-active', value === 'google');   gSlider.classList.remove('lang-active'); }
+            if (dsSlider) { dsSlider.classList.toggle('lang-active', value === 'deepseek'); dsSlider.classList.remove('blue-active'); }
+            if (gSlider)  { gSlider.classList.toggle('lang-active', value === 'google');   gSlider.classList.remove('blue-active'); }
             document.getElementById('apiServiceStatus').textContent = (value === 'google') ? t(133) : t(132);
             updateApiServiceUI(value);
         }
