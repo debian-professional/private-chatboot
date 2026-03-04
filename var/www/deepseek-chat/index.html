@@ -2448,7 +2448,7 @@
         function updateApiServiceUI(service) {
             const isGoogle = (service === 'google');
             // DeepThink-Button auf Hauptseite ein-/ausblenden
-            deepThinkButton.style.display = isGoogle ? 'none' : '';
+            deepThinkButton.style.display = (service !== 'deepseek') ? 'none' : '';
             deepThinkIndicator.style.display = (service !== 'deepseek') ? 'none' : '';
             // LLM-Panel: Gruppen je nach Anbieter ein-/ausblenden
             const dsGroup = document.getElementById('llmDeepSeekGroup');
