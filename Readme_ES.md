@@ -1,8 +1,9 @@
-# DeepSeek Chat – Un cliente de chat privado y seguro para la API de DeepSeek
+# Multi-LLM Chat Client – DeepSeek, Google Gemini y Hugging Face
 
-**DeepSeek Chat** es un cliente de chat completamente autónomo y alojado localmente para la API de DeepSeek. Fue desarrollado con enfoque en **seguridad, simplicidad y usabilidad profesional**. La arquitectura no requiere frameworks exóticos y utiliza únicamente tecnologías probadas: Apache como servidor web, Python CGI para la lógica del lado del servidor, y HTML/JavaScript/CSS puro en el lado del cliente.
+**Multi-LLM Chat Client** es un cliente de chat completamente autónomo y alojado localmente con soporte para múltiples proveedores de IA: DeepSeek, Google Gemini y Hugging Face. Fue desarrollado con enfoque en **seguridad, simplicidad y usabilidad profesional**. La arquitectura no requiere frameworks exóticos y utiliza únicamente tecnologías probadas: Apache como servidor web, Python CGI para la lógica del lado del servidor, y HTML/JavaScript/CSS puro en el lado del cliente.
 
 Características principales:
+- **Soporte Multi-LLM** – Cambia entre DeepSeek, Google Gemini y Hugging Face mediante un toggle de proveedor en el panel de Configuración LLM.
 - **Gestión de contexto única** – Elimina mensajes individuales junto con todos los posteriores. El chat permanece consistente y el uso de tokens se actualiza dinámicamente.
 - **Máxima seguridad** – La clave API nunca es visible en el lado del cliente, las cargas están protegidas contra archivos ejecutables mediante inspección de magic bytes, y las sesiones se almacenan con permisos de archivo restrictivos.
 - **Sin frameworks exóticos** – Todo se basa en Apache, Python, Bash y HTML/JS puro.
@@ -10,6 +11,7 @@ Características principales:
 - **Soporte multiidioma** – Traducción completa de la UI mediante `language.xml` externo (inglés, alemán, español, extensible con idiomas personalizados).
 - **Integración con portapapeles** – Manejador Ctrl+V con diálogo para texto, imágenes y protección contra el pegado accidental de rutas de archivos.
 - **Respuestas en streaming** – Las respuestas de la IA aparecen token a token, igual que ChatGPT o Claude.
+- **Manejo de límite de tasa 429** – Reintento automático con cuenta regresiva para los límites del Free Tier de Google Gemini.
 - **Herramienta incluida** – El script `repo2text.sh` exporta todo el repositorio como archivo de texto, ideal para trabajar con asistentes de IA (como este).
 
 ---
@@ -72,12 +74,14 @@ La arquitectura es intencionalmente simple pero bien pensada:
 - **Apache** con soporte CGI (`mod_cgi`).
 - **Scripts CGI de Python** bajo `/cgi-bin/` gestionan:
   - Comunicación con la API de DeepSeek (`deepseek-api.py`) — con streaming (Server-Sent Events)
+  - Comunicación con la API de Google Gemini (`google-api.py`) — convierte formato OpenAI a formato Gemini
+  - Comunicación con la API de Hugging Face Inference (`hugging-api.py`) — endpoint router compatible con OpenAI
   - Descubrimiento de modelos (`deepseek-models.py`) — consulta `/v1/models` al inicio
   - Almacenamiento y recuperación de sesiones (`save-session.py`, `load-session.py`, `delete-session.py`)
   - Exportaciones en varios formatos (`export-pdf.py`, `export-markdown.py`, `export-txt.py`, `export-rtf.py`)
   - Registro de feedback (`feedback-log.py`)
   - Visualización de registros (`get-log.py`)
-- La **clave API** se proporciona exclusivamente a través de una variable de entorno de Apache (`DEEPSEEK_API_KEY` en `/etc/apache2/envvars`) — **nunca en el código del cliente**.
+- Las claves API se proporcionan exclusivamente a través de variables de entorno de Apache (`DEEPSEEK_API_KEY`, `GOOGLE_API_KEY`, `HF_API_KEY` en `/etc/apache2/envvars`) — **nunca en el código del cliente**.
 - Un único `ScriptAlias /cgi-bin/ /var/www/deepseek-chat/cgi-bin/` cubre todos los scripts — no se necesitan cambios en Apache al añadir nuevos scripts.
 
 ### 3. Almacenamiento de Datos
@@ -154,12 +158,25 @@ Además de DeepSeek, la aplicación soporta **Google Gemini** como segundo prove
   - **Paid Tier**: `gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-1.5-pro`, `gemini-2.0-flash`
 - El desplegable de modelos se actualiza automáticamente al cambiar entre Free y Paid — los modelos no disponibles desaparecen al instante.
 
+### Integración con Hugging Face
+
+El cliente soporta Hugging Face Inference Providers como tercer proveedor de IA mediante `hugging-api.py`:
+
+- **Arquitectura**: Utiliza el endpoint router de Hugging Face compatible con OpenAI — no se requiere conversión de formato. El flujo SSE se reenvía directamente.
+- **Endpoint**: `https://router.huggingface.co/v1/chat/completions` — el router selecciona automáticamente el proveedor más rápido disponible.
+- **Clave API**: `HF_API_KEY` en `/etc/apache2/envvars` — un token Write de huggingface.co/settings/tokens con el permiso "Make calls to Inference Providers".
+- **Free Tier**: `Qwen/Qwen2.5-72B-Instruct`, `mistralai/Mistral-7B-Instruct-v0.3`, `microsoft/Phi-3.5-mini-instruct`.
+- **Paid Tier**: `meta-llama/Meta-Llama-3.1-70B-Instruct`, `meta-llama/Meta-Llama-3.1-405B-Instruct`, `Qwen/Qwen2.5-72B-Instruct`, `mistralai/Mixtral-8x7B-Instruct-v0.1`.
+- El desplegable de modelos se actualiza automáticamente según el plan seleccionado.
+- El botón DeepThink y el indicador DeepThink se ocultan cuando Hugging Face está activo.
+
 ### Panel de Configuración LLM
 
-Un nuevo botón **Configuración LLM** abre un segundo overlay de configuración con opciones específicas del proveedor:
+El botón **Configuración LLM** abre un segundo overlay de configuración con opciones específicas del proveedor:
 
 - **Para DeepSeek**: Modo de Chat (Chat / DeepThink), toggle de Privacidad (no usar datos para entrenamiento), desplegable de selección de modelo.
 - **Para Google**: Plan Google (Free / Paid), desplegable de selección de modelo.
+- **Para Hugging Face**: Plan HF (Free / Paid), desplegable de selección de modelo.
 - El panel de configuración principal permanece compacto: solo Selección de LLM, Idioma y Forma de tratamiento.
 - Este enfoque de dos paneles mantiene la UI ordenada y hace que todas las opciones sean fácilmente accesibles.
 
@@ -609,6 +626,7 @@ Para añadir un nuevo modelo, basta con ampliar este bloque y la lista `GOOGLE_M
 │   ├── cgi-bin/
 │   │   ├── deepseek-api.py            Proxy de streaming a la API de DeepSeek
 │   │   ├── google-api.py              Proxy de streaming a la API de Google Gemini (con reintento 429)
+│   │   ├── hugging-api.py             Proxy de streaming a la API de Hugging Face Inference
 │   │   ├── deepseek-models.py         Consulta el endpoint /v1/models
 │   │   ├── save-session.py            Guarda sesiones de chat (POST)
 │   │   ├── load-session.py            Carga lista de sesiones (GET) o sesión (GET ?id=)
@@ -627,54 +645,33 @@ Para añadir un nuevo modelo, basta con ampliar este bloque y la lista `GOOGLE_M
 
 ## Configuración del Modelo
 
-El objeto `MODEL_CONFIG` en `index.html` es la única fuente de verdad para todos los límites específicos de cada modelo:
+El objeto `MODEL_CONFIG` en `index.html` es la única fuente de verdad para todos los límites específicos de cada modelo. Cubre los tres proveedores:
 
 ```javascript
 const MODEL_CONFIG = {
-    'deepseek-chat': {
-        maxContextTokens:   100000,   // Ventana de contexto de DeepSeek V3
-        maxOutputTokens:    8192,     // Tokens máximos por respuesta
-        maxContextMessages: 50        // Mensajes máximos enviados como contexto
-    },
-    'deepseek-reasoner': {
-        maxContextTokens:   65000,    // Ventana de contexto de DeepSeek R1
-        maxOutputTokens:    32768,    // R1 admite cadenas de razonamiento más largas
-        maxContextMessages: 30        // Menos mensajes debido al overhead de razonamiento
-    },
-    'gemini-2.5-flash': {
-        maxContextTokens:   1048576,  // Ventana de contexto de 1M tokens
-        maxOutputTokens:    8192,
-        maxContextMessages: 100
-    },
-    'gemini-2.5-pro': {
-        maxContextTokens:   1048576,
-        maxOutputTokens:    65536,
-        maxContextMessages: 100
-    },
-    'gemini-1.5-pro': {
-        maxContextTokens:   2097152,  // Ventana de contexto de 2M tokens
-        maxOutputTokens:    8192,
-        maxContextMessages: 100
-    },
-    'gemini-2.0-flash': {
-        maxContextTokens:   1048576,
-        maxOutputTokens:    8192,
-        maxContextMessages: 100
-    }
+    // DeepSeek
+    'deepseek-chat':     { maxContextTokens: 100000,  maxOutputTokens: 8192,  maxContextMessages: 50  },
+    'deepseek-reasoner': { maxContextTokens: 65000,   maxOutputTokens: 32768, maxContextMessages: 30  },
+    // Google Gemini
+    'gemini-2.5-flash':  { maxContextTokens: 1048576, maxOutputTokens: 8192,  maxContextMessages: 100 },
+    'gemini-2.5-pro':    { maxContextTokens: 1048576, maxOutputTokens: 65536, maxContextMessages: 100 },
+    'gemini-1.5-pro':    { maxContextTokens: 2097152, maxOutputTokens: 8192,  maxContextMessages: 100 },
+    'gemini-2.0-flash':  { maxContextTokens: 1048576, maxOutputTokens: 8192,  maxContextMessages: 100 },
+    // Hugging Face
+    'Qwen/Qwen2.5-72B-Instruct':               { maxContextTokens: 128000, maxOutputTokens: 8192, maxContextMessages: 80 },
+    'mistralai/Mistral-7B-Instruct-v0.3':      { maxContextTokens: 32768,  maxOutputTokens: 4096, maxContextMessages: 40 },
+    'microsoft/Phi-3.5-mini-instruct':         { maxContextTokens: 128000, maxOutputTokens: 4096, maxContextMessages: 60 },
+    'meta-llama/Meta-Llama-3.1-70B-Instruct':  { maxContextTokens: 128000, maxOutputTokens: 8192, maxContextMessages: 80 },
+    'meta-llama/Meta-Llama-3.1-405B-Instruct': { maxContextTokens: 128000, maxOutputTokens: 8192, maxContextMessages: 80 },
+    'mistralai/Mixtral-8x7B-Instruct-v0.1':    { maxContextTokens: 32768,  maxOutputTokens: 4096, maxContextMessages: 40 }
 };
-```
-
-Listas de modelos por nivel de Google:
-```javascript
 const GOOGLE_MODELS_FREE = ['gemini-2.5-flash'];
 const GOOGLE_MODELS_PAID = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-1.5-pro', 'gemini-2.0-flash'];
+const HF_MODELS_FREE     = ['Qwen/Qwen2.5-72B-Instruct', 'mistralai/Mistral-7B-Instruct-v0.3', 'microsoft/Phi-3.5-mini-instruct'];
+const HF_MODELS_PAID     = ['meta-llama/Meta-Llama-3.1-70B-Instruct', 'meta-llama/Meta-Llama-3.1-405B-Instruct', 'Qwen/Qwen2.5-72B-Instruct', 'mistralai/Mixtral-8x7B-Instruct-v0.1'];
 ```
 
-Fuentes: [Documentación de la API de DeepSeek](https://api-docs.deepseek.com) (19.02.2026), [Google AI Rate Limits](https://ai.dev/rate-limit) (03.03.2026).
-
-**Estimación de tokens**: `TOKENS_PER_CHAR = 0,25` (4 caracteres ≈ 1 token — estimación conservadora para texto mixto inglés/alemán).
-
-Al añadir un nuevo modelo, **solo es necesario actualizar `MODEL_CONFIG` y la lista de modelos correspondiente**. Todas las funciones dependientes (`updateContextDisplay()`, `sendMessage()`, `handleRegenerate()`) usarán automáticamente los nuevos valores.
+Fuentes: [Documentación de la API de DeepSeek](https://api-docs.deepseek.com), [Google AI Docs](https://ai.google.dev/gemini-api/docs), [Hugging Face Inference Providers](https://huggingface.co/docs/inference-providers) (04.03.2026).
 
 ---
 
@@ -773,4 +770,4 @@ DeepSeek Chat es un **escaparate del desarrollo web profesional** — sin sobrec
 
 ---
 
-*Última actualización: 03.03.2026*
+*Última actualización: 04.03.2026*
