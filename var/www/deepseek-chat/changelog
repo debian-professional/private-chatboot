@@ -782,9 +782,6 @@
            - language.xml IDs 131-138 ergänzt (alle 4 Sprachen): API-Dienst, DeepSeek, Google,
              Google Plan, Kostenlos/Free, Bezahlt/Paid, Modell, Google Gemini
 
-
-    ============================================================================
-
     70. [03.03.2026] - EINSTELLUNGEN REDESIGN:
 
         SETTINGS PANEL (Haupt-Einstellungen):
@@ -807,10 +804,6 @@
         CSS:
            - .setting-item.disabled: ausgegraut, nicht klickbar
            - #llmSettingsOverlay / #llmSettingsPanel: neues Overlay
-
-
-    ============================================================================
-
 
     71. [03.03.2026] - GOOGLE FREE TIER KORREKTUREN:
 
@@ -840,6 +833,53 @@
            - #sessionsOverlay CSS-Selektor fehlte (Saved Chats immer sichtbar)
            - modelInfo Header zeigte DeepSeek-Modelle auch bei aktivem Google
 
+    72. [04.03.2026] - HUGGING FACE ALS DRITTER LLM-ANBIETER:
+
+        NEUES CGI-SCRIPT (hugging-api.py):
+           - Streaming-Proxy zur Hugging Face Inference API
+           - Endpoint: https://router.huggingface.co/v1/chat/completions
+             (OpenAI-kompatibler Router — kein Format-Umbau nötig, SSE direkt weitergeleitet)
+           - Hinweis: Alter Endpunkt https://api-inference.huggingface.co/models/{model}/...
+             gibt HTTP 410 Gone zurück — Router-URL ist der korrekte neue Endpunkt
+           - API-Key: HF_API_KEY aus Apache envvars (Write-Token, "Make calls to Inference Providers")
+           - Timeout: 120s (Hugging Face Free Tier kann Kaltstart haben)
+
+        INDEX.HTML:
+           - Konstanten: HF_API_URL, HF_MODELS_FREE, HF_MODELS_PAID
+           - MODEL_CONFIG erweitert um alle HF-Modelle:
+             * Qwen/Qwen2.5-72B-Instruct:              128k ctx, 8k out, 80 msg
+             * mistralai/Mistral-7B-Instruct-v0.3:     32k ctx,  4k out, 40 msg
+             * microsoft/Phi-3.5-mini-instruct:        128k ctx, 4k out, 60 msg
+             * meta-llama/Meta-Llama-3.1-70B-Instruct: 128k ctx, 8k out, 80 msg
+             * meta-llama/Meta-Llama-3.1-405B-Instruct:128k ctx, 8k out, 80 msg
+             * mistralai/Mixtral-8x7B-Instruct-v0.1:   32k ctx,  4k out, 40 msg
+           - LLM SELECTION: huggingfaceServiceToggle hinzugefügt
+           - LLM SETTINGS: llmHuggingFaceGroup mit Free/Paid-Toggle
+           - Settings-Objekt: apiService += 'huggingface', hfTier: 'free'|'paid'
+           - Funktionen aktualisiert: setApiServiceToggle, updateApiServiceUI,
+             updateContextEstimation, updateContextDisplay, sendMessage, handleRegenerate,
+             updateLanguage
+           - Event-Listener: huggingfaceServiceToggle, hfFreeTierToggle, hfPaidTierToggle
+
+        BUGFIXES (04.03.2026):
+           - modelInfo Header zeigte "deepseek-chat, deepseek-reasoner" wenn Hugging Face aktiv
+             Fix: Bedingung !=='google' -> ==='deepseek' (nur DeepSeek-Modelle aus API-Abruf)
+           - DeepThink-Button sichtbar wenn Hugging Face aktiv
+             Fix: isGoogle ? 'none' -> service !== 'deepseek' ? 'none'
+
+        LANGUAGE.XML:
+           - ID 241: "Hugging Face" (alle 4 Sprachen)
+           - ID 242: "HF Plan" / "HF-Plan" / "Plan HF" (alle 4 Sprachen)
+
+        MANIFEST:
+           - Titel: DEEPSEEK CHAT -> MULTI-LLM CHAT CLIENT
+           - Abschnitt B.4: DeepThink-Ausblendung auf Hugging Face erweitert
+           - Abschnitt B.4b: Hugging Face als dritter Anbieter vollständig dokumentiert
+           - Abschnitt D.1: HF-Endpoint, Backend, Modelle, SICHERHEITSVERBESSERUNG ergänzt
+
+        README:
+           - Readme_EN.md, Readme_DE.md, Readme_ES.md aktualisiert:
+             Titel, Highlights, Architektur, neue Sektionen, Modell-Config, Datum
 
     ============================================================================
 
