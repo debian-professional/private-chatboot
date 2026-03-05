@@ -2315,6 +2315,15 @@
             } else {
                 base = (settings.addressForm === 'sie') ? t(29) : t(30);
             }
+            // Provider-spezifische Identität
+            if (settings.apiService === 'deepseek') {
+                base += ' You are DeepSeek, an AI assistant made by DeepSeek.';
+            } else if (settings.apiService === 'google') {
+                base += ' You are Gemini, an AI assistant made by Google.';
+            } else if (settings.apiService === 'huggingface') {
+                const modelName = settings.selectedModel || 'an AI assistant';
+                base += ' You are ' + modelName + ', an AI assistant. Do not claim to be Claude, GPT, or any other AI.';
+            }
             if (isDeepThink) {
                 if (!meta || !meta.has_address_form) {
                     base += t(31);
