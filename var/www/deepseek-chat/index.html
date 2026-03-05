@@ -2053,7 +2053,7 @@
             isSending = true;
             sendButton.disabled = true; sendButton.textContent = t(5);
             inputField.disabled = true;
-            const systemPrompt = buildSystemPrompt(userMsg.mode === 'deepthink');
+            const systemPrompt = buildSystemPrompt(userMsg.mode === 'deepthink', userMsg.hasFile);
             updateSystemPromptTokens(systemPrompt);
             const processedSystem = userMsg.hasFile ? systemPrompt : replaceGermanUmlauts(systemPrompt);
             const aiContainer = document.createElement('div');
@@ -2307,7 +2307,7 @@
          * id31 = deepthink addition (formal/no-form)
          * id32 = deepthink addition (informal)
          */
-        function buildSystemPrompt(isDeepThink) {
+        function buildSystemPrompt(isDeepThink, hasFile) {
             const meta = langMeta[currentLang];
             let base;
             if (!meta || !meta.has_address_form) {
@@ -2332,7 +2332,9 @@
                 }
             }
             // === ABSOLUT ZWINGENDE ANWEISUNG FÜR DATEIANZEIGE ===
-            base += " STRICT INSTRUCTION: When asked to display the contents of a file, you MUST output the file content exactly as it is, without any modifications, additions, or formatting. Do NOT wrap the content in Markdown code blocks or any other formatting. Do NOT add any introductory or explanatory text. Start directly with the line 'FILE: [filename]' on its own line, followed immediately by a line containing exactly '---------------------------------------------------------' (60 hyphens), then the exact file content line by line, preserving all original line breaks and spaces. After the file content, add a single blank line. If multiple files are requested, repeat this pattern for each file, one after another, with no extra commentary. This is a strict requirement: any deviation will cause errors.";
+            if (hasFile) {
+                base += " STRICT INSTRUCTION: When asked to display the contents of a file, you MUST output the file content exactly as it is, without any modifications, additions, or formatting. Do NOT wrap the content in Markdown code blocks or any other formatting. Do NOT add any introductory or explanatory text. Start directly with the line 'FILE: [filename]' on its own line, followed immediately by a line containing exactly '---------------------------------------------------------' (60 hyphens), then the exact file content line by line, preserving all original line breaks and spaces. After the file content, add a single blank line. If multiple files are requested, repeat this pattern for each file, one after another, with no extra commentary. This is a strict requirement: any deviation will cause errors.";
+            }
             return base;
         }
         
@@ -2602,7 +2604,7 @@
                 : message;
             addMessageToChat(displayMessage, true, msgId, currentMode);
             inputField.value = '';
-            const systemPrompt = buildSystemPrompt(currentMode === 'deepthink');
+            const systemPrompt = buildSystemPrompt(currentMode === 'deepthink', hasFile);
             updateSystemPromptTokens(systemPrompt);
             const processedSystem = hasFile ? systemPrompt : replaceGermanUmlauts(systemPrompt);
             const aiContainer = document.createElement('div');
