@@ -108,7 +108,8 @@ def main():
 
         headers = {
             'Content-Type':  'application/json',
-            'Authorization': f'Bearer {api_key}'
+            'Authorization': f'Bearer {api_key}',
+            'User-Agent':    'Mozilla/5.0 (compatible; groq-proxy/1.0)'
         }
 
         req = urllib.request.Request(
