@@ -76,12 +76,13 @@ Die Architektur ist bewusst einfach, aber durchdacht:
   - Kommunikation mit der DeepSeek API (`deepseek-api.py`) — mit Streaming (Server-Sent Events)
   - Kommunikation mit der Google Gemini API (`google-api.py`) — konvertiert OpenAI-Format in Gemini-Format
   - Kommunikation mit der Hugging Face Inference API (`hugging-api.py`) — OpenAI-kompatibler Router-Endpunkt
+  - Kommunikation mit der GroqCloud API (`groq-api.py`) — OpenAI-kompatibler Endpunkt, hardwarebeschleunigte Inferenz (LPU)
   - Modell-Erkennung (`deepseek-models.py`) — fragt `/v1/models` beim Start ab
   - Session-Speicherung und -Abruf (`save-session.py`, `load-session.py`, `delete-session.py`)
   - Exporte in verschiedenen Formaten (`export-pdf.py`, `export-markdown.py`, `export-txt.py`, `export-rtf.py`)
   - Feedback-Logging (`feedback-log.py`)
   - Log-Anzeige (`get-log.py`)
-- API-Keys werden ausschließlich über Apache-Umgebungsvariablen (`DEEPSEEK_API_KEY`, `GOOGLE_API_KEY`, `HF_API_KEY` in `/etc/apache2/envvars`) bereitgestellt — **niemals im Client-Code**.
+- API-Keys werden ausschließlich über Apache-Umgebungsvariablen (`DEEPSEEK_API_KEY`, `GOOGLE_API_KEY`, `HF_API_KEY`, `GRQ_API_KEY` in `/etc/apache2/envvars`) bereitgestellt — **niemals im Client-Code**.
 - Ein einziger `ScriptAlias /cgi-bin/ /var/www/deepseek-chat/cgi-bin/` deckt alle Skripte ab — beim Hinzufügen neuer Skripte sind keine Apache-Änderungen erforderlich.
 
 ### 3. Datenspeicherung
@@ -168,6 +169,20 @@ Der Client unterstützt Hugging Face Inference Providers als dritten KI-Anbieter
 - Das Modell-Dropdown aktualisiert sich automatisch basierend auf dem gewählten Plan.
 - Der DeepThink-Button und der DeepThink-Indikator werden ausgeblendet, wenn Hugging Face aktiv ist.
 
+
+### GroqCloud-Integration
+
+Der Client unterstützt GroqCloud als vierten KI-Anbieter über `groq-api.py`:
+
+- **Architektur**: Nutzt den OpenAI-kompatiblen GroqCloud-Endpunkt — keine Formatkonvertierung erforderlich. Der SSE-Stream wird direkt weitergeleitet.
+- **Endpunkt**: `https://api.groq.com/openai/v1/chat/completions`
+- **API-Key**: `GRQ_API_KEY` in `/etc/apache2/envvars`.
+- **Hinweis**: Ein `User-Agent`-Header ist erforderlich, um den Cloudflare-Schutz zu umgehen (ohne diesen: error code 1010).
+- **Free & Paid Tier**: `llama-3.3-70b-versatile`, `llama-3.1-8b-instant`, `mixtral-8x7b-32768`, `gemma2-9b-it`.
+- Das Modell-Dropdown aktualisiert sich automatisch je nach gewähltem Tier.
+- Der DeepThink-Button und -Indikator werden bei aktivem GroqCloud ausgeblendet.
+- Alle Modelle laufen auf GroqClouds LPU (Language Processing Unit) für sehr geringe Latenz.
+
 ### LLM-Einstellungen-Panel
 
 Ein dediziertes **LLM-Einstellungen**-Panel (getrennt vom Haupt-Einstellungen-Panel) hält anbieterspezifische Optionen aus der Haupt-UI heraus:
@@ -176,6 +191,7 @@ Ein dediziertes **LLM-Einstellungen**-Panel (getrennt vom Haupt-Einstellungen-Pa
 - **DeepSeek-Optionen**: Standard-Modus (Normal Chat / DeepThink), Privacy-Toggle (X-No-Training-Header).
 - **Google-Optionen**: Free/Paid-Plan-Auswahl mit automatischer Modell-Listen-Aktualisierung.
 - **Hugging Face-Optionen**: Free/Paid-Plan-Auswahl mit automatischer Modell-Listen-Aktualisierung.
+- **GroqCloud-Optionen**: Free/Paid-Plan-Auswahl mit automatischer Modell-Listen-Aktualisierung.
 - **Modell-Dropdown**: Immer sichtbar, Inhalt aktualisiert sich automatisch je nach aktivem Anbieter und Plan.
 - Alle Einstellungen werden in `localStorage` gespeichert und bleiben nach Seitenneuladung erhalten.
 
@@ -430,6 +446,20 @@ Wenn eine Datei hochgeladen oder Zwischenablage-Text angehängt wird, zeigt die 
 
 ---
 
+
+### API-Proxy Infoblock (Stand: 08.03.2026)
+
+Jedes der vier CGI-Proxy-Scripts (`deepseek-api.py`, `google-api.py`, `hugging-api.py`, `groq-api.py`) enthält direkt nach der Encoding-Deklaration einen strukturierten Dokumentations-Header:
+
+- **Import-Datum** — wann die Datei zuletzt aktualisiert wurde
+- **Modell-Version** — Version jedes unterstützten Modells/Untermodells
+- **Kontextfenster** — Input- und Output-Token-Limits je Modell
+- **Fähigkeiten** — Nur Text / Text + Bild + Audio + Video
+- **Free/Paid-Zuordnung** — bei Anbietern mit Tier-Unterscheidung
+- **Quellenlink** — offizielle API-Dokumentation
+
+Damit sind Modellinformationen jederzeit direkt im Quellcode nachvollziehbar, ohne externe Dokumentation konsultieren zu müssen.
+
 ## Das Hilfsskript `repo2text.sh`
 
 Dieses Bash-Skript wurde speziell entwickelt, um **den gesamten Quellcode eines GitHub-Repositories als einzelne Textdatei zu exportieren** — ideal für die Übergabe des vollständigen Projektkontexts an einen KI-Assistenten.
@@ -618,6 +648,7 @@ Um diese Werte zu aktualisieren, wenn DeepSeek neue Modellversionen veröffentli
 │   │   ├── deepseek-api.py            Streaming-Proxy zur DeepSeek API
 │   │   ├── google-api.py              Streaming-Proxy zur Google Gemini API
 │   │   ├── hugging-api.py             Streaming-Proxy zur Hugging Face Inference API
+│   │   ├── groq-api.py                Streaming-Proxy zur GroqCloud API (LPU-beschleunigt)
 │   │   ├── deepseek-models.py         Fragt /v1/models Endpunkt ab
 │   │   ├── save-session.py            Speichert Chat-Sessions (POST)
 │   │   ├── load-session.py            Lädt Session-Liste (GET) oder Session (GET ?id=)
@@ -636,7 +667,7 @@ Um diese Werte zu aktualisieren, wenn DeepSeek neue Modellversionen veröffentli
 
 ## Modell-Konfiguration
 
-Das `MODEL_CONFIG`-Objekt in `index.html` ist die einzige Wahrheitsquelle für alle modellspezifischen Limits. Es deckt alle drei Anbieter ab:
+Das `MODEL_CONFIG`-Objekt in `index.html` ist die einzige Wahrheitsquelle für alle modellspezifischen Limits. Es deckt alle vier Anbieter ab:
 
 ```javascript
 const MODEL_CONFIG = {
@@ -757,4 +788,7 @@ DeepSeek Chat ist ein **Aushängeschild für professionelle Webentwicklung** —
 
 ---
 
-*Zuletzt aktualisiert: 04.03.2026*
+*Zuletzt aktualisiert: 08.03.2026*
+
+
+

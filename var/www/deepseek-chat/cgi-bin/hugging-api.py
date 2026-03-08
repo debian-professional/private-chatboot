@@ -1,6 +1,55 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+# =============================================================================
+# HUGGING FACE INFERENCE API PROXY
+# Importiert / aktualisiert: 08.03.2026
+# =============================================================================
+#
+# Unterstuetzte Modelle:
+#
+#   --- FREE PLAN ---
+#
+#   Qwen/Qwen2.5-72B-Instruct  [Free]
+#     Version      : Qwen 2.5 72B Instruct (Stand 08.03.2026)
+#     Kontext      : 128.000 Token Input / 8.192 Token Output
+#     Faehigkeiten : Nur Text (kein Bild, kein Audio, kein Video)
+#
+#   mistralai/Mistral-7B-Instruct-v0.3  [Free]
+#     Version      : Mistral 7B Instruct v0.3 (Stand 08.03.2026)
+#     Kontext      : 32.768 Token Input / 4.096 Token Output
+#     Faehigkeiten : Nur Text (kein Bild, kein Audio, kein Video)
+#
+#   microsoft/Phi-3.5-mini-instruct  [Free]
+#     Version      : Phi-3.5 Mini Instruct (Stand 08.03.2026)
+#     Kontext      : 128.000 Token Input / 4.096 Token Output
+#     Faehigkeiten : Nur Text (kein Bild, kein Audio, kein Video)
+#
+#   --- PAID PLAN ---
+#
+#   meta-llama/Meta-Llama-3.1-70B-Instruct  [Paid]
+#     Version      : Llama 3.1 70B Instruct (Stand 08.03.2026)
+#     Kontext      : 128.000 Token Input / 8.192 Token Output
+#     Faehigkeiten : Nur Text (kein Bild, kein Audio, kein Video)
+#
+#   meta-llama/Meta-Llama-3.1-405B-Instruct  [Paid]
+#     Version      : Llama 3.1 405B Instruct (Stand 08.03.2026)
+#     Kontext      : 128.000 Token Input / 8.192 Token Output
+#     Faehigkeiten : Nur Text (kein Bild, kein Audio, kein Video)
+#
+#   Qwen/Qwen2.5-72B-Instruct  [Paid]
+#     Version      : Qwen 2.5 72B Instruct (Stand 08.03.2026)
+#     Kontext      : 128.000 Token Input / 8.192 Token Output
+#     Faehigkeiten : Nur Text (kein Bild, kein Audio, kein Video)
+#
+#   mistralai/Mixtral-8x7B-Instruct-v0.1  [Paid]
+#     Version      : Mixtral 8x7B Instruct v0.1 (Stand 08.03.2026)
+#     Kontext      : 32.768 Token Input / 4.096 Token Output
+#     Faehigkeiten : Nur Text (kein Bild, kein Audio, kein Video)
+#
+# Quelle: https://huggingface.co/docs/inference-providers (Stand 08.03.2026)
+# =============================================================================
+
 import json
 import sys
 import os
@@ -205,3 +254,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+

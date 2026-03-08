@@ -1,6 +1,27 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+# =============================================================================
+# DEEPSEEK API PROXY
+# Importiert / aktualisiert: 08.03.2026
+# =============================================================================
+#
+# Unterstuetzte Modelle:
+#
+#   deepseek-chat  (DeepSeek V3)
+#     Version      : V3 (Stand 08.03.2026)
+#     Kontext      : 64.000 Token Input / 8.192 Token Output
+#     Faehigkeiten : Nur Text (kein Bild, kein Audio, kein Video)
+#
+#   deepseek-reasoner  (DeepSeek R1)
+#     Version      : R1 (Stand 08.03.2026)
+#     Kontext      : 64.000 Token Input / 32.768 Token Output
+#     Faehigkeiten : Nur Text (kein Bild, kein Audio, kein Video)
+#                    Internes Chain-of-Thought Reasoning (DeepThink)
+#
+# Quelle: https://api-docs.deepseek.com (Stand 08.03.2026)
+# =============================================================================
+
 import json
 import sys
 import os
@@ -171,4 +192,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+
 

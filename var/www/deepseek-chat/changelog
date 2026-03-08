@@ -881,5 +881,54 @@
            - Readme_EN.md, Readme_DE.md, Readme_ES.md aktualisiert:
              Titel, Highlights, Architektur, neue Sektionen, Modell-Config, Datum
 
+    73. [07.03.2026] - GROQCLOUD ALS VIERTER LLM-ANBIETER:
+
+        NEUES CGI-SCRIPT (groq-api.py):
+           - Streaming-Proxy zur GroqCloud API
+           - Endpoint: https://api.groq.com/openai/v1/chat/completions
+             (OpenAI-kompatibler Endpunkt — SSE direkt weitergeleitet)
+           - API-Key: GRQ_API_KEY aus Apache envvars
+           - User-Agent Header erforderlich (Cloudflare-Schutz, error code 1010)
+           - Timeout: 60s
+
+        INDEX.HTML:
+           - Konstanten: GROQ_API_URL, GROQ_MODELS_FREE, GROQ_MODELS_PAID
+           - MODEL_CONFIG erweitert um alle Groq-Modelle:
+             * llama-3.3-70b-versatile:  128k ctx, 8k out, 80 msg
+             * llama-3.1-8b-instant:     131k ctx, 8k out, 80 msg
+             * mixtral-8x7b-32768:        32k ctx, 32k out, 40 msg
+             * gemma2-9b-it:               8k ctx, 8k out, 50 msg
+           - SETTINGS_VERSION: 1.4 -> 1.5
+           - LLM SELECTION: groqServiceToggle hinzugefügt
+           - LLM SETTINGS: llmGroqGroup mit Free/Paid-Toggle
+           - Settings-Objekt: apiService += 'groq', groqTier: 'free'|'paid'
+           - Funktionen aktualisiert: setApiServiceToggle, updateApiServiceUI,
+             setGroqTierToggle (neu), updateContextEstimation, updateContextDisplay,
+             buildSystemPrompt, applyLanguage, updateSettingsUI,
+             sendMessage, handleRegenerate
+           - Event-Listener: groqServiceToggle, groqFreeTierToggle, groqPaidTierToggle
+
+        LANGUAGE.XML:
+           - ID 243: "GroqCloud" (alle 4 Sprachen)
+           - ID 244: "Groq Plan" / "Groq-Plan" / "Plan Groq" (alle 4 Sprachen)
+
+        MANIFEST:
+           - Abschnitt B.4: DeepThink-Ausblendung auf GroqCloud erweitert
+           - Abschnitt B.4b: GroqCloud als vierter Anbieter vollständig dokumentiert
+           - Abschnitt D.1: Groq-Endpoint, Backend, Modelle, SICHERHEITSVERBESSERUNG ergänzt
+           - Changelog Eintrag 73 hinzugefügt
+
+    74. [08.03.2026 18:07] - DOKUMENTATION: API-PROXY INFOBLOCK:
+
+        CGI-SCRIPTS (alle 4 Hauptmodelle):
+           - deepseek-api.py: Infoblock hinzugefügt
+             * Modelle: deepseek-chat (V3), deepseek-reasoner (R1)
+             * Kontextfenster, Output-Limits, Fähigkeiten dokumentiert
+             * Nur Text — kein Bild, kein Audio, kein Video
+           - google-api.py: Infoblock hinzugefügt
+             * Modelle: gemini-2.5-flash, gemini-2.5-pro, gemini-2.0-flash, gemini-1.5-pro
+             * Kontextfenster, Output-Limits, Free/Paid-Zuordnung dokumentiert
+             * Text
+
     ============================================================================
 

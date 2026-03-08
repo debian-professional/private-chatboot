@@ -1,9 +1,9 @@
-# Multi-LLM Chat Client – DeepSeek, Google Gemini & Hugging Face
+# Multi-LLM Chat Client – DeepSeek, Google Gemini, Hugging Face & GroqCloud
 
-**Multi-LLM Chat Client** is a fully self-contained, locally hosted chat client supporting multiple AI providers: DeepSeek, Google Gemini, and Hugging Face. It was developed with a focus on **security, simplicity, and professional usability**. The architecture requires no exotic frameworks and uses only proven technologies: Apache as the web server, Python CGI for server-side logic, and plain HTML/JavaScript/CSS on the client side.
+**Multi-LLM Chat Client** is a fully self-contained, locally hosted chat client supporting multiple AI providers: DeepSeek, Google Gemini, Hugging Face, and GroqCloud. It was developed with a focus on **security, simplicity, and professional usability**. The architecture requires no exotic frameworks and uses only proven technologies: Apache as the web server, Python CGI for server-side logic, and plain HTML/JavaScript/CSS on the client side.
 
 Key highlights:
-- **Multi-LLM support** – Switch between DeepSeek, Google Gemini, and Hugging Face via a provider toggle in the LLM Settings panel.
+- **Multi-LLM support** – Switch between DeepSeek, Google Gemini, Hugging Face, and GroqCloud via a provider toggle in the LLM Settings panel.
 - **Unique context management** – Delete individual messages along with all subsequent ones. The chat remains consistent and token usage is dynamically updated.
 - **Maximum security** – The API key is never visible on the client side, uploads are protected against executable files via magic byte inspection, and sessions are stored with restrictive file permissions.
 - **No exotic frameworks** – Everything is based on Apache, Python, Bash, and plain HTML/JS.
@@ -76,12 +76,13 @@ The architecture is intentionally simple but well thought out:
   - Communication with the DeepSeek API (`deepseek-api.py`) — with streaming (Server-Sent Events)
   - Communication with the Google Gemini API (`google-api.py`) — converts OpenAI format to Gemini format
   - Communication with the Hugging Face Inference API (`hugging-api.py`) — OpenAI-compatible router endpoint
+  - Communication with the GroqCloud API (`groq-api.py`) — OpenAI-compatible endpoint, hardware-accelerated inference (LPU)
   - Model discovery (`deepseek-models.py`) — queries `/v1/models` at startup
   - Session storage and retrieval (`save-session.py`, `load-session.py`, `delete-session.py`)
   - Exports in various formats (`export-pdf.py`, `export-markdown.py`, `export-txt.py`, `export-rtf.py`)
   - Feedback logging (`feedback-log.py`)
   - Log display (`get-log.py`)
-- API keys are provided exclusively via Apache environment variables (`DEEPSEEK_API_KEY`, `GOOGLE_API_KEY`, `HF_API_KEY` in `/etc/apache2/envvars`) — **never in client code**.
+- API keys are provided exclusively via Apache environment variables (`DEEPSEEK_API_KEY`, `GOOGLE_API_KEY`, `HF_API_KEY`, `GRQ_API_KEY` in `/etc/apache2/envvars`) — **never in client code**.
 - A single `ScriptAlias /cgi-bin/ /var/www/deepseek-chat/cgi-bin/` covers all scripts — no Apache changes needed when adding new scripts.
 
 ### 3. Data Storage
@@ -168,14 +169,29 @@ The client supports Hugging Face Inference Providers as a third AI provider via 
 - The model dropdown updates automatically based on the selected tier.
 - The DeepThink button and DeepThink indicator are hidden when Hugging Face is active.
 
+
+### GroqCloud Integration
+
+The client supports GroqCloud as a fourth AI provider via `groq-api.py`:
+
+- **Architecture**: Uses the OpenAI-compatible GroqCloud endpoint — no format conversion required. The SSE stream is forwarded directly.
+- **Endpoint**: `https://api.groq.com/openai/v1/chat/completions`
+- **API key**: `GRQ_API_KEY` in `/etc/apache2/envvars`.
+- **Note**: A `User-Agent` header is required to bypass Cloudflare protection (error code 1010 without it).
+- **Free & Paid Tier**: `llama-3.3-70b-versatile`, `llama-3.1-8b-instant`, `mixtral-8x7b-32768`, `gemma2-9b-it`.
+- The model dropdown updates automatically based on the selected tier.
+- The DeepThink button and DeepThink indicator are hidden when GroqCloud is active.
+- All models run on GroqCloud's LPU (Language Processing Unit) hardware for very low latency.
+
 ### LLM Settings Panel
 
 A dedicated **LLM Settings** panel (separate from the main Settings panel) keeps provider-specific options out of the main UI:
 
-- **Provider selection**: Toggle between DeepSeek, Google Gemini, and Hugging Face — only one active at a time.
+- **Provider selection**: Toggle between DeepSeek, Google Gemini, Hugging Face, and GroqCloud — only one active at a time.
 - **DeepSeek options**: Default mode (Normal Chat / DeepThink), Privacy toggle (X-No-Training header).
 - **Google options**: Free / Paid plan selection with automatic model list update.
 - **Hugging Face options**: Free / Paid plan selection with automatic model list update.
+- **GroqCloud options**: Free / Paid plan selection with automatic model list update.
 - **Model dropdown**: Always visible, content updates automatically based on the active provider and plan.
 - All settings are saved to `localStorage` and persist after page reload.
 
@@ -430,6 +446,20 @@ When a file is uploaded or clipboard text is attached, the user message displays
 
 ---
 
+
+### API Proxy Infoblock (as of 08.03.2026)
+
+Each of the four CGI proxy scripts (`deepseek-api.py`, `google-api.py`, `hugging-api.py`, `groq-api.py`) contains a structured documentation header directly after the encoding declaration:
+
+- **Import date** — when the file was last updated
+- **Model version** — version of each supported model/sub-model
+- **Context window** — input and output token limits per model
+- **Capabilities** — Text only / Text + Images + Audio + Video
+- **Free/Paid assignment** — for providers with tier distinction
+- **Source link** — official API documentation
+
+This ensures that model information is always traceable directly in the source code without consulting external documentation.
+
 ## The Helper Script `repo2text.sh`
 
 This Bash script was specifically developed to **export the entire source code of a GitHub repository as a single text file** — ideal for passing the complete project context to an AI assistant.
@@ -577,13 +607,20 @@ const MODEL_CONFIG = {
     'microsoft/Phi-3.5-mini-instruct':        { maxContextTokens: 128000, maxOutputTokens: 4096, maxContextMessages: 60 },
     'meta-llama/Meta-Llama-3.1-70B-Instruct': { maxContextTokens: 128000, maxOutputTokens: 8192, maxContextMessages: 80 },
     'meta-llama/Meta-Llama-3.1-405B-Instruct':{ maxContextTokens: 128000, maxOutputTokens: 8192, maxContextMessages: 80 },
-    'mistralai/Mixtral-8x7B-Instruct-v0.1':   { maxContextTokens: 32768,  maxOutputTokens: 4096, maxContextMessages: 40 }
+    'mistralai/Mixtral-8x7B-Instruct-v0.1':   { maxContextTokens: 32768,  maxOutputTokens: 4096, maxContextMessages: 40 },
+    // GroqCloud
+    'llama-3.3-70b-versatile': { maxContextTokens: 128000, maxOutputTokens: 8192,  maxContextMessages: 80 },
+    'llama-3.1-8b-instant':    { maxContextTokens: 131072, maxOutputTokens: 8192,  maxContextMessages: 80 },
+    'mixtral-8x7b-32768':      { maxContextTokens: 32768,  maxOutputTokens: 32768, maxContextMessages: 40 },
+    'gemma2-9b-it':            { maxContextTokens: 8192,   maxOutputTokens: 8192,  maxContextMessages: 50 }
 };
 const DEEPSEEK_MODELS    = ['deepseek-chat', 'deepseek-reasoner'];
 const GOOGLE_MODELS_FREE = ['gemini-2.5-flash'];
 const GOOGLE_MODELS_PAID = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-1.5-pro', 'gemini-2.0-flash'];
 const HF_MODELS_FREE     = ['Qwen/Qwen2.5-72B-Instruct', 'mistralai/Mistral-7B-Instruct-v0.3', 'microsoft/Phi-3.5-mini-instruct'];
 const HF_MODELS_PAID     = ['meta-llama/Meta-Llama-3.1-70B-Instruct', 'meta-llama/Meta-Llama-3.1-405B-Instruct', 'Qwen/Qwen2.5-72B-Instruct', 'mistralai/Mixtral-8x7B-Instruct-v0.1'];
+const GROQ_MODELS_FREE   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768', 'gemma2-9b-it'];
+const GROQ_MODELS_PAID   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768', 'gemma2-9b-it'];
 ```
 
 **API key configuration** (`/etc/apache2/envvars`):
@@ -591,6 +628,7 @@ const HF_MODELS_PAID     = ['meta-llama/Meta-Llama-3.1-70B-Instruct', 'meta-llam
 export DEEPSEEK_API_KEY="sk-..."
 export GOOGLE_API_KEY="AIza..."
 export HF_API_KEY="hf_..."
+export GRQ_API_KEY="gsk_..."
 ```
 
 **Language configuration** (`language.xml`):
@@ -631,6 +669,7 @@ export HF_API_KEY="hf_..."
 │   │   ├── deepseek-api.py            Streaming proxy to DeepSeek API
 │   │   ├── google-api.py              Streaming proxy to Google Gemini API
 │   │   ├── hugging-api.py             Streaming proxy to Hugging Face Inference API
+│   │   ├── groq-api.py                Streaming proxy to GroqCloud API (LPU-accelerated)
 │   │   ├── deepseek-models.py         Queries /v1/models endpoint
 │   │   ├── save-session.py            Saves chat sessions (POST)
 │   │   ├── load-session.py            Loads session list (GET) or session (GET ?id=)
@@ -650,7 +689,7 @@ export HF_API_KEY="hf_..."
 
 ## Model Configuration
 
-The `MODEL_CONFIG` object in `index.html` is the single point of truth for all model-specific limits. It covers all three providers:
+The `MODEL_CONFIG` object in `index.html` is the single point of truth for all model-specific limits. It covers all four providers:
 
 ```javascript
 const MODEL_CONFIG = {
@@ -668,11 +707,16 @@ const MODEL_CONFIG = {
     'microsoft/Phi-3.5-mini-instruct':         { maxContextTokens: 128000, maxOutputTokens: 4096, maxContextMessages: 60 },
     'meta-llama/Meta-Llama-3.1-70B-Instruct':  { maxContextTokens: 128000, maxOutputTokens: 8192, maxContextMessages: 80 },
     'meta-llama/Meta-Llama-3.1-405B-Instruct': { maxContextTokens: 128000, maxOutputTokens: 8192, maxContextMessages: 80 },
-    'mistralai/Mixtral-8x7B-Instruct-v0.1':    { maxContextTokens: 32768,  maxOutputTokens: 4096, maxContextMessages: 40 }
+    'mistralai/Mixtral-8x7B-Instruct-v0.1':    { maxContextTokens: 32768,  maxOutputTokens: 4096, maxContextMessages: 40 },
+    // GroqCloud
+    'llama-3.3-70b-versatile': { maxContextTokens: 128000, maxOutputTokens: 8192,  maxContextMessages: 80 },
+    'llama-3.1-8b-instant':    { maxContextTokens: 131072, maxOutputTokens: 8192,  maxContextMessages: 80 },
+    'mixtral-8x7b-32768':      { maxContextTokens: 32768,  maxOutputTokens: 32768, maxContextMessages: 40 },
+    'gemma2-9b-it':            { maxContextTokens: 8192,   maxOutputTokens: 8192,  maxContextMessages: 50 }
 };
 ```
 
-Sources: [DeepSeek API Docs](https://api-docs.deepseek.com), [Google Gemini Docs](https://ai.google.dev/gemini-api/docs), [Hugging Face Inference Providers](https://huggingface.co/docs/inference-providers) (as of 04.03.2026).
+Sources: [DeepSeek API Docs](https://api-docs.deepseek.com), [Google Gemini Docs](https://ai.google.dev/gemini-api/docs), [Hugging Face Inference Providers](https://huggingface.co/docs/inference-providers), [GroqCloud Docs](https://console.groq.com/docs/models) (as of 08.03.2026).
 
 ---
 
@@ -771,4 +815,7 @@ DeepSeek Chat is a **showcase for professional web development** — without unn
 
 ---
 
-*Last updated: 04.03.2026*
+*Last updated: 08.03.2026*
+
+
+

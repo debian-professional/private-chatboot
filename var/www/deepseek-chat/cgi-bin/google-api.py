@@ -1,6 +1,37 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+# =============================================================================
+# GOOGLE GEMINI API PROXY
+# Importiert / aktualisiert: 08.03.2026
+# =============================================================================
+#
+# Unterstuetzte Modelle:
+#
+#   gemini-2.5-flash  [Free + Paid]
+#     Version      : Gemini 2.5 Flash (Stand 08.03.2026)
+#     Kontext      : 1.048.576 Token Input / 8.192 Token Output
+#     Faehigkeiten : Text, Bilder, Audio, Video
+#     Free-Limit   : 20 Anfragen/Tag, 5 Anfragen/Minute
+#
+#   gemini-2.5-pro  [Paid]
+#     Version      : Gemini 2.5 Pro (Stand 08.03.2026)
+#     Kontext      : 1.048.576 Token Input / 65.536 Token Output
+#     Faehigkeiten : Text, Bilder, Audio, Video
+#
+#   gemini-2.0-flash  [Paid]
+#     Version      : Gemini 2.0 Flash (Stand 08.03.2026)
+#     Kontext      : 1.048.576 Token Input / 8.192 Token Output
+#     Faehigkeiten : Text, Bilder, Audio, Video
+#
+#   gemini-1.5-pro  [Paid]
+#     Version      : Gemini 1.5 Pro (Stand 08.03.2026)
+#     Kontext      : 2.097.152 Token Input / 8.192 Token Output
+#     Faehigkeiten : Text, Bilder, Audio, Video
+#
+# Quelle: https://ai.google.dev/gemini-api/docs (Stand 08.03.2026)
+# =============================================================================
+
 import json
 import sys
 import os
@@ -225,3 +256,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+

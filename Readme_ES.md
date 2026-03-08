@@ -76,12 +76,13 @@ La arquitectura es intencionalmente simple pero bien pensada:
   - Comunicación con la API de DeepSeek (`deepseek-api.py`) — con streaming (Server-Sent Events)
   - Comunicación con la API de Google Gemini (`google-api.py`) — convierte formato OpenAI a formato Gemini
   - Comunicación con la API de Hugging Face Inference (`hugging-api.py`) — endpoint router compatible con OpenAI
+  - Comunicación con la API de GroqCloud (`groq-api.py`) — endpoint compatible con OpenAI, inferencia acelerada por hardware (LPU)
   - Descubrimiento de modelos (`deepseek-models.py`) — consulta `/v1/models` al inicio
   - Almacenamiento y recuperación de sesiones (`save-session.py`, `load-session.py`, `delete-session.py`)
   - Exportaciones en varios formatos (`export-pdf.py`, `export-markdown.py`, `export-txt.py`, `export-rtf.py`)
   - Registro de feedback (`feedback-log.py`)
   - Visualización de registros (`get-log.py`)
-- Las claves API se proporcionan exclusivamente a través de variables de entorno de Apache (`DEEPSEEK_API_KEY`, `GOOGLE_API_KEY`, `HF_API_KEY` en `/etc/apache2/envvars`) — **nunca en el código del cliente**.
+- Las claves API se proporcionan exclusivamente a través de variables de entorno de Apache (`DEEPSEEK_API_KEY`, `GOOGLE_API_KEY`, `HF_API_KEY`, `GRQ_API_KEY` en `/etc/apache2/envvars`) — **nunca en el código del cliente**.
 - Un único `ScriptAlias /cgi-bin/ /var/www/deepseek-chat/cgi-bin/` cubre todos los scripts — no se necesitan cambios en Apache al añadir nuevos scripts.
 
 ### 3. Almacenamiento de Datos
@@ -177,6 +178,7 @@ El botón **Configuración LLM** abre un segundo overlay de configuración con o
 - **Para DeepSeek**: Modo de Chat (Chat / DeepThink), toggle de Privacidad (no usar datos para entrenamiento), desplegable de selección de modelo.
 - **Para Google**: Plan Google (Free / Paid), desplegable de selección de modelo.
 - **Para Hugging Face**: Plan HF (Free / Paid), desplegable de selección de modelo.
+- **Para GroqCloud**: Plan Groq (Free / Paid), desplegable de selección de modelo.
 - El panel de configuración principal permanece compacto: solo Selección de LLM, Idioma y Forma de tratamiento.
 - Este enfoque de dos paneles mantiene la UI ordenada y hace que todas las opciones sean fácilmente accesibles.
 
@@ -627,6 +629,7 @@ Para añadir un nuevo modelo, basta con ampliar este bloque y la lista `GOOGLE_M
 │   │   ├── deepseek-api.py            Proxy de streaming a la API de DeepSeek
 │   │   ├── google-api.py              Proxy de streaming a la API de Google Gemini (con reintento 429)
 │   │   ├── hugging-api.py             Proxy de streaming a la API de Hugging Face Inference
+│   │   ├── groq-api.py                Proxy de streaming a la API de GroqCloud (acelerado por LPU)
 │   │   ├── deepseek-models.py         Consulta el endpoint /v1/models
 │   │   ├── save-session.py            Guarda sesiones de chat (POST)
 │   │   ├── load-session.py            Carga lista de sesiones (GET) o sesión (GET ?id=)
@@ -645,7 +648,7 @@ Para añadir un nuevo modelo, basta con ampliar este bloque y la lista `GOOGLE_M
 
 ## Configuración del Modelo
 
-El objeto `MODEL_CONFIG` en `index.html` es la única fuente de verdad para todos los límites específicos de cada modelo. Cubre los tres proveedores:
+El objeto `MODEL_CONFIG` en `index.html` es la única fuente de verdad para todos los límites específicos de cada modelo. Cubre los cuatro proveedores:
 
 ```javascript
 const MODEL_CONFIG = {
@@ -770,4 +773,7 @@ DeepSeek Chat es un **escaparate del desarrollo web profesional** — sin sobrec
 
 ---
 
-*Última actualización: 04.03.2026*
+*Última actualización: 08.03.2026*
+
+
+

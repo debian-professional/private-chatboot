@@ -1,6 +1,41 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+# =============================================================================
+# GROQCLOUD API PROXY
+# Importiert / aktualisiert: 08.03.2026
+# =============================================================================
+#
+# Unterstuetzte Modelle:
+#
+#   --- FREE PLAN ---
+#
+#   llama-3.3-70b-versatile  [Free + Paid]
+#     Version      : Llama 3.3 70B Versatile (Stand 08.03.2026)
+#     Kontext      : 128.000 Token Input / 8.192 Token Output
+#     Faehigkeiten : Nur Text (kein Bild, kein Audio, kein Video)
+#
+#   llama-3.1-8b-instant  [Free + Paid]
+#     Version      : Llama 3.1 8B Instant (Stand 08.03.2026)
+#     Kontext      : 131.072 Token Input / 8.192 Token Output
+#     Faehigkeiten : Nur Text (kein Bild, kein Audio, kein Video)
+#
+#   mixtral-8x7b-32768  [Free + Paid]
+#     Version      : Mixtral 8x7B Instruct v0.1 (Stand 08.03.2026)
+#     Kontext      : 32.768 Token Input / 32.768 Token Output
+#     Faehigkeiten : Nur Text (kein Bild, kein Audio, kein Video)
+#
+#   gemma2-9b-it  [Free + Paid]
+#     Version      : Gemma 2 9B IT (Stand 08.03.2026)
+#     Kontext      : 8.192 Token Input / 8.192 Token Output
+#     Faehigkeiten : Nur Text (kein Bild, kein Audio, kein Video)
+#
+# Hinweis: Alle Groq-Modelle profitieren von Hardware-beschleunigter Inferenz
+#          (LPU - Language Processing Unit) fuer sehr geringe Latenz.
+#
+# Quelle: https://console.groq.com/docs/models (Stand 08.03.2026)
+# =============================================================================
+
 import json
 import sys
 import os
@@ -205,3 +240,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+
