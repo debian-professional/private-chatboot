@@ -822,7 +822,7 @@
 
         <div class="file-input-wrapper">
             <button id="uploadButton" class="pill-button">Upload file</button>
-            <input type="file" id="fileUpload" accept=".txt,.pdf,.doc,.docx,.jpg,.jpeg,.png,.csv,.xlsx,.pptx">
+            <input type="file" id="fileUpload" accept=".txt,.pdf,.doc,.docx,.jpg,.jpeg,.png,.csv,.xlsx,.pptx" multiple>
         </div>
 
         <div class="dropdown-container">
@@ -2412,10 +2412,10 @@
         const openaiPaidTierItem = document.getElementById('openaiPaidTierItem');
         const modelSelect = document.getElementById('modelSelect');
         
-        let selectedFile = null;
+        let selectedFiles = [];
         let fileTextContent = null;
         let clipboardImageFile = null;
-        let uploadedFileName = null;    // filename for file card display   // Image pasted from clipboard
+        let uploadedFileNames = [];     // filenames for file card display  // Image pasted from clipboard
         let eventListeners = [];
         let isSending = false;
         let currentSessionId = null;
@@ -2811,8 +2811,8 @@
             if (fileTextContent) userMessage = `${t(12)}\n${encodeUmlautsForAI(fileTextContent)}\n\n${t(13)} ${message}`;
             const hasFile = !!fileTextContent;
             const msgId = addUserMessageToContext(userMessage, currentMode, hasFile);
-            const displayMessage = (hasFile && uploadedFileName)
-                ? createFileCardHTML(uploadedFileName) + message
+            const displayMessage = (hasFile && uploadedFileNames.length > 0)
+                ? uploadedFileNames.map(n => createFileCardHTML(n)).join('') + message
                 : message;
             addMessageToChat(displayMessage, true, msgId, currentMode);
             inputField.value = '';
@@ -2931,8 +2931,8 @@
             } finally {
                 isSending = false; sendButton.disabled = false; sendButton.textContent = t(205);
                 inputField.disabled = false;
-                selectedFile = null; fileTextContent = null;
-                fileInfo.innerHTML = ''; fileInfo.classList.remove('visible'); uploadedFileName = null;
+                selectedFiles = []; fileTextContent = null; uploadedFileNames = [];
+                fileInfo.innerHTML = ''; fileInfo.classList.remove('visible');
                 fileUpload.value = '';
                 chat.scrollTop = chat.scrollHeight;
             }
@@ -2998,64 +2998,74 @@
         }
 
         async function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            selectedFile = file; fileTextContent = null; uploadedFileName = file.name;
-            const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
-            if (!ACCEPTED_FILE_FORMATS.includes(fileExtension)) {
-                alert(tf(10, fileExtension, ACCEPTED_FILE_FORMATS.join(', ')));
-                selectedFile = null; fileUpload.value = ''; return;
-            }
-            // Image check: alert if current model does not support images
-            if (isImageFile(fileExtension) && !currentModelSupportsImages()) {
-                alert(t(239));
-                selectedFile = null; fileUpload.value = ''; return;
+            const files = Array.from(event.target.files);
+            if (!files.length) return;
+
+            // Reset previous selection
+            selectedFiles = []; fileTextContent = null; uploadedFileNames = [];
+            fileInfo.innerHTML = ''; fileInfo.classList.remove('visible');
+
+            let combinedText = '';
+            let infoLines = [];
+
+            for (const file of files) {
+                const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+
+                if (!ACCEPTED_FILE_FORMATS.includes(fileExtension)) {
+                    alert(tf(10, fileExtension, ACCEPTED_FILE_FORMATS.join(', ')));
+                    continue;
+                }
+                if (isImageFile(fileExtension) && !currentModelSupportsImages()) {
+                    alert(t(239));
+                    continue;
+                }
+                const execSig = await checkMagicBytes(file);
+                if (execSig) {
+                    fileInfo.innerHTML += `<div class="pdf-error">${t(11)}<br>${t(34).replace('{0}', file.name).replace('{1}', '')}<br>Platform: ${execSig.platform}<br>Format: ${execSig.format}</div>`;
+                    fileInfo.classList.add('visible');
+                    continue;
+                }
+                const isProcessable = SUPPORTED_FILE_FORMATS.includes(fileExtension);
+                if (!isProcessable) {
+                    selectedFiles.push(file); uploadedFileNames.push(file.name);
+                    infoLines.push(`<div class="pdf-processing">${tf(33, file.name)}</div>`);
+                    continue;
+                }
+                try {
+                    let text = '';
+                    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+                        text = await extractTextFromPDF(file);
+                        infoLines.push(tf(35, file.name, text.length));
+                    } else if (file.type.startsWith('text/') || file.name.toLowerCase().endsWith('.txt')) {
+                        text = await new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = e => resolve(e.target.result);
+                            reader.onerror = reject;
+                            reader.readAsText(file);
+                        });
+                        if (text.length > MAX_FILE_CONTENT_LENGTH) text = text.substring(0, MAX_FILE_CONTENT_LENGTH);
+                        infoLines.push(tf(36, file.name, text.length));
+                    } else {
+                        infoLines.push(tf(34, file.name, (file.size / 1024).toFixed(2)));
+                    }
+                    selectedFiles.push(file); uploadedFileNames.push(file.name);
+                    if (text) combinedText += (combinedText ? '\n\n---\n\n' : '') + `[${file.name}]\n${text}`;
+                } catch (error) {
+                    fileInfo.innerHTML += `<div class="pdf-error">${tf(25, replaceGermanUmlauts(error.message))}</div>`;
+                    fileInfo.classList.add('visible');
+                }
             }
 
-            const execSig = await checkMagicBytes(file);
-            if (execSig) {
-                fileInfo.innerHTML = `<div class="pdf-error">${t(11)}<br>${t(34).replace('{0}', file.name).replace('{1}', '')}<br>Platform: ${execSig.platform}<br>Format: ${execSig.format}</div>`;
-                fileInfo.classList.add('visible'); selectedFile = null; fileUpload.value = ''; return;
-            }
-            const isProcessable = SUPPORTED_FILE_FORMATS.includes(fileExtension);
-            if (!isProcessable) {
-                fileInfo.innerHTML = `<div class="pdf-processing">${tf(33, file.name)}</div><button id="removeFile">${t(222)}</button>`;
-                fileInfo.classList.add('visible');
-                const removeBtn = document.getElementById('removeFile');
-                if (removeBtn) {
-                    const removeHandler = function() {
-                        selectedFile = null; fileTextContent = null;
-                        fileInfo.innerHTML = ''; fileInfo.classList.remove('visible'); uploadedFileName = null;
-                        fileUpload.value = ''; removeBtn.removeEventListener('click', removeHandler);
-                    };
-                    removeBtn.addEventListener('click', removeHandler);
-                    eventListeners.push({ element: removeBtn, event: 'click', handler: removeHandler });
-                }
-                return;
-            }
-            fileInfo.innerHTML = `${tf(34, file.name, (file.size / 1024).toFixed(2))} <button id="removeFile">${t(222)}</button>`;
+            if (!uploadedFileNames.length) return;
+            fileTextContent = combinedText || null;
+
+            fileInfo.innerHTML += `${infoLines.join(' | ')} <button id="removeFile">${t(222)}</button>`;
             fileInfo.classList.add('visible');
-            try {
-                if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-                    fileTextContent = await extractTextFromPDF(file);
-                    fileInfo.innerHTML = `${tf(35, file.name, fileTextContent.length)} <button id="removeFile">${t(222)}</button>`;
-                } else if (file.type.startsWith('text/') || file.name.toLowerCase().endsWith('.txt')) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        fileTextContent = e.target.result;
-                        if (fileTextContent.length > MAX_FILE_CONTENT_LENGTH) fileTextContent = fileTextContent.substring(0, MAX_FILE_CONTENT_LENGTH);
-                        fileInfo.innerHTML = `${tf(36, file.name, fileTextContent.length)} <button id="removeFile">${t(222)}</button>`;
-                    };
-                    reader.readAsText(file);
-                }
-            } catch (error) {
-                fileInfo.innerHTML = `<div class="pdf-error">${tf(25, replaceGermanUmlauts(error.message))}</div>`;
-            }
             const removeBtn = document.getElementById('removeFile');
             if (removeBtn) {
                 const removeHandler = function() {
-                    selectedFile = null; fileTextContent = null;
-                    fileInfo.innerHTML = ''; fileInfo.classList.remove('visible'); uploadedFileName = null;
+                    selectedFiles = []; fileTextContent = null; uploadedFileNames = [];
+                    fileInfo.innerHTML = ''; fileInfo.classList.remove('visible');
                     fileUpload.value = ''; removeBtn.removeEventListener('click', removeHandler);
                 };
                 removeBtn.addEventListener('click', removeHandler);
@@ -3268,14 +3278,14 @@
                 const text = overlay._pendingText;
                 if (text) {
                     fileTextContent = text.length > MAX_FILE_CONTENT_LENGTH ? text.substring(0, MAX_FILE_CONTENT_LENGTH) : text;
-                    uploadedFileName = 'clipboard.txt';
+                    uploadedFileNames = ['clipboard.txt'];
                     fileInfo.innerHTML = `${t(236)} (${fileTextContent.length} ${t(237)}) <button id="removeFile">${t(222)}</button>`;
                     fileInfo.classList.add('visible');
                     const removeBtn = document.getElementById('removeFile');
                     if (removeBtn) {
                         const removeHandler = function() {
-                            selectedFile = null; fileTextContent = null;
-                            fileInfo.innerHTML = ''; fileInfo.classList.remove('visible'); uploadedFileName = null;
+                            selectedFiles = []; fileTextContent = null; uploadedFileNames = [];
+                            fileInfo.innerHTML = ''; fileInfo.classList.remove('visible');
                             fileUpload.value = ''; removeBtn.removeEventListener('click', removeHandler);
                         };
                         removeBtn.addEventListener('click', removeHandler);
@@ -3502,3 +3512,5 @@
     </script>
 </body>
 </html>
+
+
