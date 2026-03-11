@@ -386,4 +386,4 @@ Start with **GroqCloud Free** (free, fast, ready immediately) or **Google Gemini
 
 ---
 
-*Updated: 11.03.2026 | For the Multi-LLM Chat Client github.com/debian-professional/private-chatboot*
+*Updated: 11.03.2026 | For the Multi-LLM Chat Client github.com/debian-professional/multi-llm-chat*

@@ -546,13 +546,13 @@ This Bash script was specifically developed to **export the entire source code o
 ./repo2text.sh
 
 # Export with URL as Markdown
-./repo2text.sh -f md https://github.com/debian-professional/private-chatboot.git
+./repo2text.sh -f md https://github.com/debian-professional/multi-llm-chat.git
 
 # Export only the 'shell-scripts' directory with flat structure
-./repo2text.sh --flat -o shell-scripts https://github.com/debian-professional/private-chatboot.git
+./repo2text.sh --flat -o shell-scripts https://github.com/debian-professional/multi-llm-chat.git
 
 # Export with MD5 checksums
-./repo2text.sh -md5 https://github.com/debian-professional/private-chatboot.git
+./repo2text.sh -md5 https://github.com/debian-professional/multi-llm-chat.git
 ```
 
 **Why is this useful?**
@@ -618,7 +618,7 @@ Security was the top priority throughout this project. Here are all key measures
 
 **1. Clone the repository** (as user `source`):
 ```bash
-git clone https://github.com/debian-professional/private-chatboot.git /home/source/private-chatboot
+git clone https://github.com/debian-professional/multi-llm-chat.git /home/source/multi-llm-chat
 ```
 
 **2. Configure the API key**:
@@ -704,7 +704,7 @@ export GRQ_API_KEY="gsk_..."
 
 | Script | Función |
 |--------|----------|
-| `deploy.sh <user>` | Copies files from `/home/<user>/private-chatboot/var/www/deepseek-chat/` to `/var/www/deepseek-chat/`, sets ownership/permissions, reloads Apache |
+| `deploy.sh <user>` | Copies files from `/home/<user>/multi-llm-chat/var/www/deepseek-chat/` to `/var/www/deepseek-chat/`, sets ownership/permissions, reloads Apache |
 | `sync-back.sh <user>` | Copies changed files from production back to the source repo |
 | `install.sh` | Installs `deploy.sh` and `sync-back.sh` in the production directory |
 | `tag-release.sh` | Creates a new Git tag with auto-incremented version number (e.g. v0.80 → v0.81) and pushes it |
