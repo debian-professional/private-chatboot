@@ -1003,5 +1003,24 @@
            - finally-Block in sendMessage(): Reset auf leere Arrays statt null
            - Clipboard pasteAsFileBtn-Handler: uploadedFileName -> uploadedFileNames['clipboard.txt']
 
+    77. [11.03.2026] - Mikrofon-Aufnahme (Audio-Button)
+           - Neuer Button "audioButton" (pill-button-mode) in Buttons-Row 2 neben DeepThink
+           - Sichtbar nur wenn aktives Modell Audio unterstützt (updateAudioButtonVisibility)
+           - Konstante AUDIO_CAPABLE_MODELS: alle Gemini-Modelle, gpt-4o, gpt-4.1
+           - Aufnahme via MediaRecorder API (getUserMedia, kein Plugin, HTTPS erforderlich)
+           - MIME-Typ: audio/webm (Chrome/Firefox) oder audio/mp4 (Safari) - automatisch erkannt
+           - Nach Aufnahme: Audio als base64 in audioData, Anzeige in fileInfo-Box
+           - File-Card: Badge "AUDIO", Label via t(250) je Sprache
+           - Versand: audio_data + audio_mime_type im JSON-Body an Backend
+           - hasFile wird bei reinem Audio NICHT gesetzt (kein Datei-System-Prompt)
+           - Audio und Datei-Upload sind gegenseitig exklusiv
+           - Neue JS-Variablen: audioData, audioMimeType, mediaRecorder, audioChunks, isRecording
+           - Neue JS-Funktionen: updateAudioButtonVisibility(), startAudioRecording(), stopAudioRecording()
+           - modelSelect change-Event aktualisiert Audio-Button-Sichtbarkeit
+           - language.xml IDs 247-250: Record Audio, Stop, Audio recorded, Audio recording (4 Sprachen)
+           - google-api.py: Audio als inline_data an letzte User-Message angehängt (Gemini-Format)
+           - openai-api.py: Audio als input_audio an letzte User-Message angehängt (OpenAI-Format)
+           - Manifest Eintrag 76 + neue Pflicht-Regel: AUDIO_CAPABLE_MODELS nachführen
+
     ============================================================================
 

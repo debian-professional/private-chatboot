@@ -367,6 +367,16 @@
          * Kein Button darf eine andere Grundfarbe als die definierten verwenden
        - ANREDEFORM-KONSISTENZ EINHALTEN: Alle neuen Texte müssen der gewählten Anredeform entsprechen
        - TOGGLE-KONVENTION EINHALTEN: Neue Einstellungen ausschließlich als Toggle-Switch (siehe A.3.F)
+       - AUDIO_CAPABLE_MODELS NACHFÜHREN (VERBINDLICH UND UNUMSTÖSSLICH):
+         * Die Konstante AUDIO_CAPABLE_MODELS in index.html listet alle Modelle mit Audio-Fähigkeit
+         * Sobald ein bereits integrierter LLM-Anbieter ein neues Modell mit Audio-Unterstützung
+           anbietet oder ein bestehendes Modell diese Fähigkeit erhält, MUSS AUDIO_CAPABLE_MODELS
+           sofort aktualisiert werden
+         * Dasselbe gilt bei Entfernung der Audio-Fähigkeit: Modell aus der Liste entfernen
+         * Aktuell audio-fähige Modelle (Stand 11.03.2026):
+           Google:  gemini-2.5-flash, gemini-2.5-pro, gemini-1.5-pro, gemini-2.0-flash
+           OpenAI:  gpt-4o, gpt-4.1
+         * Diese Regel gilt für alle zukünftigen LLM-Anbieter ohne Ausnahme
     
     2. CODE-QUALITÄT:
        - Kommentare für komplexe Logik
