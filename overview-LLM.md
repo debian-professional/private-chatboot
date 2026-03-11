@@ -1,7 +1,7 @@
 # LLM Provider Overview — Decision Guide
 ## For the Multi-LLM Chat Client (OpenAI · DeepSeek · Google Gemini · Hugging Face · GroqCloud)
 
-> **As of: 10.03.2026** — All prices and limits are subject to change. Official sources:
+> **As of: 11.03.2026** — All prices and limits are subject to change. Official sources:
 > [platform.openai.com/docs](https://platform.openai.com/docs) · [api-docs.deepseek.com](https://api-docs.deepseek.com) · [ai.google.dev](https://ai.google.dev/gemini-api/docs) ·
 > [huggingface.co/docs](https://huggingface.co/docs/inference-providers) · [console.groq.com/docs](https://console.groq.com/docs/models)
 
@@ -28,7 +28,7 @@
 | **Origin** | USA | China | USA (Google) | USA (Community) | USA |
 | **Own Models** | Yes (GPT-5.4, GPT-4.x) | Yes (V3.2, R1) | Yes (Gemini 2.5/3.x) | No (Router) | No (Router) |
 | **Context Window** | up to 1M | 128K | up to 2M | 8K–128K | 8K–131K |
-| **Multimodal** | ✅ Text, Image | ❌ Text only | ✅ Text, Image, Audio, Video | ❌ Text only* | ❌ Text only |
+| **Multimodal** | ✅ Text, Image, Audio¹ | ❌ Text only | ✅ Text, Image, Audio, Video | ❌ Text only* | ❌ Text only |
 | **Free Tier** | Limited (gpt-4o-mini, gpt-5-mini) | 5M Tokens (30 days) | Yes (permanent) | Yes (monthly credits) | Yes (permanent) |
 | **Cost (cheapest model)** | $0.15/M Token (gpt-4o-mini) | $0.028/M Token (Cache) | $0.075/M Token | Pass-through | $0.05/M Token |
 | **Strength** | Quality & ecosystem | Lowest price | Multimodal & Context | Model variety | Speed |
@@ -38,6 +38,8 @@
 | **OpenAI-compatible Endpoint** | ✅ (native) | ✅ | ❌ (proprietary format) | ✅ | ✅ |
 
 *\* Individual HF models support images, but not through the chat router used in this client.*
+
+*¹ Audio input supported for `gpt-4o` and `gpt-4.1` via the built-in microphone recording feature of this client.*
 
 ---
 
@@ -89,6 +91,7 @@ All prices in USD per 1 million tokens:
 - **Ecosystem:** The original OpenAI API format — the most widely documented and supported API in the industry
 - **Reliability:** Enterprise-grade uptime, well-established SLA, global infrastructure
 - **Multimodal (gpt-4o):** Image input support alongside text
+- **Audio Input (gpt-4o, gpt-4.1):** Microphone recordings can be sent directly to the model via the built-in audio recording feature of this client. Audio is transmitted as base64-encoded WebM/MP4 and processed natively by the model — no transcription step required.
 - **Streaming:** Native SSE support, very low latency to first token
 - **Context:** gpt-5.4 and gpt-4.1 offer up to 1M+ token context windows
 
@@ -197,7 +200,7 @@ Gemini is currently the only provider in this client that offers true **multimod
 
 ### 4.4 Strengths
 
-- **True Multimodality:** Text, image, audio, and video in one API
+- **True Multimodality:** Text, image, audio, and video in one API — all Gemini models in this client support live microphone recordings via the built-in audio recording button
 - **Massive Context:** Up to 2M tokens — entire codebases or lengthy legal documents
 - **Permanent Free Tier:** No expiry date for gemini-2.5-flash and gemini-2.0-flash
 - **GDPR Compliance:** Possible via Vertex AI EU region
@@ -300,6 +303,7 @@ Users who prioritize **maximum speed** — for interactive applications, live ch
 | Use Case | Recommendation | Reason |
 |----------|----------------|--------|
 | **Analyze images / audio / video** | Google Gemini | Only provider with true multimodality |
+| **Send microphone recordings** | Google Gemini or OpenAI (gpt-4o / gpt-4.1) | Built-in audio recording button — visible only for audio-capable models |
 | **Highest quality responses** | OpenAI GPT-5.4 | Current frontier model |
 | **Complex math / logic** | DeepSeek R1 | Best price-performance ratio for reasoning |
 | **Very long documents** | Google Gemini | 1–2M token context, no alternative |
@@ -367,11 +371,11 @@ Users who prioritize **maximum speed** — for interactive applications, live ch
 
 All five providers are fully-featured, professional LLM services. There is no clear "winner" — each has its specific sweet spot:
 
-**OpenAI** is the choice for maximum quality and reliability. GPT-5.4 represents the current frontier, and gpt-4o-mini offers an excellent cost-quality ratio for everyday tasks. The mature ecosystem and native API format make it the industry reference.
+**OpenAI** is the choice for maximum quality and reliability. GPT-5.4 represents the current frontier, and gpt-4o-mini offers an excellent cost-quality ratio for everyday tasks. The mature ecosystem and native API format make it the industry reference. `gpt-4o` and `gpt-4.1` additionally support direct audio input — this client exposes this capability via a dedicated microphone recording button.
 
 **DeepSeek** is the choice for maximum cost efficiency and strong reasoning capabilities. Those who produce a lot pay the least here. The privacy topic (China) is real and must be evaluated individually.
 
-**Google Gemini** is the choice for multimodal tasks (image, audio, video), very long contexts, and the best permanent free tier. Google's infrastructure is reliable and configurable for GDPR compliance.
+**Google Gemini** is the choice for multimodal tasks (image, audio, video), very long contexts, and the best permanent free tier. All Gemini models in this client support direct microphone recordings — spoken input is processed natively by the model without an intermediate transcription step. Google's infrastructure is reliable and configurable for GDPR compliance.
 
 **Hugging Face** is the choice for everyone who wants to explore open-source models without risking vendor lock-in. The broad model selection and transparent pass-through pricing are unique.
 
@@ -382,4 +386,4 @@ Start with **GroqCloud Free** (free, fast, ready immediately) or **Google Gemini
 
 ---
 
-*Updated: 10.03.2026 | For the Multi-LLM Chat Client github.com/debian-professional/private-chatboot*
+*Updated: 11.03.2026 | For the Multi-LLM Chat Client github.com/debian-professional/private-chatboot*

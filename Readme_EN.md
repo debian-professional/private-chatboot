@@ -4,11 +4,14 @@
 
 Key highlights:
 - **Multi-LLM support** – Switch between OpenAI, DeepSeek, Google Gemini, Hugging Face, and GroqCloud via a provider toggle in the LLM Settings panel.
+- **Multi-file upload** – Select and send multiple files at once. Contents are combined and sent together as context.
+- **Audio recording via microphone** – Record audio directly in the browser and send it to the AI. Supported by Google Gemini (all models) and OpenAI (gpt-4o, gpt-4.1). The Record Audio button appears automatically only when an audio-capable model is active.
 - **Unique context management** – Delete individual messages along with all subsequent ones. The chat remains consistent and token usage is dynamically updated.
 - **Maximum security** – The API key is never visible on the client side, uploads are protected against executable files via magic byte inspection, and sessions are stored with restrictive file permissions.
 - **No exotic frameworks** – Everything is based on Apache, Python, Bash, and plain HTML/JS.
 - **Professional export functions** – PDF, Markdown, TXT, RTF for the entire chat or individual messages.
 - **Multi-language support** – Full UI translation via external `language.xml` (English, German, Spanish, extensible with custom languages).
+- **Audio recording** – Built-in microphone button (MediaRecorder API) for direct voice input. Automatically visible only when an audio-capable model is active (all Gemini models, OpenAI gpt-4o and gpt-4.1). Audio is transmitted as base64 WebM/MP4 — no transcription, the model processes speech natively.
 - **Clipboard integration** – Ctrl+V handler with dialog for text, images, and protection against accidentally pasting file paths.
 - **Streaming responses** – AI answers appear token by token, just like ChatGPT or Claude.
 - **429 Rate limit handling** – Automatic retry with countdown display for Google Gemini Free Tier limits.
@@ -36,6 +39,7 @@ Key highlights:
   - [Feedback Buttons & Logging](#feedback-buttons--logging)
   - [Dynamic Context Display](#dynamic-context-display)
   - [File Card Display](#file-card-display)
+  - [Audio Recording](#audio-recording)
 - [The Helper Script `repo2text.sh`](#the-helper-script-repo2textsh)
 - [Security Architecture in Detail](#security-architecture-in-detail)
 - [Deployment & Usage](#deployment--usage)
@@ -157,6 +161,7 @@ The client supports OpenAI as the first AI provider (shown at the top of the LLM
 - **Free Tier**: `gpt-4o-mini`, `gpt-5-mini`.
 - **Paid Tier**: `gpt-5.4`, `gpt-5.2-chat-latest`, `gpt-4o`, `gpt-4.1`, `gpt-4o-mini`.
 - The model dropdown in LLM Settings updates automatically based on the selected tier.
+- **Audio input**: `gpt-4o` and `gpt-4.1` support direct microphone recordings. When either model is active, the audio recording button becomes visible. Audio is sent as `input_audio` in OpenAI format.
 - The DeepThink button and DeepThink indicator are hidden when OpenAI is active.
 - System prompt identifies the active model: *"You are [model], an AI assistant made by OpenAI."*
 
@@ -169,6 +174,7 @@ The client supports Google Gemini as a second AI provider via `google-api.py`:
 - **Free Tier** (default): `gemini-2.5-flash` — 5 requests per minute, 20 requests per day.
 - **Paid Tier**: `gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-1.5-pro`, `gemini-2.0-flash`.
 - The model dropdown in LLM Settings updates automatically based on the selected tier.
+- **Audio input**: All Gemini models support direct microphone recordings. The audio recording button is always visible when Google Gemini is the active provider. Audio is sent as `inline_data` in Gemini's native format.
 - The DeepThink button and DeepThink indicator are hidden when Google Gemini is active.
 
 ### Hugging Face Integration
@@ -457,7 +463,46 @@ When a file is uploaded or clipboard text is attached, the user message displays
 
 - Shows file type badge (PDF, TXT, XLSX, etc.) derived from the file extension
 - Shows truncated filename (max 30 characters with `...`)
-- Applies to: real file uploads via the Upload button, clipboard text attached as file (`clipboard.txt`), and all other accepted formats
+- Applies to: real file uploads via the Upload button, clipboard text attached as file (`clipboard.txt`), all other accepted formats, and audio recordings
+- Audio recordings display the badge `AUDIO` with the localized label (e.g. "Audio recording" / "Audioaufnahme" / "Grabación de audio")
+
+### Multi-File Upload
+
+The Upload button supports selecting **multiple files at once**:
+
+- All selected files are validated individually (format check, magic byte inspection, image capability check).
+- Text-extractable files (`.txt`, `.pdf`) are processed in sequence; their contents are combined with a `---` separator and a `[filename]` header per file.
+- The file info bar shows all files separated by ` | ` in a single line.
+- A file card is generated per file in the user message.
+- Accepted formats: `.txt`, `.pdf`, `.doc`, `.docx`, `.jpg`, `.jpeg`, `.png`, `.csv`, `.xlsx`, `.pptx`
+
+### Audio Recording
+
+The client includes a built-in **microphone recording button** that enables direct voice input to audio-capable models:
+
+- **Button**: `audioButton` — pill-mode style, positioned in button row 2 next to the DeepThink button.
+- **Visibility**: The button is only shown when the currently selected model supports audio input. It is hidden automatically when a non-audio model is active. This is controlled by `updateAudioButtonVisibility()` which is called on every model change.
+- **Audio-capable models** (`AUDIO_CAPABLE_MODELS` constant):
+  - **Google Gemini**: `gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-1.5-pro`, `gemini-2.0-flash`
+  - **OpenAI**: `gpt-4o`, `gpt-4.1`
+- **Recording flow**: `getUserMedia()` → `MediaRecorder` API → chunked recording → `Blob` assembled on stop → base64-encoded.
+- **MIME type**: `audio/webm` (Chrome/Firefox) or `audio/mp4` (Safari) — auto-detected at runtime.
+- **After recording**: The audio data is shown in the `fileInfo` box with an AUDIO badge card. The label is pulled from `language.xml` (`t(250)` — "Audio recording" in all four languages).
+- **Sending**: `audio_data` (base64 string) and `audio_mime_type` are included in the JSON request body alongside the text message. The `hasFile` flag is **not** set for audio — no file-processing system prompt is injected.
+- **Mutual exclusivity**: File upload and audio recording are mutually exclusive. Starting a recording clears any pending file attachment and vice versa.
+- **Backend — Google (`google-api.py`)**: Audio is appended to the last user message as an `inline_data` block in Gemini's native format. The model receives and processes the audio directly.
+- **Backend — OpenAI (`openai-api.py`)**: Audio is appended to the last user message as an `input_audio` block in OpenAI's format (`format: webm` or `mp4`).
+- **Maintenance rule** (documented in manifest): Whenever an integrated LLM provider adds or removes audio support for a model, `AUDIO_CAPABLE_MODELS` in `index.html` **must** be updated immediately.
+
+**Language IDs added** (all four languages):
+
+| ID | Content |
+|----|---------|
+| 247 | Record Audio / Audio aufnehmen / Grabar audio |
+| 248 | Stop |
+| 249 | Audio recorded / Audio aufgenommen / Audio grabado |
+| 250 | Audio recording / Audioaufnahme / Grabación de audio |
+
 
 ---
 
@@ -638,6 +683,8 @@ const HF_MODELS_FREE     = ['Qwen/Qwen2.5-72B-Instruct', 'mistralai/Mistral-7B-I
 const HF_MODELS_PAID     = ['meta-llama/Meta-Llama-3.1-70B-Instruct', 'meta-llama/Meta-Llama-3.1-405B-Instruct', 'Qwen/Qwen2.5-72B-Instruct', 'mistralai/Mixtral-8x7B-Instruct-v0.1'];
 const GROQ_MODELS_FREE   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768', 'gemma2-9b-it'];
 const GROQ_MODELS_PAID   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768', 'gemma2-9b-it'];
+// Models with native audio input support (microphone recording button)
+const AUDIO_CAPABLE_MODELS = ['gemini-2.5-flash','gemini-2.5-pro','gemini-1.5-pro','gemini-2.0-flash','gpt-4o','gpt-4.1'];
 ```
 
 **API key configuration** (`/etc/apache2/envvars`):
@@ -757,6 +804,7 @@ The project includes a **`manifest` file** that documents all design decisions a
 - **No PHP** — exclusively JavaScript and Python.
 - **No external JS frameworks** — no Node, no React, no Vue.
 - **Formatting preservation**: Existing indentation and formatting in `index.html` must never be changed.
+- **`AUDIO_CAPABLE_MODELS` must be updated**: Whenever a model gains or loses audio support, the constant must be updated immediately (Manifest rule E.1).
 - The manifest is a **separate file** and must never be embedded in `index.html`.
 
 ---
@@ -818,6 +866,7 @@ This project demonstrates professional-level web development in a minimalist, se
 - Streaming responses with sub-second first-token latency.
 - Unique flexible context management (delete any message + all subsequent).
 - Intelligent clipboard handling for text, images, and file path protection.
+- **Audio recording** directly in the browser — microphone input for Google Gemini (all models) and OpenAI gpt-4o / gpt-4.1.
 - Multi-language support with address form distinction, loaded from external XML.
 
 **Engineering**:
@@ -841,7 +890,7 @@ DeepSeek Chat is a **showcase for professional web development** — without unn
 
 ---
 
-*Last updated: 10.03.2026*
+*Last updated: 11.03.2026*
 
 
 
