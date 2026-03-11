@@ -58,15 +58,15 @@ Características principales:
 
 ## Descripción general
 
-DeepSeek Chat is a **local web application** that communicates via the DeepSeek API (models `deepseek-chat` and `deepseek-reasoner`). Developed for a private server environment (Debian), it can run on any system with Apache and Python 3. The goal was to create a **secure, extensible, and user-friendly** chat client that operates without cloud dependencies and offers full control over data.
+Multi-LLM Chat Client es una **aplicación web local** que se comunica a través de diversas APIs. Desarrollada para un entorno de servidor privado (Debian), puede ejecutarse en cualquier sistema con Apache y Python 3. El objetivo fue crear un cliente de chat **seguro, extensible y fácil de usar** que funcione sin dependencias en la nube y ofrezca control total sobre los datos.
 
-The project has grown continuously over several weeks of active development, adding features like streaming, session management, export functions, multilingual support, clipboard integration, and robust security measures — all without ever introducing external JavaScript frameworks.
+El proyecto ha crecido continuamente durante varias semanas de desarrollo activo, añadiendo funciones como streaming, gestión de sesiones, exportaciones, soporte multilingüe, integración del portapapeles y medidas de seguridad robustas — todo sin introducir frameworks JavaScript externos.
 
 ---
 
 ## Arquitectura
 
-The architecture is intentionally simple but well thought out:
+La arquitectura es intencionalmente simple pero bien pensada:
 
 ### 1. Client
 - Pure HTML/JavaScript/CSS, served via Apache.
@@ -104,7 +104,7 @@ The architecture is intentionally simple but well thought out:
 
 ## Gestión de contexto única
 
-One of the standout features is the ability to **delete individual messages along with all subsequent ones**. This goes far beyond the typical "delete last message" and allows flexible correction of the conversation history.
+Una de las características más destacadas es la capacidad de **eliminar mensajes individuales junto con todos los posteriores**. Esto va mucho más allá del típico "eliminar último mensaje" y permite la corrección flexible del historial de conversación.
 
 **Implementation**:
 - Each message (user & AI) receives a unique `id` (format: `msg_N`) and is stored in an array `contextHistory.messages`.
@@ -113,7 +113,7 @@ One of the standout features is the ability to **delete individual messages alon
 - The modified session is then automatically saved (`saveSession()`).
 
 **Why is this unique?**
-Many chat clients only allow deletion of the last message or no history manipulation at all. Here, the user can **define any point in the conversation as a new starting point** — perfect for testing, corrections, or cleaning up the context window without losing the entire chat.
+Muchos clientes de chat solo permiten eliminar el último mensaje o ninguna manipulación del historial. Aquí, el usuario puede **definir cualquier punto de la conversación como nuevo punto de inicio** — perfecto para pruebas, correcciones o limpieza del contexto sin perder todo el chat.
 
 **Regenerate function**: In addition to deletion, each AI response has a "Regenerate" button that deletes the old response and automatically generates a new one based on the same user message — using the full conversation context up to that point.
 
@@ -153,7 +153,7 @@ Cache-Control: no-cache
 
 ### Integración con OpenAI
 
-The client supports OpenAI as the first AI provider (shown at the top of the LLM selection) via `openai-api.py`:
+El cliente admite OpenAI como primer proveedor de IA (mostrado en la parte superior de la selección LLM) mediante `openai-api.py`:
 
 - **Architecture**: Uses the native OpenAI Chat Completions endpoint — no format conversion required. The SSE stream is forwarded directly.
 - **Endpoint**: `https://api.openai.com/v1/chat/completions`
@@ -167,7 +167,7 @@ The client supports OpenAI as the first AI provider (shown at the top of the LLM
 
 ### Integración con Google Gemini
 
-The client supports Google Gemini as a second AI provider via `google-api.py`:
+El cliente admite Google Gemini como segundo proveedor de IA mediante `google-api.py`:
 
 - **Architecture**: The CGI script converts the OpenAI-compatible message format used internally into the Gemini-specific `contents` format, sends the request to the Gemini `streamGenerateContent` endpoint, and converts the response back into the OpenAI SSE format expected by `index.html`.
 - **API key**: `GOOGLE_API_KEY` in `/etc/apache2/envvars` — never exposed to the client.
@@ -179,7 +179,7 @@ The client supports Google Gemini as a second AI provider via `google-api.py`:
 
 ### Integración con Hugging Face
 
-The client supports Hugging Face Inference Providers as a third AI provider via `hugging-api.py`:
+El cliente admite Hugging Face Inference Providers como tercer proveedor de IA mediante `hugging-api.py`:
 
 - **Architecture**: Uses the OpenAI-compatible Hugging Face router endpoint — no format conversion required. The SSE stream is forwarded directly.
 - **Endpoint**: `https://router.huggingface.co/v1/chat/completions` — the router selects the fastest available provider automatically.
@@ -192,7 +192,7 @@ The client supports Hugging Face Inference Providers as a third AI provider via 
 
 ### Integración con GroqCloud
 
-The client supports GroqCloud as a fourth AI provider via `groq-api.py`:
+El cliente admite GroqCloud como cuarto proveedor de IA mediante `groq-api.py`:
 
 - **Architecture**: Uses the OpenAI-compatible GroqCloud endpoint — no format conversion required. The SSE stream is forwarded directly.
 - **Endpoint**: `https://api.groq.com/openai/v1/chat/completions`
@@ -205,7 +205,7 @@ The client supports GroqCloud as a fourth AI provider via `groq-api.py`:
 
 ### Panel de configuración LLM
 
-A dedicated **LLM Settings** panel (separate from the main Settings panel) keeps provider-specific options out of the main UI:
+Un panel dedicado de **Configuración LLM** (separado del panel de configuración principal) mantiene las opciones específicas del proveedor fuera de la interfaz principal:
 
 - **Provider selection**: Toggle between OpenAI, DeepSeek, Google Gemini, Hugging Face, and GroqCloud — only one active at a time.
 - **OpenAI options**: Free / Paid plan selection with automatic model list update.
@@ -218,7 +218,7 @@ A dedicated **LLM Settings** panel (separate from the main Settings panel) keeps
 
 ### Gestión del límite de tasa 429
 
-The Google Gemini Free Tier enforces strict rate limits (5 RPM, 20 RPD). The client handles these gracefully:
+El nivel gratuito de Google Gemini impone límites de tasa estrictos (5 RPM, 20 RPD). El cliente los gestiona de forma elegante:
 
 - On a 429 response, the client automatically retries up to **3 times** with **15-second intervals**.
 - During the wait, a countdown is displayed directly in the chat: *"Rate limit reached – waiting 15 seconds and retrying... (Attempt 1/3)"*
@@ -228,7 +228,7 @@ The Google Gemini Free Tier enforces strict rate limits (5 RPM, 20 RPD). The cli
 
 ### Manejador del portapapeles (Ctrl+V)
 
-A sophisticated clipboard handler intercepts paste events and responds intelligently based on content type:
+Un sofisticado manejador del portapapeles intercepta los eventos de pegado y responde de forma inteligente según el tipo de contenido:
 
 **Text content** → Paste dialog appears with two options:
 - "Insert at cursor position" — inserts the text directly into the input field at the cursor
@@ -290,9 +290,9 @@ A unique solution for a fundamental problem with the DeepSeek API and German tex
 
 **Important implementation detail**: The functions `encodeUmlautsForAI()` and `decodeUmlautsFromAI()` use **exclusively Unicode escape sequences** (`\u00e4` instead of `ä`) and `split/join` instead of regex — this is critical to avoid corruption when files are transferred via Git.
 
-The decode runs **both during streaming** (token by token) and after the complete response is received.
+La decodificación se ejecuta **tanto durante el streaming** (token a token) como después de recibir la respuesta completa.
 
-This system is **only applied to file content**, not to regular user messages or system prompts.
+Este sistema se aplica **únicamente al contenido de archivos**, no a los mensajes regulares del usuario ni a los prompts del sistema.
 
 ### Modo DeepThink
 
@@ -323,7 +323,7 @@ At startup, the client queries `/cgi-bin/deepseek-models.py` which in turn calls
 
 ### Sistema multilingüe
 
-The UI supports multiple languages loaded from an external `language.xml` file:
+La interfaz admite múltiples idiomas cargados desde un archivo `language.xml` externo:
 
 **Currently included languages**:
 - English (`en`) — default
@@ -353,7 +353,7 @@ The UI supports multiple languages loaded from an external `language.xml` file:
 
 ### Configuración (toggles en lugar de botones de radio)
 
-All settings use **toggle switches** (sliding left-to-right), never radio buttons or checkboxes:
+Todas las configuraciones usan **interruptores de palanca** (deslizamiento de izquierda a derecha), nunca botones de radio ni casillas de verificación:
 
 | Group | Setting | Toggle Color |
 |-------|---------|-------------|
@@ -373,7 +373,7 @@ All settings use **toggle switches** (sliding left-to-right), never radio button
 
 ### Gestión de sesiones
 
-Each conversation is automatically managed as a named session:
+Cada conversación se gestiona automáticamente como una sesión con nombre:
 
 - **Session ID format**: `YYYY-MM-DD_HHMMSS_random` (e.g. `2026-02-16_143045_abc123`) — generated client-side, validated server-side.
 - **Automatic saving**: After every message pair (user + AI), the complete `contextHistory.messages` array is saved to the server as a JSON file.
@@ -434,7 +434,7 @@ Four buttons appear on hover for each AI response (left side, bottom):
 
 ### Visualización dinámica del contexto
 
-The server header shows four lines of information:
+El encabezado del servidor muestra cuatro líneas de información:
 1. Server name (in blue, `#4dabf7`)
 2. `IP: xxx.xxx.xxx.xxx`
 3. `Context: XX% (model-name)`
@@ -448,11 +448,11 @@ The server header shows four lines of information:
 
 **Warning system**: Above 90%, the context line turns red and blinks (CSS animation, opacity 0 → 1, 1 second cycle) — a highly visible warning that the context window is nearly full.
 
-The display updates automatically with: every sent message, every deleted message, every model switch.
+La visualización se actualiza automáticamente con: cada mensaje enviado, cada mensaje eliminado, cada cambio de modelo.
 
 ### Visualización de tarjeta de archivo
 
-When a file is uploaded or clipboard text is attached, the user message displays a **file card** — a compact visual element similar to Claude or ChatGPT:
+Cuando se carga un archivo o se adjunta texto del portapapeles, el mensaje del usuario muestra una **tarjeta de archivo** — un elemento visual compacto similar a Claude o ChatGPT:
 
 ```
 ┌─────────────────────────────────────┐
@@ -478,7 +478,7 @@ El botón de carga permite seleccionar **varios archivos a la vez**:
 
 ### Grabación de audio
 
-The client includes a built-in **microphone recording button** that enables direct voice input to audio-capable models:
+El cliente incluye un **botón de grabación por micrófono** integrado que permite la entrada de voz directa a modelos con capacidad de audio:
 
 - **Button**: `audioButton` — pill-mode style, positioned in button row 2 next to the DeepThink button.
 - **Visibility**: The button is only shown when the currently selected model supports audio input. It is hidden automatically when a non-audio model is active. This is controlled by `updateAudioButtonVisibility()` which is called on every model change.
@@ -509,7 +509,7 @@ The client includes a built-in **microphone recording button** that enables dire
 
 ### Bloque de información del proxy API (desde 08.03.2026)
 
-Each of the five CGI proxy scripts (`openai-api.py`, `deepseek-api.py`, `google-api.py`, `hugging-api.py`, `groq-api.py`) contains a structured documentation header directly after the encoding declaration:
+Cada uno de los cinco scripts CGI proxy (`openai-api.py`, `deepseek-api.py`, `google-api.py`, `hugging-api.py`, `groq-api.py`) contiene una cabecera de documentación estructurada directamente después de la declaración de codificación:
 
 - **Import date** — when the file was last updated
 - **Model version** — version of each supported model/sub-model
@@ -518,11 +518,11 @@ Each of the five CGI proxy scripts (`openai-api.py`, `deepseek-api.py`, `google-
 - **Free/Paid assignment** — for providers with tier distinction
 - **Source link** — official API documentation
 
-This ensures that model information is always traceable directly in the source code without consulting external documentation.
+Esto garantiza que la información del modelo siempre sea rastreable directamente en el código fuente sin consultar documentación externa.
 
 ## El script auxiliar `repo2text.sh`
 
-This Bash script was specifically developed to **export the entire source code of a GitHub repository as a single text file** — ideal for passing the complete project context to an AI assistant.
+Este script Bash fue desarrollado específicamente para **exportar todo el código fuente de un repositorio GitHub como un único archivo de texto** — ideal para pasar el contexto completo del proyecto a un asistente de IA.
 
 **How it works**:
 - Clones the repository with `git clone --depth 1`.
@@ -566,7 +566,7 @@ This Bash script was specifically developed to **export the entire source code o
 
 ## Arquitectura de seguridad en detalle
 
-Security was the top priority throughout this project. Here are all key measures:
+La seguridad fue la máxima prioridad durante todo el proyecto. Aquí todas las medidas clave:
 
 ### 1. Clave API — Nunca expuesta al cliente
 - The key is held **exclusively** in the Apache environment variable `DEEPSEEK_API_KEY` (set in `/etc/apache2/envvars`).
@@ -726,7 +726,7 @@ export GRQ_API_KEY="gsk_..."
 │   └── tag-release.sh                  Creates and pushes Git version tags
 ├── var/www/deepseek-chat/
 │   ├── index.html                      Main application (all JS/CSS/HTML)
-│   ├── language.xml                    All UI texts in all languages (EN, DE, ES, Custom)
+│   ├── language.xml                    Todos los textos de la interfaz en todos los idiomas (EN, DE, ES, Custom)
 │   ├── manifest                        Design manifest (all conventions, ~20KB)
 │   ├── changelog                       Complete development history (68+ entries, ~44KB)
 │   ├── files-directorys                File overview / directory listing
@@ -755,7 +755,7 @@ export GRQ_API_KEY="gsk_..."
 
 ## Configuración de modelos
 
-The `MODEL_CONFIG` object in `index.html` is the single point of truth for all model-specific limits. It covers all five providers:
+El objeto `MODEL_CONFIG` en `index.html` es la única fuente de verdad para todos los límites específicos de cada modelo. Cubre los cinco proveedores:
 
 ```javascript
 const MODEL_CONFIG = {
@@ -789,13 +789,13 @@ const MODEL_CONFIG = {
 };
 ```
 
-Sources: [OpenAI API Docs](https://platform.openai.com/docs), [DeepSeek API Docs](https://api-docs.deepseek.com), [Google Gemini Docs](https://ai.google.dev/gemini-api/docs), [Hugging Face Inference Providers](https://huggingface.co/docs/inference-providers), [GroqCloud Docs](https://console.groq.com/docs/models) (as of 10.03.2026).
+Fuentes: [OpenAI API Docs](https://platform.openai.com/docs), [DeepSeek API Docs](https://api-docs.deepseek.com), [Google Gemini Docs](https://ai.google.dev/gemini-api/docs), [Hugging Face Inference Providers](https://huggingface.co/docs/inference-providers), [GroqCloud Docs](https://console.groq.com/docs/models) (a fecha de 11.03.2026).
 
 ---
 
 ## Manifiesto de diseño
 
-The project includes a **`manifest` file** that documents all design decisions and conventions. Every change to the project is documented there. Key rules:
+El proyecto incluye un **archivo `manifest`** que documenta todas las decisiones de diseño y convenciones. Cada cambio en el proyecto se documenta allí. Reglas clave:
 
 - **All buttons**: Pill-style only (border-radius: 20px, height: 36px) — square buttons are forbidden.
 - **Button colors**: Blue (`#0056b3`) for actions, dark/blue toggle for modes, red (`#dc3545`) for destructive, green (`#28a745`) for constructive.
@@ -812,7 +812,7 @@ The project includes a **`manifest` file** that documents all design decisions a
 ## Limitaciones conocidas y notas técnicas
 
 ### "Lost in the Middle" — Una limitación conocida de la IA
-All current language models (including DeepSeek) tend to remember content at the **beginning and end** of a long context reliably, but content **in the middle** is sometimes overlooked or hallucinated. (Liu et al., 2023: "Lost in the Middle: How Language Models Use Long Contexts")
+Todos los modelos de lenguaje actuales (incluido DeepSeek) tienden a recordar de forma fiable el contenido al **principio y al final** de un contexto largo, pero el contenido **en el medio** a veces se pasa por alto o se alucina. (Liu et al., 2023: "Lost in the Middle: How Language Models Use Long Contexts")
 
 **Practical impact on this project**:
 - A repository export of ~270,000 characters ≈ ~67,500 tokens.
@@ -820,7 +820,7 @@ All current language models (including DeepSeek) tend to remember content at the
 - **Recommendation**: For specific tasks, upload only the relevant files individually rather than the entire repository export.
 
 ### Caché de URL sin procesar de GitHub
-After a `git push`, the new version is **not immediately available** via `raw.githubusercontent.com` URLs — GitHub caches these for up to 10 minutes. This is normal and cannot be circumvented. The files are correctly stored on GitHub as soon as `git push` succeeds.
+Después de un `git push`, la nueva versión **no está disponible de inmediato** a través de las URLs de `raw.githubusercontent.com` — GitHub las almacena en caché hasta 10 minutos. Esto es normal y no puede evitarse. Los archivos se almacenan correctamente en GitHub tan pronto como `git push` tiene éxito.
 
 ### Nano y Unicode — Advertencia crítica
 **Never** edit files containing Unicode escape sequences (like the umlaut functions) using `nano` or by copy-pasting into a terminal. Nano corrupts `\u00e4` to `M-CM-$` which is binary garbage for JavaScript.
@@ -828,11 +828,11 @@ After a `git push`, the new version is **not immediately available** via `raw.gi
 **The only safe workflow**:
 1. Edit files locally (VS Code, gedit, kate, or any proper editor).
 2. `git add` / `git commit` / `git push` from the local machine.
-3. On the server: `git pull` (in the source repo as user `source`).
+3. En el servidor: `git pull` (en el repositorio fuente como usuario `source`).
 4. As root: `./deploy.sh source`.
 
 ### Comportamiento de pegado en Linux/X11/Firefox
-On Linux with X11 and Firefox, `e.preventDefault()` in paste event handlers does not reliably block browser-native paste behavior for content coming from file managers. The solution implemented here (allow paste, check content in `setTimeout(0)`, clear if file paths detected) is the reliable workaround for this platform-specific limitation.
+En Linux con X11 y Firefox, `e.preventDefault()` en los manejadores de eventos de pegado no bloquea de forma fiable el comportamiento nativo del navegador para contenido proveniente de gestores de archivos. La solución implementada aquí (permitir el pegado, verificar el contenido en `setTimeout(0)`, limpiar si se detectan rutas de archivo) es la solución alternativa fiable para esta limitación específica de la plataforma.
 
 ---
 
@@ -849,13 +849,13 @@ On Linux with X11 and Firefox, `e.preventDefault()` in paste event handlers does
 | git | Gestión de versiones | `apt install git` |
 | zip | Creación de archivos zip en `repo2text.sh` | `apt install zip` |
 
-**No exotic frameworks** — all dependencies are standard packages in a Debian environment or loaded from well-established CDNs.
+**Sin frameworks exóticos** — todas las dependencias son paquetes estándar en un entorno Debian o se cargan desde CDNs reconocidos.
 
 ---
 
 ## Conclusión / Por qué destaca este proyecto
 
-This project demonstrates professional-level web development in a minimalist, security-first approach:
+Este proyecto demuestra desarrollo web de nivel profesional con un enfoque minimalista y orientado a la seguridad:
 
 **Architecture**:
 - Clean separation of client (pure HTML/JS) and server (Python CGI) with no blurring of responsibilities.
@@ -880,7 +880,7 @@ This project demonstrates professional-level web development in a minimalist, se
 - Deployment scripts ensuring consistent, permission-correct deployments.
 - Version tagging for clean release management.
 
-**For a professional developer**, this project demonstrates:
+**Para un desarrollador profesional**, este proyecto demuestra:
 - **Security awareness** — API key protection, malware detection, secure session storage.
 - **Structured discipline** — manifest, version tags, strict design conventions, documented changelog.
 - **Problem-solving depth** — X11 paste behavior, umlaut corruption, PDF binary output, "Lost in the Middle".
