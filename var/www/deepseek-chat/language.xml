@@ -135,6 +135,7 @@ Adding a new language:
     <text id="247">Record Audio</text>
     <text id="248">Stop</text>
     <text id="249">Audio recorded</text>
+    <text id="250">Audio recording</text>
     <!-- 201-300: Chat interface texts -->
     <text id="201">Enter your message here...</text>
     <text id="202">Enter your message here...</text>
@@ -299,6 +300,7 @@ Adding a new language:
     <text id="247">Audio aufnehmen</text>
     <text id="248">Stop</text>
     <text id="249">Audio aufgenommen</text>
+    <text id="250">Audioaufnahme</text>
     <!-- 201-300: Chat-Interface-Texte -->
     <text id="201">Ihre Nachricht hier eingeben...</text>
     <text id="202">Ihre Nachricht hier eingeben...</text>
@@ -461,6 +463,7 @@ Adding a new language:
     <text id="247">Grabar audio</text>
     <text id="248">Detener</text>
     <text id="249">Audio grabado</text>
+    <text id="250">Grabación de audio</text>
     <!-- 201-300: Textos de la interfaz del chat -->
     <text id="201">Escriba su mensaje aquí...</text>
     <text id="202">Escriba su mensaje aquí...</text>
@@ -618,6 +621,7 @@ Adding a new language:
     <text id="247">Record Audio</text>
     <text id="248">Stop</text>
     <text id="249">Audio recorded</text>
+    <text id="250">Audio recording</text>
     <!-- 201-300: Chat interface texts -->
     <text id="201">Enter your message here...</text>
     <text id="202">Enter your message here...</text>

@@ -3191,6 +3191,17 @@
         }
 
         function createFileCardHTML(filename) {
+            if (filename === 'audio_recording') {
+                return `<div class="file-card">
+                <div class="file-card-icon">
+                    <span class="file-card-badge">AUDIO</span>
+                </div>
+                <div class="file-card-info">
+                    <div class="file-card-name">${t(250)}</div>
+                    <div class="file-card-type">AUDIO</div>
+                </div>
+            </div><br>`;
+            }
             const badge = getFileTypeLabel(filename);
             const name = filename.length > 30 ? filename.substring(0, 27) + '...' : filename;
             return `<div class="file-card">
