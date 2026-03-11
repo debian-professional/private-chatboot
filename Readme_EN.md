@@ -548,8 +548,8 @@ This Bash script was specifically developed to **export the entire source code o
 # Export with URL as Markdown
 ./repo2text.sh -f md https://github.com/debian-professional/private-chatboot.git
 
-# Export only the 'shell-scipts' directory with flat structure
-./repo2text.sh --flat -o shell-scipts https://github.com/debian-professional/private-chatboot.git
+# Export only the 'shell-scripts' directory with flat structure
+./repo2text.sh --flat -o shell-scripts https://github.com/debian-professional/private-chatboot.git
 
 # Export with MD5 checksums
 ./repo2text.sh -md5 https://github.com/debian-professional/private-chatboot.git
@@ -718,7 +718,7 @@ export GRQ_API_KEY="gsk_..."
 ├── etc/apache2/sites-available/
 │   ├── deepseek-chat.conf              (disabled — HTTP only, redirects to HTTPS)
 │   └── deepseek-chat-ssl.conf          (active — SSL, CGI, API key via envvars)
-├── shell-scipts/
+├── shell-scripts/
 │   ├── repo2text.sh                    Export entire repo as single text file
 │   ├── deploy.sh                       Copies source repo → production
 │   ├── sync-back.sh                    Copies production → source repo
