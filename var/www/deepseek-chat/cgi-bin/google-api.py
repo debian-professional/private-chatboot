@@ -80,7 +80,7 @@ def send_error(status_code, data):
     sys.stdout.flush()
     log_to_file(status_code, data)
 
-def convert_messages_to_gemini(messages):
+def convert_messages_to_gemini(messages, audio_data=None, audio_mime_type=None):
     """Konvertiert OpenAI-Format messages in Gemini-Format."""
     system_instruction = None
     contents = []
@@ -93,6 +93,16 @@ def convert_messages_to_gemini(messages):
             contents.append({'role': 'model', 'parts': [{'text': content}]})
         else:
             contents.append({'role': 'user', 'parts': [{'text': content}]})
+    # Audio-Daten an letzte User-Message anhaengen
+    if audio_data and audio_mime_type and contents:
+        last_user = next((c for c in reversed(contents) if c['role'] == 'user'), None)
+        if last_user:
+            last_user['parts'].append({
+                'inline_data': {
+                    'mime_type': audio_mime_type,
+                    'data': audio_data
+                }
+            })
     return system_instruction, contents
 
 def main():
@@ -135,6 +145,8 @@ def main():
         model = request_data.get('model', 'gemini-2.0-flash')
         messages = request_data.get('messages', [])
         max_tokens = request_data.get('max_tokens', 2000)
+        audio_data = request_data.get('audio_data', None)
+        audio_mime_type = request_data.get('audio_mime_type', None)
 
         if not messages or not isinstance(messages, list):
             send_error(400, {
@@ -143,7 +155,7 @@ def main():
             return
 
         # Messages in Gemini-Format konvertieren
-        system_instruction, contents = convert_messages_to_gemini(messages)
+        system_instruction, contents = convert_messages_to_gemini(messages, audio_data, audio_mime_type)
 
         # Google Gemini API Request vorbereiten (mit Streaming)
         api_url = f'https://generativelanguage.googleapis.com/v1beta/models/{model}:streamGenerateContent?alt=sse&key={api_key}'
@@ -256,6 +268,9 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+
 
 
 

@@ -140,12 +140,26 @@ def main():
         model = request_data.get('model', 'gpt-4o-mini')
         messages = request_data.get('messages', [])
         max_tokens = request_data.get('max_tokens', 2000)
+        audio_data = request_data.get('audio_data', None)
+        audio_mime_type = request_data.get('audio_mime_type', 'audio/webm')
 
         if not messages or not isinstance(messages, list):
             send_error(400, {
                 'error': 'Ungueltige Anfrage: messages Array erforderlich'
             })
             return
+
+        # Audio-Daten an letzte User-Message anhaengen (input_audio Format)
+        if audio_data:
+            fmt = 'mp4' if (audio_mime_type and 'mp4' in audio_mime_type) else 'webm'
+            for msg in reversed(messages):
+                if msg.get('role') == 'user':
+                    text = msg.get('content', '')
+                    msg['content'] = [
+                        {'type': 'text', 'text': text},
+                        {'type': 'input_audio', 'input_audio': {'data': audio_data, 'format': fmt}}
+                    ]
+                    break
 
         # OpenAI API — Chat Completions Endpunkt
         api_url = 'https://api.openai.com/v1/chat/completions'
@@ -255,3 +269,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+

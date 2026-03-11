@@ -473,6 +473,27 @@
     - Event-Listener: groqServiceToggle, groqFreeTierToggle, groqPaidTierToggle
 
 
+    [11.03.2026] - Eintrag 76: Mikrofon-Aufnahme (Audio-Button)
+    - Neuer Button "audioButton" (pill-button-mode) in Buttons-Row 2 neben DeepThink
+    - Sichtbar nur wenn Audio-faehiges Modell aktiv ist (Funktion: updateAudioButtonVisibility)
+    - Konstante AUDIO_CAPABLE_MODELS: gemini-2.5-flash, gemini-2.5-pro, gemini-1.5-pro,
+      gemini-2.0-flash, gpt-4o, gpt-4.1
+    - Aufnahme via MediaRecorder API (getUserMedia, kein Plugin)
+    - MIME-Typ: audio/webm (Chrome/Firefox) oder audio/mp4 (Safari) - automatisch erkannt
+    - Nach Aufnahme: Audio als base64 in Variable audioData, Anzeige in fileInfo-Box
+    - Datei-Upload und Audio-Aufnahme sind gegenseitig exklusiv
+    - Versand: audio_data + audio_mime_type im JSON-Body an Backend
+    - Neue Variablen: audioData, audioMimeType, mediaRecorder, audioChunks, isRecording
+    - Neue Funktionen: updateAudioButtonVisibility(), startAudioRecording(), stopAudioRecording()
+    - modelSelect change-Event: aktualisiert Audio-Button-Sichtbarkeit
+    - language.xml IDs 247-249: "Record Audio/Audio aufnehmen/Grabar audio",
+      "Stop/Stop/Detener", "Audio recorded/Audio aufgenommen/Audio grabado" (alle 4 Sprachen)
+    - google-api.py: convert_messages_to_gemini() erweitert um audio_data/audio_mime_type
+      Audio wird als inline_data (Gemini-Format) an letzte User-Message angehaengt
+    - openai-api.py: Audio wird als input_audio (OpenAI-Format) an letzte User-Message
+      angehaengt; Format: webm oder mp4 je nach MIME-Typ
+
+
     [10.03.2026] - Eintrag 74: OpenAI als fünfter LLM-Anbieter
     - Abschnitt B.4: DeepThink-Button-Ausblendung auf OpenAI erweitert
     - Abschnitt B.4b: OpenAI als fünfter Anbieter ergänzt (Free/Paid-Modelle, API-Key, Backend)
@@ -506,6 +527,9 @@
 
 
 ================================================================================
+
+
+
 
 
 

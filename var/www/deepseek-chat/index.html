@@ -847,6 +847,7 @@
         <button id="deepThinkButton" class="pill-button-mode">
             <span class="mode-icon">&#10802;</span><span id="deepThinkButtonLabel">DeepThink</span>
         </button>
+        <button id="audioButton" class="pill-button-mode" style="display:none;">Record Audio</button>
     </div>
 
     <div id="clipboardImagePreview">
@@ -1388,6 +1389,10 @@
         const GROQ_MODELS_FREE     = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768', 'gemma2-9b-it'];
         const GROQ_MODELS_PAID     = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768', 'gemma2-9b-it'];
         const GOOGLE_MODELS        = GOOGLE_MODELS_FREE; // Fallback
+        const AUDIO_CAPABLE_MODELS = [
+            'gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-1.5-pro', 'gemini-2.0-flash',
+            'gpt-4o', 'gpt-4.1'
+        ];
         // =====================================================================
 
 
@@ -1503,6 +1508,7 @@
             // --- Buttons row 1 ---
             sendButton.textContent = t(205);
             document.getElementById('uploadButton').textContent = t(206);
+            if (!isRecording) audioButton.textContent = t(247);
             exportButton.innerHTML = t(207) + ' <span class="dropdown-arrow">&#9660;</span>';
             document.getElementById('exportPdfBtn').textContent = t(208);
             document.getElementById('exportMarkdownBtn').textContent = t(209);
@@ -2350,6 +2356,7 @@
         const closeLlmSettings = document.getElementById('closeLlmSettings');
         const saveLlmSettingsButton = document.getElementById('saveLlmSettings');
         const deepThinkButton = document.getElementById('deepThinkButton');
+        const audioButton     = document.getElementById('audioButton');
         const settingsOverlay = document.getElementById('settingsOverlay');
         const closeSettings = document.getElementById('closeSettings');
         const saveSettingsButton = document.getElementById('saveSettings');
@@ -2413,6 +2420,11 @@
         const modelSelect = document.getElementById('modelSelect');
         
         let selectedFiles = [];
+        let audioData = null;         // base64 aufgenommenes Audio
+        let audioMimeType = null;     // MIME-Typ des aufgenommenen Audios
+        let mediaRecorder = null;     // MediaRecorder Instanz
+        let audioChunks = [];         // Aufnahme-Chunks
+        let isRecording = false;      // Aufnahme aktiv?
         let fileTextContent = null;
         let clipboardImageFile = null;
         let uploadedFileNames = [];     // filenames for file card display  // Image pasted from clipboard
@@ -2661,6 +2673,7 @@
             const isGoogle = (service === 'google');
             // DeepThink-Button auf Hauptseite ein-/ausblenden
             deepThinkButton.style.display = (service !== 'deepseek') ? 'none' : '';
+            updateAudioButtonVisibility();
             deepThinkIndicator.style.display = (service !== 'deepseek') ? 'none' : '';
             // LLM-Panel: Gruppen je nach Anbieter ein-/ausblenden
             const dsGroup  = document.getElementById('llmDeepSeekGroup');
@@ -2693,6 +2706,7 @@
                 modelSelect.appendChild(opt);
             });
             settings.selectedModel = modelSelect.value;
+            updateAudioButtonVisibility();
             // Falls kein DeepSeek aktiv und DeepThink läuft: auf Chat zurückschalten
             if (service !== 'deepseek' && currentMode === 'deepthink') {
                 setMode('chat');
@@ -2709,6 +2723,73 @@
                     modelInfoEl.textContent = t(238) + ' ...';
                 }
             }
+        }
+
+
+        // =====================================================================
+        // AUDIO-AUFNAHME (MediaRecorder API)
+        // =====================================================================
+        function updateAudioButtonVisibility() {
+            const model = settings.selectedModel || modelSelect.value || '';
+            const capable = AUDIO_CAPABLE_MODELS.includes(model);
+            audioButton.style.display = capable ? '' : 'none';
+            if (!capable && isRecording) stopAudioRecording();
+        }
+
+        async function startAudioRecording() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert('Ihr Browser unterstützt keine Mikrofon-Aufnahme.');
+                return;
+            }
+            // Vorhandene Datei-Auswahl leeren
+            selectedFiles = []; fileTextContent = null; uploadedFileNames = [];
+            fileUpload.value = '';
+            fileInfo.innerHTML = ''; fileInfo.classList.remove('visible');
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                audioChunks = [];
+                // Safari liefert audio/mp4, Chrome/Firefox audio/webm
+                const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
+                mediaRecorder = new MediaRecorder(stream, { mimeType });
+                mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data); };
+                mediaRecorder.onstop = () => {
+                    stream.getTracks().forEach(track => track.stop());
+                    const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
+                    audioMimeType = mediaRecorder.mimeType;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        audioData = e.target.result.split(',')[1]; // base64
+                        const secs = Math.round(audioChunks.reduce((a, c) => a + (c.size / 16000), 0));
+                        fileInfo.innerHTML = `${t(249)} <button id="removeAudio">${t(222)}</button>`;
+                        fileInfo.classList.add('visible');
+                        const removeBtn = document.getElementById('removeAudio');
+                        if (removeBtn) {
+                            const removeHandler = function() {
+                                audioData = null; audioMimeType = null; audioChunks = [];
+                                fileInfo.innerHTML = ''; fileInfo.classList.remove('visible');
+                                removeBtn.removeEventListener('click', removeHandler);
+                            };
+                            removeBtn.addEventListener('click', removeHandler);
+                            eventListeners.push({ element: removeBtn, event: 'click', handler: removeHandler });
+                        }
+                    };
+                    reader.readAsDataURL(blob);
+                    isRecording = false;
+                    audioButton.textContent = t(247);
+                    audioButton.classList.remove('active');
+                };
+                mediaRecorder.start();
+                isRecording = true;
+                audioButton.textContent = t(248);
+                audioButton.classList.add('active');
+            } catch (err) {
+                console.error('Mikrofon-Zugriff verweigert:', err);
+                alert('Mikrofon-Zugriff verweigert. Bitte Berechtigung erteilen.');
+            }
+        }
+
+        function stopAudioRecording() {
+            if (mediaRecorder && isRecording) { mediaRecorder.stop(); }
         }
 
         function setMode(mode) {
@@ -2841,7 +2922,9 @@
                 else if (settings.apiService === 'openai') activeApiUrl = OPENAI_API_URL;
                 else activeApiUrl = API_URL;
                 const maxTokens = (MODEL_CONFIG[modelName] || MODEL_CONFIG['deepseek-chat']).maxOutputTokens;
-                const requestBody = JSON.stringify({ model: modelName, messages, max_tokens: maxTokens, no_training: settings.noTraining });
+                const requestPayload = { model: modelName, messages, max_tokens: maxTokens, no_training: settings.noTraining };
+                if (audioData) { requestPayload.audio_data = audioData; requestPayload.audio_mime_type = audioMimeType; }
+                const requestBody = JSON.stringify(requestPayload);
 
                 // Retry-Logik für Google 429
                 const MAX_RETRIES = 3;
@@ -2932,6 +3015,9 @@
                 isSending = false; sendButton.disabled = false; sendButton.textContent = t(205);
                 inputField.disabled = false;
                 selectedFiles = []; fileTextContent = null; uploadedFileNames = [];
+                audioData = null; audioMimeType = null; audioChunks = [];
+                if (isRecording && mediaRecorder) { mediaRecorder.stop(); isRecording = false; }
+                audioButton.textContent = t(247); audioButton.classList.remove('active');
                 fileInfo.innerHTML = ''; fileInfo.classList.remove('visible');
                 fileUpload.value = '';
                 chat.scrollTop = chat.scrollHeight;
@@ -3479,6 +3565,17 @@
             // --- DeepThink button ---
             addEventListenerWithCleanup(deepThinkButton, 'click', () => {
                 setMode(currentMode === 'deepthink' ? 'chat' : 'deepthink');
+            });
+
+            // --- modelSelect change → Audio-Button Sichtbarkeit aktualisieren ---
+            addEventListenerWithCleanup(modelSelect, 'change', () => {
+                settings.selectedModel = modelSelect.value;
+                updateAudioButtonVisibility();
+            });
+
+            // --- Audio-Button ---
+            addEventListenerWithCleanup(audioButton, 'click', () => {
+                if (isRecording) { stopAudioRecording(); } else { startAudioRecording(); }
             });
         }
 
