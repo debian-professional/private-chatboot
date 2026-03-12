@@ -58,7 +58,7 @@ Key highlights:
 
 ## Overview
 
-DeepSeek Chat is a **local web application** that communicates via the DeepSeek API (models `deepseek-chat` and `deepseek-reasoner`). Developed for a private server environment (Debian), it can run on any system with Apache and Python 3. The goal was to create a **secure, extensible, and user-friendly** chat client that operates without cloud dependencies and offers full control over data.
+Multi-LLM Chat Client is a **local web application** that communicates via various APIs. Developed for a private server environment (Debian), it can run on any system with Apache and Python 3. The goal was to create a **secure, extensible, and user-friendly** chat client that operates without cloud dependencies and offers full control over data.
 
 The project has grown continuously over several weeks of active development, adding features like streaming, session management, export functions, multilingual support, clipboard integration, and robust security measures — all without ever introducing external JavaScript frameworks.
 
@@ -886,7 +886,7 @@ This project demonstrates professional-level web development in a minimalist, se
 - **Problem-solving depth** — X11 paste behavior, umlaut corruption, PDF binary output, "Lost in the Middle".
 - **Complete documentation** — both inline and in dedicated files.
 
-DeepSeek Chat is a **showcase for professional web development** — without unnecessary overhead, but with the highest standards for security, correctness, and user-friendliness.
+Multi-LLM Chat Client is a **showcase for professional web development** — without unnecessary overhead, but with the highest standards for security, correctness, and user-friendliness.
 
 ---
 
