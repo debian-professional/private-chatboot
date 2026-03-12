@@ -2919,6 +2919,14 @@
                 opt.value = m; opt.textContent = m;
                 modelSelect.appendChild(opt);
             });
+            // Gespeichertes Modell wiederherstellen
+            if (settings.selectedModel) {
+                for (let i = 0; i < modelSelect.options.length; i++) {
+                    if (modelSelect.options[i].value === settings.selectedModel) {
+                        modelSelect.selectedIndex = i; break;
+                    }
+                }
+            }
             settings.selectedModel = modelSelect.value;
             updateAudioButtonVisibility();
             // Falls kein DeepSeek aktiv und DeepThink läuft: auf Chat zurückschalten
@@ -3219,6 +3227,7 @@
                 aiContainer.appendChild(rightButtons);
                 chat.appendChild(document.createElement('div')).className = 'message-divider';
                 await saveSession();
+                await checkCompressorThresholds();
             } catch (error) {
                 aiContainer.remove();
                 const errorDiv = document.createElement('div');
