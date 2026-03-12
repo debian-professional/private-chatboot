@@ -1851,8 +1851,8 @@
                 // Nachrichten ersetzen: Zusammenfassung als system-Eintrag
                 const summaryMsg = {
                     id:              'compressed_' + Date.now(),
-                    role:            'assistant',
-                    content:         '[COMPRESSED CONTEXT]\n' + summary,
+                    role:            'user',
+                    content:         '[COMPRESSED CONTEXT - previous conversation summary]\n' + summary + '\n[END OF COMPRESSED CONTEXT]',
                     estimatedTokens: Math.ceil(summary.length * 0.25),
                     compressed:      true
                 };
@@ -2395,8 +2395,15 @@
             aiContainer.appendChild(aiText); chat.appendChild(aiContainer);
             chat.scrollTop = chat.scrollHeight;
             try {
-                const messages = [{ role: 'system', content: processedSystem }];
+                // Komprimierte Zusammenfassung in System-Prompt einbauen (nie als erste Message)
+                let effectiveSystem = processedSystem;
+                const firstMsg = contextHistory.messages[0];
+                if (firstMsg && firstMsg.compressed) {
+                    effectiveSystem += '\n\n' + firstMsg.content;
+                }
+                const messages = [{ role: 'system', content: effectiveSystem }];
                 contextHistory.messages.forEach(msg => {
+                    if (msg.compressed) return; // bereits im System-Prompt
                     const content = msg.hasFile ? msg.content : replaceGermanUmlauts(msg.content);
                     messages.push({ role: msg.role, content });
                 });
@@ -3135,8 +3142,15 @@
             aiContainer.appendChild(aiText); chat.appendChild(aiContainer);
             chat.scrollTop = chat.scrollHeight;
             try {
-                const messages = [{ role: 'system', content: processedSystem }];
+                // Komprimierte Zusammenfassung in System-Prompt einbauen (nie als erste Message)
+                let effectiveSystem = processedSystem;
+                const firstMsg = contextHistory.messages[0];
+                if (firstMsg && firstMsg.compressed) {
+                    effectiveSystem += '\n\n' + firstMsg.content;
+                }
+                const messages = [{ role: 'system', content: effectiveSystem }];
                 contextHistory.messages.forEach(msg => {
+                    if (msg.compressed) return; // bereits im System-Prompt
                     const content = msg.hasFile ? msg.content : replaceGermanUmlauts(msg.content);
                     messages.push({ role: msg.role, content });
                 });
