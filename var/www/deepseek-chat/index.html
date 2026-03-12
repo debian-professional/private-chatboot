@@ -1819,7 +1819,11 @@
             const msgs = contextHistory.messages;
             if (msgs.length < 4) return;
 
-            const cutoff = Math.floor(msgs.length * 0.5);
+            // Cutoff auf geradzahligen Index ausrichten (Ende eines user/assistant-Paars),
+            // damit toKeep immer mit einer user-Message beginnt.
+            let cutoff = Math.floor(msgs.length * 0.5);
+            if (cutoff % 2 !== 0) cutoff--;
+            if (cutoff < 2) cutoff = 2;
             const toCompress = msgs.slice(0, cutoff);
             const toKeep     = msgs.slice(cutoff);
 
