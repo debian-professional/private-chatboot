@@ -57,6 +57,40 @@
             0%, 100% { opacity: 1; }
             50%       { opacity: 0.3; }
         }
+        /* Kompressor-Banner */
+        #kompressorBanner {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 9999;
+            background: linear-gradient(90deg, #0056b3, #0077ff, #0056b3);
+            background-size: 200% 100%;
+            animation: kompressorSlide 1.5s linear infinite;
+            color: #fff;
+            font-size: 15px;
+            font-weight: bold;
+            text-align: center;
+            padding: 12px 20px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 3px 15px rgba(0,86,179,0.6);
+        }
+        #kompressorBanner .kompressor-spinner {
+            display: inline-block;
+            width: 16px; height: 16px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        @keyframes kompressorSlide {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
         #chat {
             min-height: 200px;
             margin-bottom: 20px;
@@ -809,6 +843,10 @@
         </div>
     </div>
     
+    <div id="kompressorBanner">
+        <span class="kompressor-spinner"></span>
+        <span id="kompressorBannerText">Kontext wird komprimiert...</span>
+    </div>
     <div id="chat"></div>
     
     <textarea id="input" placeholder="Enter your message here..." rows="1"></textarea>
@@ -1826,7 +1864,13 @@
             const toCompress = msgs.slice(0, cutoff);
             const toKeep     = msgs.slice(cutoff);
 
-            // Indikator anzeigen
+            // Kompressor-Banner anzeigen
+            const banner = document.getElementById('kompressorBanner');
+            const bannerText = document.getElementById('kompressorBannerText');
+            if (banner) {
+                bannerText.textContent = t(48);
+                banner.style.display = '';
+            }
             if (compressorInfo) {
                 compressorInfo.textContent = t(48);
                 compressorInfo.style.display = '';
@@ -1875,6 +1919,7 @@
                 const pct = Math.round(
                     (contextHistory.totalEstimatedTokens / config2.maxContextTokens) * 100
                 );
+                if (banner) banner.style.display = 'none';
                 if (compressorInfo) {
                     compressorInfo.textContent = tf(46, pct);
                     compressorInfo.style.display = '';
@@ -1883,6 +1928,7 @@
                 await saveSession();
             } catch (err) {
                 console.error('Kompressor Fehler:', err);
+                if (banner) banner.style.display = 'none';
                 if (compressorInfo) {
                     compressorInfo.textContent = tf(47, err.message);
                     compressorInfo.style.display = '';
