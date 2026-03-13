@@ -420,8 +420,23 @@ def main():
             })
             return
 
+        # Ergebnis in Datei speichern
+        import datetime
+        summary_clean = summary.strip()
+        result_dir = '/var/www/deepseek-chat/kompressor'
+        os.makedirs(result_dir, exist_ok=True)
+        timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+        result_file = os.path.join(result_dir, f'kompressor_{timestamp}.txt')
+        with open(result_file, 'w', encoding='utf-8') as f:
+            f.write(f'Zeitpunkt: {timestamp}\n')
+            f.write(f'Anbieter:  {compressor_service}\n')
+            f.write(f'Modell:    {compressor_model}\n')
+            f.write(f'Nachrichten komprimiert: {len(messages)}\n')
+            f.write('=' * 60 + '\n')
+            f.write(summary_clean + '\n')
+
         # Erfolg
-        send_success(summary.strip())
+        send_success(summary_clean)
 
     except json.JSONDecodeError as e:
         send_error(400, {
