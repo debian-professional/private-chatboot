@@ -12,6 +12,7 @@ Características principales:
 - **Funciones de exportación profesionales** – PDF, Markdown, TXT, RTF para el chat completo o mensajes individuales.
 - **Soporte multilingüe** – Traducción completa de la interfaz mediante `language.xml` externo (inglés, alemán, español, ampliable con idiomas personalizados).
 - **Grabación de audio** – Botón de micrófono integrado (API MediaRecorder) para entrada de voz directa. Visible automáticamente solo cuando hay un modelo con capacidad de audio activo (todos los modelos Gemini, OpenAI gpt-4o y gpt-4.1). El audio se transmite como base64 WebM/MP4 — sin transcripción, el modelo procesa el habla de forma nativa.
+- **Kompressor (compresión de contexto)** – Compresión inteligente y automática del historial de chat cuando la ventana de contexto se llena. Un segundo LLM resume el 50% más antiguo de los mensajes e inyecta el resumen en el prompt del sistema — la conversación puede continuar indefinidamente sin perder el hilo. Umbrales configurables (70%/85%/95%), banner animado como retroalimentación visual, archivos de resultados guardados en disco.
 - **Integración del portapapeles** – Manejador Ctrl+V con diálogo para texto, imágenes y protección contra pegado accidental de rutas de archivo.
 - **Respuestas en streaming** – Las respuestas de la IA aparecen token a token, igual que ChatGPT o Claude.
 - **Gestión de límite de tasa 429** – Reintento automático con visualización de cuenta regresiva para los límites del nivel gratuito de Google Gemini.
@@ -40,6 +41,7 @@ Características principales:
   - [Visualización dinámica del contexto](#visualización-dinámica-del-contexto)
   - [Visualización de tarjeta de archivo](#visualización-de-tarjeta-de-archivo)
   - [Grabación de audio](#grabación-de-audio)
+  - [Kompressor — Compresión inteligente de contexto](#kompressor--compresión-inteligente-de-contexto)
 - [El script auxiliar `repo2text.sh`](#el-script-auxiliar-repo2textsh)
 - [Arquitectura de seguridad en detalle](#arquitectura-de-seguridad-en-detalle)
 - [Despliegue y uso](#despliegue-y-uso)
@@ -82,6 +84,7 @@ La arquitectura es intencionalmente simple pero bien pensada:
   - Comunicación con la API de Google Gemini (`google-api.py`) — convierte el formato OpenAI al formato Gemini
   - Comunicación con la API de Hugging Face Inference (`hugging-api.py`) — endpoint de router compatible con OpenAI
   - Comunicación con la API de GroqCloud (`groq-api.py`) — endpoint compatible con OpenAI, inferencia acelerada por LPU
+  - Compresión de contexto (`compress-context.py`) — resume el 50% más antiguo de los mensajes mediante una segunda llamada LLM cuando se alcanzan los umbrales de contexto
   - Descubrimiento de modelos (`deepseek-models.py`) — consulta `/v1/models` al inicio
   - Almacenamiento y recuperación de sesiones (`save-session.py`, `load-session.py`, `delete-session.py`)
   - Exportaciones en varios formatos (`export-pdf.py`, `export-markdown.py`, `export-txt.py`, `export-rtf.py`)
@@ -504,6 +507,91 @@ El cliente incluye un **botón de grabación por micrófono** integrado que perm
 | 250 | Grabación de audio / Audio recording / Audioaufnahme |
 
 
+### Kompressor — Compresión inteligente de contexto
+
+Cada modelo de lenguaje tiene una ventana de contexto finita. En sesiones largas — especialmente con cargas de archivos grandes, flujos de trabajo de análisis extensos o conversaciones de varias horas — el contexto se llena, lo que provoca errores de la API (400/413) y obliga al usuario a iniciar un nuevo chat perdiendo todo el hilo de la conversación.
+
+El **Kompressor** resuelve este problema de forma automática y transparente.
+
+#### Concepto básico
+
+En lugar de truncar ciegamente los mensajes antiguos o forzar un reinicio manual, el Kompressor **resume** la mitad más antigua de la conversación mediante una segunda llamada LLM dedicada. Este resumen se inyecta en el prompt del sistema de las solicitudes posteriores. El modelo activo "recuerda" el pasado a través del resumen — la conversación puede continuar indefinidamente sin pérdida de contexto.
+
+#### Umbrales de activación
+
+| Umbral | Acción |
+|--------|--------|
+| **70%** de uso del contexto | Primera ronda de compresión |
+| **85%** de uso del contexto | Segunda ronda de compresión |
+| **95%** de uso del contexto | Tercera ronda de compresión |
+
+Cada umbral se activa como máximo una vez por sesión. Después de cada compresión, el contador se reinicia para que los umbrales puedan activarse de nuevo a medida que el contexto vuelve a llenarse.
+
+#### Proceso de compresión
+
+1. El cliente estima el uso del contexto después de cada mensaje enviado.
+2. Si se supera un umbral, se llama a `compress-context.py` **antes** de la llamada principal a la API.
+3. Se extrae el 50% más antiguo de los mensajes. El punto de corte avanza hasta el siguiente mensaje del usuario para garantizar la compatibilidad con la API (el contexto siempre comienza con un turno del usuario).
+4. Los datos en base64, las imágenes y el contenido multimedia se eliminan — solo se envía texto puro al LLM de compresión.
+5. El LLM de compresión devuelve un resumen estructurado.
+6. Los mensajes antiguos se reemplazan por una única entrada de resumen (indicador `compressed: true`).
+7. El resumen se añade al prompt del sistema efectivo para todas las llamadas posteriores — nunca se envía como mensaje independiente (lo que causaría errores 400 en la mayoría de las APIs).
+8. El contexto actualizado se guarda. La llamada principal a la API se realiza con el contexto comprimido.
+
+#### Retroalimentación visual
+
+Durante la compresión, aparece un **banner azul animado** en la parte superior de la ventana del navegador:
+> *"El contexto se está comprimiendo..."*
+
+Un banner azul idéntico también aparece durante la transmisión normal de la API:
+> *"Los datos se están transmitiendo..."*
+
+Ambos banners utilizan la misma animación de gradiente deslizante y desaparecen automáticamente al completarse o en caso de error.
+
+#### Archivos de resultados
+
+Cada ronda de compresión se guarda en:
+```
+/var/www/deepseek-chat/kompressor/kompressor_AAAAMMDD_HHMMSS.txt
+```
+Cada archivo contiene: marca de tiempo, proveedor, modelo, recuento original de mensajes y el texto completo del resumen. El directorio se crea automáticamente (`os.makedirs exist_ok=True`).
+
+#### Restricción de proveedores (solo de pago)
+
+El Kompressor requiere una llamada LLM separada que puede implicar grandes volúmenes de tokens. Los límites de velocidad del nivel gratuito de Groq (6.000–12.000 TPM) y Hugging Face son insuficientes para una compresión fiable de conversaciones reales. Solo se ofrecen proveedores de pago:
+
+| Proveedor | Modelos de compresión |
+|-----------|-----------------------|
+| DeepSeek | `deepseek-chat`, `deepseek-reasoner` |
+| OpenAI | `gpt-4o-mini`, `gpt-4o`, `gpt-4.1` |
+| Google | `gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-1.5-pro` |
+
+**Configuración predeterminada recomendada**: DeepSeek + `deepseek-chat` — sin límites de velocidad, menor costo, resultados más fiables.
+
+#### Configuración
+
+Configurado en el panel de **Configuración LLM**:
+- **Toggle**: Activar / Desactivar (predeterminado: activado)
+- **LLM de compresión**: Menú desplegable de proveedor (DeepSeek / OpenAI / Google)
+- **Modelo de compresión**: Menú desplegable de modelo (se actualiza según el proveedor seleccionado)
+
+Todos los ajustes se guardan en `localStorage` (`SETTINGS_VERSION: 1.7`).
+
+**IDs de idioma añadidos** (los cuatro idiomas):
+
+| ID | Contenido |
+|----|-----------|
+| 46 | "Kompressor activo – contexto comprimido al {0}%" |
+| 47 | "Error del Kompressor: {0}" |
+| 48 | "El contexto se está comprimiendo..." |
+| 251 | "Comprimir Chat" / "Compress Chat" / "Chat komprimieren" |
+| 252 | Texto descriptivo del toggle de compresión |
+| 253 | "LLM para compresión de chat" |
+| 254 | Descripción del proveedor LLM |
+| 255 | "Selección de modelo para compresión" |
+
+
+
 ---
 
 
@@ -806,6 +894,7 @@ El proyecto incluye un **archivo `manifest`** que documenta todas las decisiones
 - **Preservación del formato**: La sangría y el formato existentes en `index.html` nunca deben cambiarse.
 - **`AUDIO_CAPABLE_MODELS` debe actualizarse**: Cuando un modelo gane o pierda soporte de audio, la constante debe actualizarse inmediatamente (Regla del Manifiesto E.1).
 - El manifiesto es un **archivo separado** y nunca debe incrustarse en `index.html`.
+- **Mantener actualizada la lista de proveedores del Kompressor**: Solo se permiten proveedores de pago (DeepSeek, OpenAI, Google) para la compresión. Si se añade un nuevo proveedor, su idoneidad para el Kompressor debe evaluarse y documentarse.
 
 ---
 
@@ -867,6 +956,7 @@ Este proyecto demuestra desarrollo web de nivel profesional con un enfoque minim
 - Gestión de contexto flexible y única (eliminar cualquier mensaje + todos los posteriores).
 - Manejo inteligente del portapapeles para texto, imágenes y protección de rutas de archivos.
 - **Grabación de audio** directamente en el navegador — entrada de micrófono para Google Gemini (todos los modelos) y OpenAI gpt-4o / gpt-4.1.
+- **Kompressor** — la compresión automática de contexto permite conversaciones de cualquier duración, independientemente del tamaño de la ventana de contexto.
 - Soporte multilingüe con distinción de forma de tratamiento, cargado desde XML externo.
 
 **Ingeniería**:
@@ -890,7 +980,7 @@ Multi-LLM Chat Client es un **ejemplo de desarrollo web profesional** — sin so
 
 ---
 
-*Última actualización: 11.03.2026*
+*Última actualización: 13.03.2026*
 
 
 
