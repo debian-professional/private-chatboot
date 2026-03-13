@@ -1813,7 +1813,7 @@
         async function runCompressor() {
             if (!settings.compressorEnabled) return;
             const msgs = contextHistory.messages;
-            if (msgs.length < 4) return;
+            if (msgs.length < 2) return;
 
             // Cutoff so waehlen dass toKeep[0] immer role:'user' ist
             let cutoff = Math.floor(msgs.length * 0.5);
