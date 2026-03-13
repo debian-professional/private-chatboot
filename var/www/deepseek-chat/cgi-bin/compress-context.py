@@ -17,8 +17,6 @@
 #   deepseek    — DeepSeek API  (DEEPSEEK_API_KEY)
 #   openai      — OpenAI API    (OPENAI_API_KEY)
 #   google      — Gemini API    (GOOGLE_API_KEY)
-#   huggingface — HF Router     (HF_API_KEY)
-#   groq        — GroqCloud     (GRQ_API_KEY)
 #
 # Request-Format (POST, application/json):
 #
@@ -133,24 +131,52 @@ def send_success(summary):
 # =============================================================================
 # KONVERSATIONS-AUFBEREITUNG
 # =============================================================================
+def extract_plain_text(content):
+    """Extrahiert nur reinen Text aus content (String oder Array).
+    Filtert Base64-Daten, Bild-URLs und Datei-Inhalte heraus."""
+    if isinstance(content, str):
+        # Langer Base64-String? Ueberspringen.
+        if len(content) > 500 and ',' in content and content.count(' ') < 10:
+            return '[Bilddaten — nicht komprimiert]'
+        return content.strip()
+    elif isinstance(content, list):
+        # Multimodaler Content: nur text-Parts extrahieren
+        parts = []
+        for item in content:
+            if isinstance(item, dict):
+                if item.get('type') == 'text':
+                    parts.append(item.get('text', '').strip())
+                elif item.get('type') == 'image_url':
+                    parts.append('[Bild — nicht komprimiert]')
+                elif item.get('type') == 'image':
+                    parts.append('[Bild — nicht komprimiert]')
+                # document, audio etc. ueberspringen
+        return ' '.join(p for p in parts if p)
+    return str(content).strip()
+
+
 def build_conversation_text(messages):
-    """Wandelt das messages-Array in lesbaren Text um."""
+    """Wandelt das messages-Array in lesbaren Text um.
+    Sendet nur reinen Text — keine Base64, Bilder oder Datei-Inhalte."""
     lines = []
     for msg in messages:
         role    = msg.get('role', 'user')
         content = msg.get('content', '')
         if not content:
             continue
+        text = extract_plain_text(content)
+        if not text:
+            continue
         # Komprimierte System-Eintraege ueberspringen (wuerden rekursiv komprimiert)
-        if role == 'system' and str(content).startswith('[COMPRESSED CONTEXT]'):
-            lines.append(f"[Previously compressed context]:\n{content}")
+        if role == 'system' and text.startswith('[COMPRESSED CONTEXT]'):
+            lines.append(f"[Previously compressed context]:\n{text}")
             continue
         if role == 'system':
-            lines.append(f"[System]: {content}")
+            lines.append(f"[System]: {text}")
         elif role == 'assistant':
-            lines.append(f"[Assistant]: {content}")
+            lines.append(f"[Assistant]: {text}")
         else:
-            lines.append(f"[User]: {content}")
+            lines.append(f"[User]: {text}")
     return "\n\n".join(lines)
 
 
