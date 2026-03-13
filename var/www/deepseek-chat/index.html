@@ -57,6 +57,32 @@
             0%, 100% { opacity: 1; }
             50%       { opacity: 0.3; }
         }
+        /* Sende-Banner */
+        #sendeBanner {
+            position: fixed;
+            top: 120px; left: 0; right: 0;
+            z-index: 9998;
+            background: linear-gradient(90deg, #0056b3, #0077ff, #0056b3);
+            background-size: 200% 100%;
+            animation: kompressorSlide 1.5s linear infinite;
+            color: #fff;
+            font-size: 15px;
+            font-weight: bold;
+            text-align: center;
+            padding: 12px 20px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 3px 15px rgba(0,86,179,0.6);
+        }
+        #sendeBanner .kompressor-spinner {
+            display: inline-block;
+            width: 16px; height: 16px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
         /* Kompressor-Banner */
         #kompressorBanner {
             position: fixed;
@@ -842,6 +868,10 @@
         </div>
     </div>
     
+    <div id="sendeBanner" style="display:none;">
+        <span class="kompressor-spinner"></span>
+        <span id="sendeBannerText">Daten werden übermittelt...</span>
+    </div>
     <div id="kompressorBanner" style="display:none;">
         <span class="kompressor-spinner"></span>
         <span id="kompressorBannerText">Kontext wird komprimiert...</span>
@@ -2429,6 +2459,7 @@
             isSending = true;
             sendButton.disabled = true; sendButton.textContent = t(5);
             inputField.disabled = true;
+            const sbRegen = document.getElementById('sendeBanner'); if (sbRegen) sbRegen.style.display = 'block';
             const systemPrompt = buildSystemPrompt(userMsg.mode === 'deepthink', userMsg.hasFile);
             updateSystemPromptTokens(systemPrompt);
             const processedSystem = userMsg.hasFile ? systemPrompt : replaceGermanUmlauts(systemPrompt);
@@ -2533,7 +2564,8 @@
                 console.error(t(27), error);
             } finally {
                 isSending = false; sendButton.disabled = false; sendButton.textContent = t(205);
-                inputField.disabled = false; chat.scrollTop = chat.scrollHeight;
+                inputField.disabled = false;
+                const sb1 = document.getElementById('sendeBanner'); if (sb1) sb1.style.display = 'none'; chat.scrollTop = chat.scrollHeight;
             }
         }
 
@@ -3166,6 +3198,9 @@
             isSending = true;
             sendButton.disabled = true; sendButton.textContent = t(5);
             inputField.disabled = true;
+            const sendeBanner = document.getElementById('sendeBanner');
+            const sendeBannerText = document.getElementById('sendeBannerText');
+            if (sendeBanner) { sendeBannerText.textContent = t(48) ? 'Daten werden übermittelt...' : 'Sending...'; sendeBanner.style.display = 'block'; }
             let userMessage = message;
             if (fileTextContent) userMessage = `${t(12)}\n${encodeUmlautsForAI(fileTextContent)}\n\n${t(13)} ${message}`;
             const hasFile = !!fileTextContent;   // Audio wird direkt via API gesendet, nicht als Text
@@ -3303,6 +3338,7 @@
             } finally {
                 isSending = false; sendButton.disabled = false; sendButton.textContent = t(205);
                 inputField.disabled = false;
+                const sb1 = document.getElementById('sendeBanner'); if (sb1) sb1.style.display = 'none';
                 selectedFiles = []; fileTextContent = null; uploadedFileNames = [];
                 audioData = null; audioMimeType = null; audioChunks = [];
                 if (isRecording && mediaRecorder) { mediaRecorder.stop(); isRecording = false; }
