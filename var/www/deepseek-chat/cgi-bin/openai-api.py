@@ -1,4 +1,3 @@
----------------------------------------------------------
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
@@ -200,6 +199,8 @@ def main():
                     error_code = error_json.get('error', {}).get('code', '')
                     if error_code == 'insufficient_quota':
                         error_type = 'insufficient_quota'
+                    elif error_code == 'daily_request_limit_exceeded':
+                        error_type = 'daily_limit_exceeded'
                 except Exception:
                     pass
             if error_type:
