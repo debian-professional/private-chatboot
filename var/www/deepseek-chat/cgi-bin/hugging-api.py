@@ -1,3 +1,5 @@
+FILE: var/www/deepseek-chat/cgi-bin/hugging-api.py
+---------------------------------------------------------
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
@@ -174,10 +176,18 @@ def main():
             response = urllib.request.urlopen(req, timeout=120)
         except urllib.error.HTTPError as e:
             error_body = e.read().decode('utf-8')
-            send_error(e.code, {
-                'error': f'Hugging Face API Fehler: {e.code}',
-                'details': error_body
-            })
+            # HTTP 429: Hugging Face Free Tier Limit erreicht
+            if e.code == 429:
+                send_error(e.code, {
+                    'error': f'Hugging Face API Fehler: {e.code}',
+                    'error_type': 'daily_limit',
+                    'details': error_body
+                })
+            else:
+                send_error(e.code, {
+                    'error': f'Hugging Face API Fehler: {e.code}',
+                    'details': error_body
+                })
             return
         except urllib.error.URLError as e:
             send_error(500, {
@@ -255,6 +265,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
 

@@ -1,3 +1,4 @@
+---------------------------------------------------------
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
@@ -189,10 +190,27 @@ def main():
             response = urllib.request.urlopen(req, timeout=60)
         except urllib.error.HTTPError as e:
             error_body = e.read().decode('utf-8')
-            send_error(e.code, {
-                'error': f'Google Gemini API Fehler: {e.code}',
-                'details': error_body
-            })
+            # HTTP 429: prüfen ob Tageslimit (RESOURCE_EXHAUSTED per_day)
+            # oder nur ein temporäres RPM-Limit (wird clientseitig retried)
+            if e.code == 429:
+                daily_keywords = ['per_day', 'daily', 'RATE_LIMIT_EXCEEDED']
+                is_daily = any(kw.lower() in error_body.lower() for kw in daily_keywords)
+                if is_daily:
+                    send_error(e.code, {
+                        'error': f'Google Gemini API Fehler: {e.code}',
+                        'error_type': 'daily_limit',
+                        'details': error_body
+                    })
+                else:
+                    send_error(e.code, {
+                        'error': f'Google Gemini API Fehler: {e.code}',
+                        'details': error_body
+                    })
+            else:
+                send_error(e.code, {
+                    'error': f'Google Gemini API Fehler: {e.code}',
+                    'details': error_body
+                })
             return
         except urllib.error.URLError as e:
             send_error(500, {
@@ -269,9 +287,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-

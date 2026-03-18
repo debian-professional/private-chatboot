@@ -1,3 +1,4 @@
+---------------------------------------------------------
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
@@ -160,10 +161,18 @@ def main():
             response = urllib.request.urlopen(req, timeout=60)
         except urllib.error.HTTPError as e:
             error_body = e.read().decode('utf-8')
-            send_error(e.code, {
-                'error': f'GroqCloud API Fehler: {e.code}',
-                'details': error_body
-            })
+            # HTTP 429: GroqCloud Free Tier Limit erreicht
+            if e.code == 429:
+                send_error(e.code, {
+                    'error': f'GroqCloud API Fehler: {e.code}',
+                    'error_type': 'daily_limit',
+                    'details': error_body
+                })
+            else:
+                send_error(e.code, {
+                    'error': f'GroqCloud API Fehler: {e.code}',
+                    'details': error_body
+                })
             return
         except urllib.error.URLError as e:
             send_error(500, {
@@ -244,3 +253,29 @@ if __name__ == '__main__':
 
 
 
+
+
+
+FILE: var/www/deepseek-chat/cgi-bin/export-pdf.py
+---------------------------------------------------------
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+import json
+import sys
+import os
+from io import BytesIO
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import cm
+from reportlab.lib.colors import HexColor
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle
+from reportlab.lib.enums import TA_LEFT, TA_CENTER
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
+def send_response(status_code, data, content_type='application/json'):
+    """Sendet HTTP-Response zurück."""
+    if isinstance(data, bytes):
+        # Für Binärdaten: alles über stdout.buffer schreiben
+        headers = f"Status: {status_code}\r\n"
