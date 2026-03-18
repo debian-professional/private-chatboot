@@ -1108,5 +1108,25 @@
            - ID 254: LLM-Anbieter Beschreibung (alle 4 Sprachen)
            - ID 255: "Modellauswahl Kompression" / "Model Selection for Compression"
 
+    80. [18.03.2026] Guthaben/Tageslimit-Banner
+    - Abschnitt E.1: Neue verbindliche Regel GUTHABEN/TAGESLIMIT-BANNER hinzugefügt
+    - Zwei neue Banner implementiert:
+       * Roter Banner (#guthabenBanner): "Guthaben muss erneuert werden !" — dauerhaft
+         sichtbar mit Schliessen-Button, ausgelöst bei erschöpftem Guthaben bei
+         bezahlten Anbietern (DeepSeek HTTP 402, OpenAI HTTP 429 + insufficient_quota)
+       * Blauer Banner (#tageslimitBanner): "Tageslimit erreicht !" — dauerhaft sichtbar
+         mit Schliessen-Button, ausgelöst bei Tageslimit bei Free-Tier-Anbietern
+         (Google, GroqCloud, Hugging Face — alle HTTP 429)
+    - CGI-Scripts angepasst:
+       * deepseek-api.py: HTTP 402 → error_type: 'insufficient_quota'
+       * openai-api.py: HTTP 429 + JSON-Body insufficient_quota → error_type: 'insufficient_quota'
+       * google-api.py: HTTP 429 + Body-Analyse (per_day/daily) → error_type: 'daily_limit'
+       * groq-api.py: HTTP 429 → error_type: 'daily_limit'
+       * hugging-api.py: HTTP 429 → error_type: 'daily_limit'
+    - index.html: CSS, HTML, JS für beide Banner (showGuthabenBanner, showTageslimitBanner)
+      in sendMessage(), handleRegenerate(), applyLanguage(), initializeEventListeners()
+    - language.xml: IDs 256 ("Guthaben muss erneuert werden !") und 257
+      ("Tageslimit erreicht !") in allen 4 Sprachen (DE, EN, ES, Custom) eingetragen
+
     ============================================================================
 

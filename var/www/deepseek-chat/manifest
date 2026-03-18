@@ -398,6 +398,24 @@
            Google:  gemini-2.5-flash, gemini-2.5-pro, gemini-1.5-pro, gemini-2.0-flash
            OpenAI:  gpt-4o, gpt-4.1
          * Diese Regel gilt für alle zukünftigen LLM-Anbieter ohne Ausnahme
+
+       - GUTHABEN/TAGESLIMIT-BANNER BEI NEUEM LLM-ANBIETER (VERBINDLICH UND UNUMSTÖSSLICH):
+         * Bei Integration eines neuen LLM-Anbieters MÜSSEN die Fehlermeldungen für
+           erschöpfte Kontingente zwingend implementiert werden.
+         * BEZAHLTE Anbieter (Guthaben-basiert):
+           - Im CGI-Script: HTTP-Fehler für "Guthaben aufgebraucht" mit
+             'error_type': 'insufficient_quota' kennzeichnen
+           - Im Client: showGuthabenBanner() aufrufen → roter Banner "Guthaben muss erneuert werden !"
+           - Aktuell: DeepSeek (HTTP 402), OpenAI (HTTP 429 + insufficient_quota im JSON-Body)
+         * KOSTENLOSE Anbieter (Tageslimit-basiert):
+           - Im CGI-Script: HTTP 429 mit 'error_type': 'daily_limit' kennzeichnen
+           - Im Client: showTageslimitBanner() aufrufen → blauer Banner "Tageslimit erreicht !"
+           - Aktuell: Google Gemini, GroqCloud, Hugging Face (alle HTTP 429)
+         * In sendMessage() und handleRegenerate() den neuen Anbieter in den
+           jeweiligen if/else-Zweig (insufficient_quota oder daily_limit) eintragen
+         * language.xml: Texte für ID 256 und 257 sind bereits in allen 4 Sprachen
+           vorhanden und müssen NICHT neu angelegt werden
+         * Diese Regel gilt für alle zukünftigen LLM-Anbieter ohne Ausnahme
     
     2. CODE-QUALITÄT:
        - Kommentare für komplexe Logik
@@ -567,6 +585,9 @@
     - Log-Pfad geändert: cgi-bin/deepseek-chat.log -> logs/multi-llm-chat.log
 
 ================================================================================
+
+
+
 
 
 
