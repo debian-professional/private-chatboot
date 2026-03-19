@@ -893,9 +893,10 @@ The project includes a **`manifest` file** that documents all design decisions a
 All current language models tend to remember content at the **beginning and end** of a long context reliably, but content **in the middle** is sometimes overlooked or hallucinated. (Liu et al., 2023: "Lost in the Middle: How Language Models Use Long Contexts")
 
 **Practical impact on this project**:
-- A repository export of ~270,000 characters ≈ ~67,500 tokens.
-- DeepSeek context window: 100,000 tokens → ~67% utilization → content in the middle may be unreliable.
-- **Recommendation**: For specific tasks, upload only the relevant files individually rather than the entire repository export.
+- A repository export of ~686,000 characters ≈ ~171,500 tokens.
+- DeepSeek context window: 100,000 tokens → the full repository export **exceeds** the DeepSeek context window and cannot be loaded as a single file. The client will block the upload with a clear error message.
+- Google Gemini (1–2M token context) can handle the full export without issues.
+- **Recommendation**: When working with DeepSeek or other smaller-context models, upload only the relevant individual files rather than the entire repository export.
 
 ### GitHub Raw URL Caching
 After a `git push`, the new version is **not immediately available** via `raw.githubusercontent.com` URLs — GitHub caches these for up to 10 minutes. This is normal and cannot be circumvented. The files are correctly stored on GitHub as soon as `git push` succeeds.
