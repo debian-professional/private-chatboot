@@ -2299,7 +2299,20 @@
             return null;
         }
         
-        async function extractTextFromPDF(file) {
+        function getDynamicMaxFileChars() {
+            let modelName;
+            if (settings.apiService === 'google' || settings.apiService === 'huggingface' ||
+                settings.apiService === 'groq'   || settings.apiService === 'openai') {
+                modelName = settings.selectedModel;
+            } else {
+                modelName = (currentMode === 'deepthink') ? 'deepseek-reasoner' : 'deepseek-chat';
+            }
+            const config = MODEL_CONFIG[modelName] || MODEL_CONFIG['deepseek-chat'];
+            return Math.floor(config.maxContextTokens * 4 * 0.75);
+        }
+
+        async function extractTextFromPDF(file, maxChars) {
+            const effectiveMax = maxChars || MAX_FILE_CONTENT_LENGTH;
             return new Promise(async (resolve, reject) => {
                 let timeoutId;
                 try {
@@ -2316,12 +2329,12 @@
                     timeoutId = setTimeout(() => {
                         reject(new Error(t(4)));
                     }, PDF_EXTRACTION_TIMEOUT);
-                    for (let i = 1; i <= totalPages && fullText.length < MAX_FILE_CONTENT_LENGTH; i++) {
+                    for (let i = 1; i <= totalPages && fullText.length < effectiveMax; i++) {
                         const page = await pdf.getPage(i);
                         const textContent = await page.getTextContent();
                         const pageText = textContent.items.map(item => item.str).join(' ') + '\n\n';
-                        if (fullText.length + pageText.length > MAX_FILE_CONTENT_LENGTH) {
-                            const remainingChars = MAX_FILE_CONTENT_LENGTH - fullText.length;
+                        if (fullText.length + pageText.length > effectiveMax) {
+                            const remainingChars = effectiveMax - fullText.length;
                             if (remainingChars > 0) fullText += pageText.substring(0, remainingChars);
                             break;
                         } else {
@@ -3784,8 +3797,9 @@
                 }
                 try {
                     let text = '';
+                    const dynMax = getDynamicMaxFileChars();
                     if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-                        text = await extractTextFromPDF(file);
+                        text = await extractTextFromPDF(file, dynMax);
                         infoLines.push(tf(35, file.name, text.length));
                     } else if (file.type.startsWith('text/') || file.name.toLowerCase().endsWith('.txt')) {
                         text = await new Promise((resolve, reject) => {
@@ -3794,7 +3808,7 @@
                             reader.onerror = reject;
                             reader.readAsText(file);
                         });
-                        // Kontextfenster-Prüfung VOR der Kürzung auf MAX_FILE_CONTENT_LENGTH
+                        // Kontextfenster-Prüfung VOR der Kürzung
                         const estimatedFileTokens = Math.ceil(text.length * 0.25);
                         let modelNameCtx;
                         if (settings.apiService === 'google' || settings.apiService === 'huggingface' ||
@@ -3809,7 +3823,7 @@
                             fileUpload.value = '';
                             return;
                         }
-                        if (text.length > MAX_FILE_CONTENT_LENGTH) text = text.substring(0, MAX_FILE_CONTENT_LENGTH);
+                        if (text.length > dynMax) text = text.substring(0, dynMax);
                         infoLines.push(tf(36, file.name, text.length));
                     } else {
                         infoLines.push(tf(34, file.name, (file.size / 1024).toFixed(2)));
@@ -4055,7 +4069,7 @@
                 const overlay = document.getElementById('pasteOverlay');
                 const text = overlay._pendingText;
                 if (text) {
-                    fileTextContent = text.length > MAX_FILE_CONTENT_LENGTH ? text.substring(0, MAX_FILE_CONTENT_LENGTH) : text;
+                    fileTextContent = text.length > getDynamicMaxFileChars() ? text.substring(0, getDynamicMaxFileChars()) : text;
                     uploadedFileNames = ['clipboard.txt'];
                     fileInfo.innerHTML = `${t(236)} (${fileTextContent.length} ${t(237)}) <button id="removeFile">${t(222)}</button>`;
                     fileInfo.classList.add('visible');
