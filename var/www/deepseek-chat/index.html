@@ -1,3 +1,4 @@
+---------------------------------------------------------
 <!DOCTYPE html>
 <html>
 <head>
@@ -982,6 +983,7 @@
                 <div class="dropdown-item" id="exportMarkdownBtn">Download as Markdown</div>
                 <div class="dropdown-item" id="exportTxtBtn">Download as TXT</div>
                 <div class="dropdown-item" id="exportRtfBtn">Download as RTF</div>
+                <div class="dropdown-item" id="exportClipboardBtn">Copy to clipboard</div>
                 <div class="dropdown-item" id="loadSessionBtn">Load chat history</div>
             </div>
         </div>
@@ -1711,6 +1713,7 @@
             document.getElementById('exportMarkdownBtn').textContent = t(209);
             document.getElementById('exportTxtBtn').textContent = t(210);
             document.getElementById('exportRtfBtn').textContent = t(211);
+            document.getElementById('exportClipboardBtn').textContent = t(258);
             document.getElementById('loadSessionBtn').textContent = t(212);
             settingsButton.textContent = t(213);
             logButton.textContent = t(214);
@@ -2081,15 +2084,12 @@
 
             if (pct >= 95 && !compressorTriggered[95]) {
                 compressorTriggered[95] = true;
-                lastTriggeredThreshold = 95;
                 await runCompressor();
             } else if (pct >= 85 && !compressorTriggered[85]) {
                 compressorTriggered[85] = true;
-                lastTriggeredThreshold = 85;
                 await runCompressor();
             } else if (pct >= 70 && !compressorTriggered[70]) {
                 compressorTriggered[70] = true;
-                lastTriggeredThreshold = 70;
                 await runCompressor();
             }
         }
@@ -2374,6 +2374,50 @@
                 const blob = await response.blob();
                 triggerDownload(blob, `deepseek-chat-${currentSessionId || 'export'}.txt`);
             } catch (error) { alert(tf(20, error.message)); }
+        }
+
+        function exportClipboard() {
+            try {
+                const now = new Date();
+                const timestamp = now.toISOString();
+                const dateStr = timestamp.slice(0, 10);
+                const timeStr = timestamp.slice(11, 19);
+                const lines = [];
+                lines.push('='.repeat(60));
+                lines.push('MULTI-LLM CHAT - EXPORT');
+                lines.push('='.repeat(60));
+                lines.push('Server: ' + SERVER_NAME);
+                lines.push('IP:     ' + getServerIP());
+                lines.push('Datum:  ' + dateStr + '  Uhrzeit: ' + timeStr);
+                lines.push('Anzahl Nachrichten: ' + contextHistory.messages.length);
+                lines.push('='.repeat(60));
+                lines.push('');
+                contextHistory.messages.forEach(function(msg) {
+                    const role = msg.role || 'unknown';
+                    const content = msg.content || '';
+                    const msgTime = (msg.timestamp || '').slice(0, 19).replace('T', ' ');
+                    if (role === 'user') {
+                        lines.push('USER [' + msgTime + ']:');
+                    } else {
+                        lines.push('AI [' + msgTime + ']:');
+                    }
+                    lines.push('-'.repeat(40));
+                    lines.push(content);
+                    lines.push('');
+                    lines.push('='.repeat(60));
+                    lines.push('');
+                });
+                const text = lines.join('\n');
+                navigator.clipboard.writeText(text).then(function() {
+                    // Kurze Bestätigung im Export-Button
+                    const btn = document.getElementById('exportButton');
+                    const orig = btn.innerHTML;
+                    btn.innerHTML = t(14) + ' <span class="dropdown-arrow">&#9660;</span>';
+                    setTimeout(function() { btn.innerHTML = orig; }, 2000);
+                }).catch(function(err) {
+                    alert(tf(25, err.message));
+                });
+            } catch (error) { alert(tf(25, error.message)); }
         }
         
         async function exportRtf() {
@@ -2724,32 +2768,6 @@
             const msgIndex = contextHistory.messages.findIndex(m => m.id === msgId);
             if (msgIndex !== -1) contextHistory.messages = contextHistory.messages.slice(0, msgIndex);
             updateContextEstimation();
-
-            // Kompressor-Zusammenfassung verwerfen wenn Kontext unter den zuletzt
-            // ausgelösten Schwellwert gefallen ist (Option B: präzise Verwerfung)
-            if (lastTriggeredThreshold !== null) {
-                let modelName;
-                if (settings.apiService === 'google' || settings.apiService === 'huggingface' ||
-                    settings.apiService === 'groq'   || settings.apiService === 'openai') {
-                    modelName = settings.selectedModel;
-                } else {
-                    modelName = (currentMode === 'deepthink') ? 'deepseek-reasoner' : 'deepseek-chat';
-                }
-                const config = MODEL_CONFIG[modelName] || MODEL_CONFIG['deepseek-chat'];
-                const pct = Math.min(100, Math.round(
-                    (contextHistory.totalEstimatedTokens / config.maxContextTokens) * 100
-                ));
-                if (pct < lastTriggeredThreshold) {
-                    // Zusammenfassung aus contextHistory entfernen
-                    contextHistory.messages = contextHistory.messages.filter(m => !m.compressed);
-                    // Schwellwert-Tracking zurücksetzen
-                    lastTriggeredThreshold = null;
-                    compressorTriggered = { 70: false, 85: false, 95: false };
-                    // Kontext neu berechnen
-                    updateContextEstimation();
-                }
-            }
-
             const container = document.querySelector(`[data-msg-id="${msgId}"]`);
             if (container) {
                 const elementsToRemove = [];
@@ -2791,8 +2809,6 @@
         let currentMode = 'chat';
         // Kompressor: Schwellwert-Tracking (reset nach jeder Kompression)
         let compressorTriggered = { 70: false, 85: false, 95: false };
-        // Zuletzt ausgelöster Schwellwert (für Zusammenfassungs-Verwerfung beim Löschen)
-        let lastTriggeredThreshold = null;
 
         const sendButton = document.getElementById('sendButton');
         const settingsButton = document.getElementById('settingsButton');
@@ -3837,6 +3853,7 @@
             addEventListenerWithCleanup(exportMarkdownBtn, 'click', () => { exportMenu.classList.remove('show'); exportMarkdown(); });
             addEventListenerWithCleanup(exportTxtBtn, 'click', () => { exportMenu.classList.remove('show'); exportTxt(); });
             addEventListenerWithCleanup(exportRtfBtn, 'click', () => { exportMenu.classList.remove('show'); exportRtf(); });
+            addEventListenerWithCleanup(document.getElementById('exportClipboardBtn'), 'click', () => { exportMenu.classList.remove('show'); exportClipboard(); });
             addEventListenerWithCleanup(loadSessionBtn, 'click', async () => {
                 exportMenu.classList.remove('show');
                 await loadSessionsList();

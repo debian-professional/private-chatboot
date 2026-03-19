@@ -1,3 +1,4 @@
+---------------------------------------------------------
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 ==============================================================================
@@ -137,6 +138,7 @@ Adding a new language:
     <text id="255">Model Selection for Compression</text>
     <text id="256">Credit must be renewed !</text>
     <text id="257">Daily limit reached !</text>
+    <text id="258">Copy to clipboard</text>
 
     <text id="241">Hugging Face</text>
     <text id="242">HF Plan</text>
@@ -314,6 +316,7 @@ Adding a new language:
     <text id="255">Modellauswahl Kompression</text>
     <text id="256">Guthaben muss erneuert werden !</text>
     <text id="257">Tageslimit erreicht !</text>
+    <text id="258">In Zwischenablage kopieren</text>
 
     <text id="241">Hugging Face</text>
     <text id="242">HF-Plan</text>
@@ -489,6 +492,7 @@ Adding a new language:
     <text id="255">Selección de Modelo para Compresión</text>
     <text id="256">¡El crédito debe renovarse !</text>
     <text id="257">¡Límite diario alcanzado !</text>
+    <text id="258">Copiar al portapapeles</text>
 
     <text id="241">Hugging Face</text>
     <text id="242">Plan HF</text>
@@ -657,6 +661,7 @@ Adding a new language:
     <text id="255">Model Selection for Compression</text>
     <text id="256">Credit must be renewed !</text>
     <text id="257">Daily limit reached !</text>
+    <text id="258">Copy to clipboard</text>
 
     <text id="241">Hugging Face</text>
     <text id="242">HF Plan</text>
@@ -713,3 +718,6 @@ Adding a new language:
   </language>
 
 </languages>
+
+
+
