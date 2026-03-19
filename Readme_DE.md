@@ -9,10 +9,12 @@ Wichtigste Highlights:
 - **Einzigartiges Kontextmanagement** – Einzelne Nachrichten zusammen mit allen nachfolgenden löschen. Der Chat bleibt konsistent, die Token-Nutzung wird dynamisch aktualisiert.
 - **Maximale Sicherheit** – Der API-Key ist clientseitig nie sichtbar, Uploads werden via Magic-Byte-Prüfung gegen ausführbare Dateien geschützt, Sessions werden mit restriktiven Dateiberechtigungen gespeichert.
 - **Keine exotischen Frameworks** – Alles basiert auf Apache, Python, Bash und reinem HTML/JS.
-- **Professionelle Exportfunktionen** – PDF, Markdown, TXT, RTF für den gesamten Chat oder einzelne Nachrichten.
+- **Professionelle Exportfunktionen** – PDF, Markdown, TXT, RTF für den gesamten Chat oder einzelne Nachrichten, plus direktes Kopieren in die Zwischenablage.
 - **Mehrsprachige Unterstützung** – Vollständige UI-Übersetzung via externer `language.xml` (Englisch, Deutsch, Spanisch, erweiterbar).
 - **Audio-Aufnahme** – Integrierter Mikrofon-Button (MediaRecorder API) für direkte Spracheingabe. Automatisch sichtbar nur wenn ein audio-fähiges Modell aktiv ist (alle Gemini-Modelle, OpenAI gpt-4o und gpt-4.1). Audio wird als base64 WebM/MP4 übertragen — keine Transkription, das Modell verarbeitet Sprache direkt.
-- **Kompressor (Kontext-Komprimierung)** – Automatische intelligente Komprimierung des Chat-Verlaufs, wenn das Kontextfenster sich füllt. Ein zweites LLM fasst die ältesten 50% der Nachrichten zusammen und injiziert die Zusammenfassung in den System-Prompt — das Gespräch kann unbegrenzt fortgeführt werden, ohne den roten Faden zu verlieren. Konfigurierbare Schwellwerte (70%/85%/95%), animierter Banner als visuelle Rückmeldung, Ergebnisdateien werden auf dem Datenträger gespeichert.
+- **Kompressor (Kontext-Komprimierung)** – Automatische intelligente Komprimierung des Chat-Verlaufs, wenn das Kontextfenster sich füllt. Ein zweites LLM fasst die ältesten 50% der Nachrichten zusammen und injiziert die Zusammenfassung in den System-Prompt — das Gespräch kann unbegrenzt fortgeführt werden, ohne den roten Faden zu verlieren. Konfigurierbare Schwellwerte (70%/85%/95%), animierter Banner als visuelle Rückmeldung, Ergebnisdateien werden auf dem Datenträger gespeichert. Die Zusammenfassung wird automatisch verworfen, wenn der Kontext nach manuellem Löschen von Nachrichten unter den zuletzt ausgelösten Schwellwert fällt.
+- **Guthaben- und Tageslimit-Banner** – Dauerhafte visuelle Banner bei erschöpftem Guthaben (rot, bezahlte Anbieter) und Tageslimits (blau, Free-Tier-Anbieter), jeweils mit Schliessen-Button.
+- **Kontextfenster-Überschreitung** – Wenn die maximale Kontextgrösse erreicht wird, erscheint direkt im Chat eine interaktive Box mit zwei Optionen: Neuen Chat mit aktuellem Kontext starten (Option C: letzte Komprimierungszusammenfassung + nachfolgende Nachrichten), oder sauberen neuen Chat starten. Die aktuelle Session wird in beiden Fällen automatisch gespeichert.
 - **Zwischenablage-Integration** – Ctrl+V-Handler mit Dialog für Text, Bilder und Schutz gegen versehentliches Einfügen von Dateipfaden.
 - **Streaming-Antworten** – KI-Antworten erscheinen Token für Token, genau wie bei ChatGPT oder Claude.
 - **429-Rate-Limit-Handling** – Automatischer Wiederholungsversuch mit Countdown-Anzeige für Google Gemini Free Tier Limits.
@@ -42,6 +44,8 @@ Wichtigste Highlights:
   - [Datei-Card-Anzeige](#datei-card-anzeige)
   - [Audio-Aufnahme](#audio-aufnahme)
   - [Kompressor — Intelligente Kontext-Komprimierung](#kompressor--intelligente-kontext-komprimierung)
+  - [Guthaben- und Tageslimit-Banner](#guthaben--und-tageslimit-banner)
+  - [Kontextfenster-Überschreitung](#kontextfenster-überschreitung)
 - [Das Hilfsskript `repo2text.sh`](#das-hilfsskript-repo2textsh)
 - [Sicherheitsarchitektur im Detail](#sicherheitsarchitektur-im-detail)
 - [Deployment & Verwendung](#deployment--verwendung)
@@ -62,7 +66,7 @@ Wichtigste Highlights:
 
 Multi-LLM Chat Client ist eine **lokale Webanwendung**, die über verschiedene APIs kommuniziert. Entwickelt für eine private Serverumgebung (Debian), läuft sie auf jedem System mit Apache und Python 3. Ziel war ein **sicherer, erweiterbarer und benutzerfreundlicher** Chat-Client ohne Cloud-Abhängigkeiten und mit voller Datenkontrolle.
 
-Das Projekt ist über mehrere Wochen aktiver Entwicklung kontinuierlich gewachsen und hat Features wie Streaming, Session-Management, Exportfunktionen, Mehrsprachigkeit, Zwischenablage-Integration und robuste Sicherheitsmassnahmen hinzugewonnen — ohne jemals externe JavaScript-Frameworks einzuführen.
+Das Projekt ist über mehrere Wochen aktiver Entwicklung kontinuierlich gewachsen und hat Features wie Streaming, Session-Management, Exportfunktionen, Mehrsprachigkeit, Zwischenablage-Integration, intelligente Kontext-Komprimierung und robuste Sicherheitsmassnahmen hinzugewonnen — ohne jemals externe JavaScript-Frameworks einzuführen.
 
 ---
 
@@ -95,7 +99,8 @@ Die Architektur ist bewusst einfach, aber durchdacht:
 
 ### 3. Datenspeicherung
 - **Sessions** werden als JSON-Dateien in `/var/www/deepseek-chat/sessions/` mit `chmod 700` gespeichert.
-- **Logs** werden nach `/var/www/deepseek-chat/cgi-bin/deepseek-chat.log` geschrieben (ohne API-Key oder Session-Inhalte).
+- **Logs** werden nach `/var/www/deepseek-chat/logs/multi-llm-chat.log` geschrieben (ohne API-Key oder Session-Inhalte).
+- **Kompressor-Ergebnisse** werden nach `/var/www/deepseek-chat/kompressor/` geschrieben — eine Datei pro Komprimierungsrunde.
 - **Einstellungen** verbleiben lokal im Browser (`localStorage`) mit Versionskontrolle.
 - **Sprachdaten** werden beim Seitenaufruf aus `language.xml` via `fetch()` geladen.
 
@@ -113,6 +118,7 @@ Eines der herausragenden Features ist die Möglichkeit, **einzelne Nachrichten z
 - Jede Nachricht (Benutzer & KI) erhält eine eindeutige `id` (Format: `msg_N`) und wird in einem Array `contextHistory.messages` gespeichert.
 - Die Funktion `deleteMessage(msgId)` ermittelt den Index der Nachricht, kürzt das Array ab `index` und entfernt alle folgenden Elemente aus dem DOM (inklusive Trennlinien).
 - Die Token-Schätzung (`updateContextEstimation()`) wird sofort neu berechnet, ebenso die prozentuale Kontextauslastung im Header.
+- Wenn der Kontext nach dem Löschen unter den zuletzt ausgelösten Kompressor-Schwellwert fällt, wird die Komprimierungszusammenfassung automatisch verworfen und das Schwellwert-Tracking zurückgesetzt.
 - Die geänderte Session wird anschliessend automatisch gespeichert (`saveSession()`).
 
 **Warum ist das einzigartig?**
@@ -140,14 +146,14 @@ Viele Chat-Clients erlauben nur das Löschen der letzten Nachricht oder gar kein
 
 KI-Antworten werden **Token für Token** via Server-Sent Events (SSE) empfangen und angezeigt:
 
-- `deepseek-api.py` sendet Anfragen an DeepSeek mit `stream: True` und leitet den Event-Stream direkt weiter.
+- Alle fünf CGI-Proxy-Skripte senden Anfragen an ihre jeweiligen APIs mit `stream: True` und leiten den Event-Stream direkt weiter.
 - `index.html` liest den Stream via `ReadableStream`-API und `TextDecoder`.
 - Jedes empfangene Token wird dem Nachrichten-Element in Echtzeit hinzugefügt.
 - Der psychologische Effekt ist erheblich: die ersten Token erscheinen innerhalb von ~0,3 Sekunden statt 8+ Sekunden auf eine vollständige Antwort zu warten.
 - Sowohl `sendMessage()` als auch `handleRegenerate()` verwenden identische Streaming-Logik.
 - Auto-Scroll bleibt während des Streamings aktiv.
 
-**Technische Header** von `deepseek-api.py` für korrektes Streaming:
+**Technische Header** aller CGI-Proxy-Skripte für korrektes Streaming:
 ```
 Content-Type: text/event-stream
 X-Accel-Buffering: no
@@ -192,7 +198,6 @@ Der Client unterstützt Hugging Face Inference Providers als dritten KI-Anbieter
 - Das Modell-Dropdown aktualisiert sich automatisch basierend auf dem gewählten Tier.
 - Der DeepThink-Button und -Indikator werden ausgeblendet, wenn Hugging Face aktiv ist.
 
-
 ### GroqCloud-Integration
 
 Der Client unterstützt GroqCloud als vierten KI-Anbieter via `groq-api.py`:
@@ -202,7 +207,6 @@ Der Client unterstützt GroqCloud als vierten KI-Anbieter via `groq-api.py`:
 - **API-Key**: `GRQ_API_KEY` in `/etc/apache2/envvars`.
 - **Hinweis**: Ein `User-Agent`-Header ist erforderlich, um Cloudflare-Schutz zu umgehen (ohne ihn: Fehlercode 1010).
 - **Free & Paid Tier**: `llama-3.3-70b-versatile`, `llama-3.1-8b-instant`, `meta-llama/llama-4-scout-17b-16e-instruct`, `qwen/qwen3-32b`. Nur Paid: `moonshotai/kimi-k2-instruct-0905`.
-- **Hinweis (13.03.2026):** `mixtral-8x7b-32768` und `gemma2-9b-it` wurden von GroqCloud abgeschaltet.
 - Das Modell-Dropdown aktualisiert sich automatisch basierend auf dem gewählten Tier.
 - Der DeepThink-Button und -Indikator werden ausgeblendet, wenn GroqCloud aktiv ist.
 - Alle Modelle laufen auf GroqClouds LPU-Hardware (Language Processing Unit) für sehr geringe Latenz.
@@ -217,7 +221,7 @@ Ein dediziertes **LLM-Einstellungs**-Panel (getrennt vom Haupt-Einstellungs-Pane
 - **Google-Optionen**: Free / Paid Auswahl mit automatischer Modelllistenaktualisierung.
 - **Hugging Face-Optionen**: Free / Paid Auswahl mit automatischer Modelllistenaktualisierung.
 - **GroqCloud-Optionen**: Free / Paid Auswahl mit automatischer Modelllistenaktualisierung.
-- **Kompressor-Optionen**: Aktivierungs-Toggle, Auswahl des Komprimierungs-Anbieters (DeepSeek / OpenAI / Google — nur bezahlt), Auswahl des Komprimierungs-Modells. Standard: aktiviert, DeepSeek / `deepseek-chat`.
+- **Kompressor-Optionen**: Aktivierungs-Toggle, Auswahl des Komprimierungs-Anbieters (nur bezahlte Anbieter), Auswahl des Komprimierungs-Modells. Standard: aktiviert, DeepSeek / `deepseek-chat`.
 - **Modell-Dropdown**: Immer sichtbar, Inhalt aktualisiert sich automatisch basierend auf Anbieter und Plan.
 - Alle Einstellungen werden in `localStorage` gespeichert und bleiben nach dem Seitenreload erhalten.
 
@@ -227,7 +231,7 @@ Das Google Gemini Free Tier erzwingt strenge Rate Limits (5 RPM, 20 RPD). Der Cl
 
 - Bei einer 429-Antwort wiederholt der Client automatisch bis zu **3 Mal** mit **15-Sekunden-Intervallen**.
 - Während der Wartezeit wird ein Countdown direkt im Chat angezeigt: *„Rate limit erreicht – warte 15 Sekunden und versuche erneut... (Versuch 1/3)"*
-- Nach 3 fehlgeschlagenen Versuchen wird eine abschliessende Fehlermeldung angezeigt.
+- Nach 3 fehlgeschlagenen Versuchen wird die Tageslimit-Prüfung ausgelöst und bei Bedarf der blaue Tageslimit-Banner angezeigt.
 - Ausführliche Fehlerdetails werden zur Diagnose ins Server-Log geschrieben.
 - Die Wiederholungslogik unterscheidet zwischen temporären RPM-Limits (wiederholbar) und erschöpftem Tageskontingent (nicht wiederholbar).
 
@@ -252,12 +256,12 @@ Ein ausgefeilter Zwischenablage-Handler fängt Einfüge-Ereignisse ab und reagie
 - Verarbeitbare Formate (Inhaltsextraktion): `.txt`, `.pdf`
 - Andere akzeptierte Formate: als binärer Kontext angehängt (ohne Textextraktion)
 - Maximale Dateigrösse: **10 MB**
-- Maximaler extrahierter Inhalt: **250.000 Zeichen** (ausreichend für grosse Textdateien und Repository-Exporte)
+- Maximaler extrahierter Inhalt: **250.000 Zeichen**
 
 **Magic-Byte-Prüfung** (erste 20 Bytes) erkennt und blockiert ausführbare Dateien unabhängig von der Dateinamenserweiterung:
 
-| Platform | Format | Signature |
-|----------|--------|-----------|
+| Plattform | Format | Signatur |
+|-----------|--------|----------|
 | Windows 32/64 bit | PE/MZ Executable | `4D 5A` |
 | Linux 32 bit | ELF32 | `7F 45 4C 46 01` |
 | Linux 64 bit | ELF64 | `7F 45 4C 46 02` |
@@ -268,7 +272,7 @@ Ein ausgefeilter Zwischenablage-Handler fängt Einfüge-Ereignisse ab und reagie
 | macOS Universal | Fat Binary | `CA FE BA BE` |
 | macOS/iOS ARM 32 | Big Endian | `FE ED FA CE` |
 | macOS/iOS ARM 64 | Big Endian | `FE ED FA CF` |
-| Linux/macOS | Shell Script | `23 21` (#!) |
+| Linux/macOS | Shell-Skript | `23 21` (#!) |
 | Python | Bytecode (.pyc) | `55 0D 0D 0A` |
 
 **PDF-Extraktion**: Verwendet PDF.js 3.11.174 von CDN mit automatischem Fallback auf einen sekundären CDN. Fortschritt wird seitenweise angezeigt. Extraktions-Timeout: 30 Sekunden.
@@ -283,7 +287,7 @@ Eine einzigartige Lösung für ein grundlegendes Problem mit der DeepSeek API un
 
 **Lösung**: Vor dem Senden von Dateiinhalten an DeepSeek werden Umlaute durch eindeutige Platzhalter ersetzt. DeepSeek gibt diese Platzhalter unverändert zurück. JavaScript ersetzt sie anschliessend nach Empfang der Antwort wieder durch echte Umlaute.
 
-| Original | Placeholder |
+| Original | Platzhalter |
 |----------|-------------|
 | `ä` | `[[AE]]` |
 | `ö` | `[[OE]]` |
@@ -319,7 +323,7 @@ Beim Start fragt der Client `/cgi-bin/deepseek-models.py` ab, das seinerseits de
   const MODEL_CAPABILITIES = {
       'deepseek-chat':     { images: false, text: true },
       'deepseek-reasoner': { images: false, text: true },
-      'deepseek-v4':       { images: true,  text: true },  // ready for future models
+      'deepseek-v4':       { images: true,  text: true },  // bereit für zukünftige Modelle
       'default':           { images: false, text: true },
   };
   ```
@@ -361,7 +365,7 @@ Die UI unterstützt mehrere Sprachen, die aus einer externen `language.xml`-Date
 Alle Einstellungen verwenden **Toggle-Schalter** (Links-nach-Rechts-Schieberegler), niemals Radio-Buttons oder Checkboxen:
 
 | Gruppe | Einstellung | Toggle-Farbe |
-|-------|---------|-------------|
+|--------|-------------|-------------|
 | Sprache | EN / DE / ES / Custom | Grün (persönliche Präferenz) |
 | Anredeform | Formell / Informell | Grün (persönliche Präferenz) |
 | Standardmodus | Normal Chat / DeepThink | Blau (technischer Modus) |
@@ -374,7 +378,7 @@ Alle Einstellungen verwenden **Toggle-Schalter** (Links-nach-Rechts-Schieberegle
 
 **Datenschutz-Toggle**: Setzt den Header `X-No-Training: true` in API-Anfragen (unterstützt durch DeepSeeks Opt-out-Mechanismus).
 
-**Einstellungs-Persistenz**: Alle Einstellungen werden in `localStorage` unter dem Key `deepseekSettings` gespeichert. Aktuelle `SETTINGS_VERSION: 1.3`. Die Funktion `migrateSettings()` gewährleistet Rückwärtskompatibilität mit älteren Einstellungen (z.B. wird der entfernte „search"-Modus automatisch auf „chat" migriert).
+**Einstellungs-Persistenz**: Alle Einstellungen werden in `localStorage` unter dem Key `deepseekSettings` gespeichert. Aktuelle `SETTINGS_VERSION: 1.7`. Die Funktion `migrateSettings()` gewährleistet Rückwärtskompatibilität mit älteren Einstellungen.
 
 ### Session-Management
 
@@ -402,6 +406,7 @@ Jedes Gespräch wird automatisch als benannte Session verwaltet:
 | Markdown | Serverseitig | Identische Struktur wie PDF, mit Markdown-Ankern |
 | TXT | Serverseitig | Reiner Text mit Trennzeichen |
 | RTF | Serverseitig | RTF-Format, Umlaute als RTF-Codes (keine externe Bibliothek) |
+| **In Zwischenablage kopieren** | **Clientseitig (kein Server-Roundtrip)** | **Reiner Text, identisches Format wie TXT-Export** |
 
 **Nachrichtenweiser Export** (Hover-Button auf jeder Nachricht):
 
@@ -419,6 +424,8 @@ Jedes Gespräch wird automatisch als benannte Session verwaltet:
 - Vollständige Chat-Historie mit Zeitstempeln und Modus-Indikatoren
 - Farbkodierung nach Nachrichtenrolle und Modus
 
+**In Zwischenablage kopieren**: Der gesamte Chat wird clientseitig als reiner Text zusammengestellt und direkt via `navigator.clipboard.writeText()` in die Systemzwischenablage geschrieben. Eine kurze „Kopiert!"-Bestätigung erscheint für 2 Sekunden im Export-Button.
+
 **PDF-technischer Hinweis**: Binäre PDF-Daten werden ausschliesslich via `sys.stdout.buffer` mit als Bytes kodierten HTTP-Headern geschrieben — vermeidet den „Bad header"-Fehler bei Mischung von `print()` (Textmodus) mit Binärausgabe.
 
 ### Feedback-Buttons & Logging
@@ -426,14 +433,14 @@ Jedes Gespräch wird automatisch als benannte Session verwaltet:
 Vier Buttons erscheinen beim Hover für jede KI-Antwort (links unten):
 
 - **Kopieren** — Kopiert Nachrichtentext in die Zwischenablage; zeigt „Kopiert!" für 2 Sekunden, dann zurücksetzen.
-- **Like** — Markiert die Antwort positiv (blau hervorgehoben); sendet einen LIKE-Eintrag ins Server-Log. Nochmaliger Klick entfernt den Like.
-- **Dislike** — Markiert die Antwort negativ (rot hervorgehoben); sendet einen DISLIKE-Eintrag. Like und Dislike sind gegenseitig exklusiv.
+- **Gefällt mir** — Markiert die Antwort positiv (blau hervorgehoben); sendet einen LIKE-Eintrag ins Server-Log. Nochmaliger Klick entfernt den Like.
+- **Gefällt mir nicht** — Markiert die Antwort negativ (rot hervorgehoben); sendet einen DISLIKE-Eintrag. Gefällt mir und Gefällt mir nicht sind gegenseitig exklusiv.
 - **Regenerieren** — Entfernt die aktuelle KI-Antwort aus Kontext und DOM, ruft dann die API erneut mit derselben Benutzernachricht und vollständiger vorheriger Historie auf.
 
-**Serverseitiges Log-Format** (`deepseek-chat.log`):
+**Serverseitiges Log-Format** (`multi-llm-chat.log`):
 ```
-2026-02-17 17:30:00 | 192.168.1.x | FEEDBACK | LIKE | msg_5 | "First 60 chars of message..."
-2026-02-17 17:30:00 | 192.168.1.x | POST | /cgi-bin/deepseek-api.py | 200
+2026-02-17 17:30:00 | IP: 192.168.1.x | POST /cgi-bin/deepseek-api.py | Status: 200
+2026-02-17 17:30:00 | IP: 192.168.1.x | FEEDBACK | LIKE | msg_5 | "Erste 60 Zeichen der Nachricht..."
 ```
 **Nie geloggt**: API-Keys, Session-Inhalte oder Nachrichtentext über die 60-Zeichen-Feedback-Vorschau hinaus.
 
@@ -442,14 +449,14 @@ Vier Buttons erscheinen beim Hover für jede KI-Antwort (links unten):
 Der Server-Header zeigt vier Informationszeilen:
 1. Servername (in Blau, `#4dabf7`)
 2. `IP: xxx.xxx.xxx.xxx`
-3. `Context: XX% (modellname)`
-4. `Model: deepseek-chat, deepseek-reasoner`
+3. `Kontext: XX% (modellname)`
+4. `Modell: deepseek-chat, deepseek-reasoner`
 
 **Berechnung der Kontextauslastung**:
 - Geschätzte Token = Gesamtzeichen in aktuellen Nachrichten × `TOKENS_PER_CHAR` (0,25)
 - Nur die letzten N Nachrichten werden gezählt (N = `maxContextMessages` aus `MODEL_CONFIG`)
 - System-Prompt-Token werden separat hinzugefügt
-- Percentage = estimated tokens / `maxContextTokens` × 100
+- Prozentwert = geschätzte Token / `maxContextTokens` × 100
 
 **Warnsystem**: Ab 90% wird die Kontextzeile rot und blinkt (CSS-Animation, Deckkraft 0 → 1, 1-Sekunden-Zyklus) — eine gut sichtbare Warnung, dass das Kontextfenster fast voll ist.
 
@@ -462,7 +469,7 @@ Wenn eine Datei hochgeladen oder Zwischenablagentext angehängt wird, zeigt die 
 ```
 ┌─────────────────────────────────────┐
 │  [PDF]  │  filename.pdf             │
-│  icon   │  PDF Document             │
+│  Icon   │  PDF-Dokument             │
 └─────────────────────────────────────┘
 ```
 
@@ -492,22 +499,12 @@ Der Client verfügt über einen integrierten **Mikrofon-Aufnahme-Button**, der d
   - **OpenAI**: `gpt-4o`, `gpt-4.1`
 - **Aufnahme-Ablauf**: `getUserMedia()` → `MediaRecorder`-API → stückweise Aufnahme → `Blob` beim Stopp zusammengesetzt → base64-kodiert.
 - **MIME-Typ**: `audio/webm` (Chrome/Firefox) oder `audio/mp4` (Safari) — zur Laufzeit automatisch erkannt.
-- **Nach der Aufnahme**: Die Audio-Daten werden im `fileInfo`-Feld mit einer AUDIO-Badge-Card angezeigt. Das Label stammt aus `language.xml` (`t(250)` — „Audioaufnahme" in allen vier Sprachen).
+- **Nach der Aufnahme**: Die Audio-Daten werden im `fileInfo`-Feld mit einer AUDIO-Badge-Card angezeigt.
 - **Senden**: `audio_data` (base64-String) und `audio_mime_type` werden im JSON-Anfragekörper neben der Textnachricht übermittelt. Das `hasFile`-Flag wird für Audio **nicht** gesetzt — kein Dateiverarbeitungs-System-Prompt wird injiziert.
 - **Gegenseitige Exklusivität**: Datei-Upload und Audio-Aufnahme sind gegenseitig exklusiv. Eine Aufnahme starten löscht ausstehende Dateianhänge und umgekehrt.
 - **Backend — Google (`google-api.py`)**: Audio wird als `inline_data`-Block im nativen Gemini-Format an die letzte Benutzernachricht angehängt. Das Modell empfängt und verarbeitet das Audio direkt.
 - **Backend — OpenAI (`openai-api.py`)**: Audio wird als `input_audio`-Block im OpenAI-Format (`format: webm` oder `mp4`) an die letzte Benutzernachricht angehängt.
 - **Wartungsregel** (im Manifest dokumentiert): Sobald ein integrierter LLM-Anbieter Audio-Unterstützung für ein Modell hinzufügt oder entfernt, **muss** `AUDIO_CAPABLE_MODELS` in `index.html` sofort aktualisiert werden.
-
-**Hinzugefügte Sprach-IDs** (alle vier Sprachen):
-
-| ID | Inhalt |
-|----|---------|
-| 247 | Audio aufnehmen / Record Audio / Grabar audio |
-| 248 | Stop |
-| 249 | Audio aufgenommen / Audio recorded / Audio grabado |
-| 250 | Audioaufnahme / Audio recording / Grabación de audio |
-
 
 ### Kompressor — Intelligente Kontext-Komprimierung
 
@@ -540,23 +537,9 @@ Jeder Schwellwert löst pro Sitzung höchstens einmal aus. Nach jeder Komprimier
 7. Die Zusammenfassung wird dem effektiven System-Prompt aller nachfolgenden Aufrufe hinzugefügt — niemals als eigenständige Nachricht gesendet (was bei den meisten APIs zu 400-Fehlern führen würde).
 8. Der aktualisierte Kontext wird gespeichert. Der Haupt-API-Aufruf erfolgt mit dem komprimierten Kontext.
 
-#### Visuelle Rückmeldung
+#### Intelligentes Verwerfen der Zusammenfassung bei manuellem Löschen
 
-Während der Komprimierung erscheint ein **blauer animierter Banner** am oberen Rand des Browserfensters:
-> *„Kontext wird komprimiert..."*
-
-Ein identischer blauer Banner erscheint auch bei normaler API-Übertragung:
-> *„Daten werden übermittelt..."*
-
-Beide Banner verwenden dieselbe gleitende Verlaufsanimation und verschwinden automatisch bei Abschluss oder Fehler.
-
-#### Ergebnisdateien
-
-Jede Komprimierungsrunde wird gespeichert unter:
-```
-/var/www/deepseek-chat/kompressor/kompressor_JJJJMMTT_HHMMSS.txt
-```
-Jede Datei enthält: Zeitstempel, Anbieter, Modell, ursprüngliche Nachrichtenanzahl und den vollständigen Zusammenfassungstext. Das Verzeichnis wird automatisch erstellt (`os.makedirs exist_ok=True`).
+Wenn der Benutzer manuell Nachrichten löscht, prüft der Kompressor ob der Kontextprozentsatz unter den **zuletzt ausgelösten Schwellwert** fällt (nicht nur unter 70%). Falls ja, wird die Komprimierungszusammenfassung automatisch entfernt und das gesamte Schwellwert-Tracking zurückgesetzt — so entspricht der Komprimierungszustand immer dem tatsächlichen Gesprächsinhalt.
 
 #### Anbieter-Einschränkung (nur bezahlt)
 
@@ -570,32 +553,50 @@ Der Kompressor erfordert einen separaten LLM-Aufruf, der grosse Token-Mengen umf
 
 **Empfohlener Standard**: DeepSeek + `deepseek-chat` — keine Rate Limits, niedrigste Kosten, zuverlässigste Ergebnisse.
 
-#### Einstellungen
+#### Ergebnisdateien
 
-Konfiguriert im **LLM-Einstellungs**-Panel:
-- **Toggle**: Aktivieren / Deaktivieren (Standard: aktiviert)
-- **Komprimierungs-LLM**: Anbieter-Dropdown (DeepSeek / OpenAI / Google)
-- **Komprimierungs-Modell**: Modell-Dropdown (aktualisiert sich basierend auf dem gewählten Anbieter)
+Jede Komprimierungsrunde wird gespeichert unter:
+```
+/var/www/deepseek-chat/kompressor/kompressor_JJJJMMTT_HHMMSS.txt
+```
 
-Alle Einstellungen werden in `localStorage` gespeichert (`SETTINGS_VERSION: 1.7`).
+### Guthaben- und Tageslimit-Banner
 
-**Hinzugefügte Sprach-IDs** (alle vier Sprachen):
+Der Client bietet klare, dauerhafte visuelle Rückmeldung wenn API-Kontingente erschöpft sind:
 
-| ID | Inhalt |
-|----|---------|
-| 46 | „Kompressor aktiv – Kontext komprimiert bei {0}%" |
-| 47 | „Kompressor-Fehler: {0}" |
-| 48 | „Kontext wird komprimiert..." |
-| 251 | „Chat komprimieren" / „Compress Chat" / „Comprimir Chat" |
-| 252 | Beschreibungstext für Komprimierungs-Toggle |
-| 253 | „LLM für Chat-Komprimierung" |
-| 254 | LLM-Anbieter-Beschreibung |
-| 255 | „Modellauswahl Kompression" |
+**Roter Banner — „Guthaben muss erneuert werden !"** (bezahlte Anbieter):
+- Wird angezeigt wenn eine bezahlte API erschöpftes Guthaben meldet
+- **DeepSeek**: ausgelöst durch HTTP 402
+- **OpenAI**: ausgelöst durch HTTP 429 + `insufficient_quota` im JSON-Antwort-Body
+- Bleibt sichtbar bis er manuell über den ×-Button geschlossen wird
 
+**Blauer Banner — „Tageslimit erreicht !"** (Free-Tier-Anbieter):
+- Wird angezeigt wenn eine Free-Tier-API ein erschöpftes Tageskontingent meldet
+- **Google Gemini**: ausgelöst durch HTTP 429 + tägliche Schlüsselwörter im Antwort-Body
+- **GroqCloud**: ausgelöst durch HTTP 429
+- **Hugging Face**: ausgelöst durch HTTP 429
+- Bleibt sichtbar bis er manuell über den ×-Button geschlossen wird
 
+Beide Banner werden als fixierte Elemente am oberen Rand des Browserfensters mit einem ×-Schliessen-Button gemäss der Standard-Pill-Style-Konvention implementiert.
+
+### Kontextfenster-Überschreitung
+
+Wenn das Kontextfenster des aktiven Modells vollständig gefüllt ist und die API einen Fehler zurückgibt (HTTP 400 mit kontextbezogenen Schlüsselwörtern), zeigt der Client keine generische Fehlermeldung. Stattdessen erscheint direkt im Chat eine **interaktive Box**:
+
+- **Blau umrandete Box** mit der Meldung: *„Die maximale Chat-Grösse des aktuellen LLM's wurde erreicht."*
+- **Grüner Button**: „Neuen Chat starten mit aktuellem Kontext" — implementiert **Option C**:
+  1. Die aktuelle Session wird automatisch gespeichert
+  2. Die letzte Komprimierungszusammenfassung (falls vorhanden) wird mit allen nachfolgenden Nachrichten als reiner Text kombiniert
+  3. Ein neuer Chat startet mit diesem kombinierten Kontext als vorgeladener Dateianhang — das Gespräch wird nahtlos fortgesetzt
+- **Blauer Button**: „Neuen Chat starten ohne Kontext" — sauberer Neustart:
+  1. Die aktuelle Session wird automatisch gespeichert
+  2. Ein neuer Chat startet mit leerem Kontext
+
+Dieser Ansatz ermöglicht **verkettete Gespräche** über mehrere Sessions — theoretisch unbegrenzt lang.
+
+Alle fünf CGI-Proxy-Skripte erkennen Kontext-Überlauf via HTTP-Statuscode-Analyse und Schlüsselwortabgleich im Antwort-Body und geben `error_type: 'context_exceeded'` an den Client zurück.
 
 ---
-
 
 ### API-Proxy-Infoblock (ab 08.03.2026)
 
@@ -615,12 +616,14 @@ Dies stellt sicher, dass Modellinformationen immer direkt im Quellcode nachvollz
 Dieses Bash-Skript wurde speziell entwickelt, um **den gesamten Quellcode eines GitHub-Repositories als einzelne Textdatei zu exportieren** — ideal, um den vollständigen Projektkontext an einen KI-Assistenten weiterzugeben.
 
 **So funktioniert es**:
-- Clones the repository with `git clone --depth 1`.
-- Analyzes all text files (MIME type + `grep -Iq .`) and writes them with separators into an output file.
-- Explicitly respects `.gitignore` and `.gitattributes`.
+- Klont das Repository mit `git clone --depth 1`.
+- Analysiert alle Textdateien (MIME-Typ + `grep -Iq .`) und schreibt sie mit Trennzeichen in eine Ausgabedatei.
+- Verwendet `sort -z -u` um Dateipfade vor der Verarbeitung zu deduplizieren — verhindert doppelte Dateieinträge.
+- Verwendet einen eindeutigen Begrenzer (`############ FILE: ... ############`) der nicht im Quellcode vorkommen kann, um fehlerhafte Trennungen zu vermeiden.
+- Respektiert explizit `.gitignore` und `.gitattributes`.
 - Unterstützt TXT, JSON und Markdown als Ausgabeformate.
-- Creates a ZIP archive of the export file.
-- Includes metadata: commit hash, branch, timestamp.
+- Erstellt ein ZIP-Archiv der Exportdatei.
+- Enthält Metadaten: Commit-Hash, Branch, Zeitstempel.
 
 **Besondere Optionen**:
 - `--flat`: Nur Dateinamen ohne Pfade verwenden.
@@ -632,16 +635,16 @@ Dieses Bash-Skript wurde speziell entwickelt, um **den gesamten Quellcode eines 
 **Beispiele**:
 
 ```bash
-# Simple export (interactive URL prompt)
+# Einfacher Export (interaktive URL-Eingabe)
 ./repo2text.sh
 
-# Export with URL as Markdown
+# Export mit URL als Markdown
 ./repo2text.sh -f md https://github.com/debian-professional/multi-llm-chat.git
 
-# Export only the 'shell-scripts' directory with flat structure
+# Nur das Verzeichnis 'shell-scripts' mit flacher Struktur exportieren
 ./repo2text.sh --flat -o shell-scripts https://github.com/debian-professional/multi-llm-chat.git
 
-# Export with MD5 checksums
+# Export mit MD5-Prüfsummen
 ./repo2text.sh -md5 https://github.com/debian-professional/multi-llm-chat.git
 ```
 
@@ -650,7 +653,7 @@ Dieses Bash-Skript wurde speziell entwickelt, um **den gesamten Quellcode eines 
 - Perfekt zum Einfügen ganzer Codebasen in KI-Chats.
 - Die MD5-Option hilft beim Überprüfen der Dateiintegrität nach dem Export.
 
-> `repo2text` is also available as a standalone project: [github.com/debian-professional/repo2text](https://github.com/debian-professional/repo2text)
+> `repo2text` ist auch als eigenständiges Projekt verfügbar: [github.com/debian-professional/repo2text](https://github.com/debian-professional/repo2text)
 
 ---
 
@@ -659,10 +662,10 @@ Dieses Bash-Skript wurde speziell entwickelt, um **den gesamten Quellcode eines 
 Sicherheit hatte während des gesamten Projekts höchste Priorität. Hier alle wichtigen Massnahmen:
 
 ### 1. API-Key — Nie dem Client gegenüber exponiert
-- Der Key wird **ausschliesslich** in der Apache-Umgebungsvariablen `DEEPSEEK_API_KEY` gehalten (gesetzt in `/etc/apache2/envvars`).
-- `deepseek-api.py` ruft ihn via `os.environ.get('DEEPSEEK_API_KEY')` ab.
-- Der Client kommuniziert nur mit `/cgi-bin/deepseek-api.py` (lokaler Proxy) — nie direkt mit der DeepSeek API.
-- Selbst bei einem XSS-Angriff könnte der Key nicht von der Seite gelesen werden.
+- Alle API-Keys werden **ausschliesslich** in Apache-Umgebungsvariablen gehalten (gesetzt in `/etc/apache2/envvars`).
+- Jedes CGI-Skript ruft seinen Key via `os.environ.get('..._API_KEY')` ab.
+- Der Client kommuniziert nur mit lokalen CGI-Proxies — nie direkt mit externen APIs.
+- Selbst bei einem XSS-Angriff könnten die Keys nicht von der Seite gelesen werden.
 
 ### 2. Magic-Byte-Prüfung gegen ausführbare Dateien
 - Vor dem Lesen einer hochgeladenen Datei werden die ersten 20 Bytes gegen eine umfassende Signatur-Datenbank geprüft (siehe [Datei-Upload mit Sicherheitsprüfung](#datei-upload-mit-sicherheitsprüfung)).
@@ -702,7 +705,7 @@ Sicherheit hatte während des gesamten Projekts höchste Priorität. Hier alle w
 - Apache mit CGI-Modul (`a2enmod cgi`) und SSL (`a2enmod ssl`)
 - Python 3 mit Paketen: `reportlab`
 - Für `repo2text.sh`: `jq`, `pv`, `zip`, `git`
-- Ein gültiger DeepSeek API-Key von [platform.deepseek.com](https://platform.deepseek.com)
+- Ein gültiger API-Key für mindestens einen der unterstützten Anbieter
 
 ### Installation
 
@@ -713,14 +716,18 @@ git clone https://github.com/debian-professional/multi-llm-chat.git /home/source
 
 **2. API-Keys konfigurieren**:
 ```bash
-# Add to /etc/apache2/envvars:
-export DEEPSEEK_API_KEY="your-deepseek-api-key-here"
+# Zu /etc/apache2/envvars hinzufügen:
+export DEEPSEEK_API_KEY="hier-deepseek-api-key-eintragen"
+export OPENAI_API_KEY="hier-openai-api-key-eintragen"
+export GOOGLE_API_KEY="hier-google-api-key-eintragen"
+export HF_API_KEY="hier-huggingface-token-eintragen"
+export GRQ_API_KEY="hier-groqcloud-api-key-eintragen"
 ```
 
 **3. Apache-Konfiguration aktivieren**:
 ```bash
 a2ensite deepseek-chat-ssl.conf
-a2dissite deepseek-chat.conf   # disable plain HTTP config
+a2dissite deepseek-chat.conf   # einfache HTTP-Konfiguration deaktivieren
 systemctl restart apache2
 ```
 
@@ -738,115 +745,12 @@ chmod 700 /var/www/deepseek-chat/sessions
 
 **6. Hilfsskripte installieren**:
 ```bash
-./install.sh   # as root — copies deploy.sh and sync-back.sh to production directory
+./install.sh   # als root — kopiert deploy.sh und sync-back.sh ins Produktionsverzeichnis
 ```
 
 ### Konfiguration
 
 **Modell-Konfiguration** (`MODEL_CONFIG` in `index.html`):
-```javascript
-const MODEL_CONFIG = {
-    'deepseek-chat':     { maxContextTokens: 100000,  maxOutputTokens: 8192,  maxContextMessages: 50  },
-    'deepseek-reasoner': { maxContextTokens: 65000,   maxOutputTokens: 32768, maxContextMessages: 30  },
-    'gemini-2.5-flash':  { maxContextTokens: 1048576, maxOutputTokens: 8192,  maxContextMessages: 100 },
-    'gemini-2.5-pro':    { maxContextTokens: 1048576, maxOutputTokens: 65536, maxContextMessages: 100 },
-    'gemini-1.5-pro':    { maxContextTokens: 2097152, maxOutputTokens: 8192,  maxContextMessages: 100 },
-    'gemini-2.0-flash':  { maxContextTokens: 1048576, maxOutputTokens: 8192,  maxContextMessages: 100 },
-    'Qwen/Qwen2.5-72B-Instruct':              { maxContextTokens: 128000, maxOutputTokens: 8192, maxContextMessages: 80 },
-    'mistralai/Mistral-7B-Instruct-v0.3':     { maxContextTokens: 32768,  maxOutputTokens: 4096, maxContextMessages: 40 },
-    'microsoft/Phi-3.5-mini-instruct':        { maxContextTokens: 128000, maxOutputTokens: 4096, maxContextMessages: 60 },
-    'meta-llama/Meta-Llama-3.1-70B-Instruct': { maxContextTokens: 128000, maxOutputTokens: 8192, maxContextMessages: 80 },
-    'meta-llama/Meta-Llama-3.1-405B-Instruct':{ maxContextTokens: 128000, maxOutputTokens: 8192, maxContextMessages: 80 },
-    'mistralai/Mixtral-8x7B-Instruct-v0.1':   { maxContextTokens: 32768,  maxOutputTokens: 4096, maxContextMessages: 40 },
-    // GroqCloud
-    'llama-3.3-70b-versatile': { maxContextTokens: 128000, maxOutputTokens: 8192,  maxContextMessages: 80 },
-    'llama-3.1-8b-instant':    { maxContextTokens: 131072, maxOutputTokens: 8192,  maxContextMessages: 80 },
-    'mixtral-8x7b-32768':      { maxContextTokens: 32768,  maxOutputTokens: 32768, maxContextMessages: 40 },
-    'gemma2-9b-it':            { maxContextTokens: 8192,   maxOutputTokens: 8192,  maxContextMessages: 50 }
-};
-const OPENAI_MODELS_FREE = ['gpt-4o-mini', 'gpt-5-mini'];
-const OPENAI_MODELS_PAID = ['gpt-5.4', 'gpt-5.2-chat-latest', 'gpt-4o', 'gpt-4.1', 'gpt-4o-mini'];
-const DEEPSEEK_MODELS    = ['deepseek-chat', 'deepseek-reasoner'];
-const GOOGLE_MODELS_FREE = ['gemini-2.5-flash'];
-const GOOGLE_MODELS_PAID = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-1.5-pro', 'gemini-2.0-flash'];
-const HF_MODELS_FREE     = ['Qwen/Qwen2.5-72B-Instruct', 'mistralai/Mistral-7B-Instruct-v0.3', 'microsoft/Phi-3.5-mini-instruct'];
-const HF_MODELS_PAID     = ['meta-llama/Meta-Llama-3.1-70B-Instruct', 'meta-llama/Meta-Llama-3.1-405B-Instruct', 'Qwen/Qwen2.5-72B-Instruct', 'mistralai/Mixtral-8x7B-Instruct-v0.1'];
-const GROQ_MODELS_FREE   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768', 'gemma2-9b-it'];
-const GROQ_MODELS_PAID   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768', 'gemma2-9b-it'];
-// Modelle mit nativem Audio-Input-Support (Mikrofon-Aufnahme-Button)
-const AUDIO_CAPABLE_MODELS = ['gemini-2.5-flash','gemini-2.5-pro','gemini-1.5-pro','gemini-2.0-flash','gpt-4o','gpt-4.1'];
-```
-
-**API-Key-Konfiguration** (`/etc/apache2/envvars`):
-```bash
-export OPENAI_API_KEY="sk-proj-..."
-export DEEPSEEK_API_KEY="sk-..."
-export GOOGLE_API_KEY="AIza..."
-export HF_API_KEY="hf_..."
-export GRQ_API_KEY="gsk_..."
-```
-
-**Sprachkonfiguration** (`language.xml`):
-- Einen neuen `<language id="custom" name="..." visible="true">`-Block hinzufügen, um den benutzerdefinierten Sprachslot zu aktivieren.
-- `has_address_form="true"` für Sprachen mit formell/informell-Unterscheidung setzen.
-
-### Deploy-Skripte
-
-| Skript | Funktion |
-|--------|----------|
-| `deploy.sh <user>` | Kopiert Dateien von `/home/<user>/multi-llm-chat/var/www/deepseek-chat/` nach `/var/www/deepseek-chat/`, setzt Berechtigungen, lädt Apache neu |
-| `sync-back.sh <user>` | Kopiert geänderte Dateien aus der Produktion zurück ins Quell-Repo |
-| `install.sh` | Installiert `deploy.sh` und `sync-back.sh` im Produktionsverzeichnis |
-| `tag-release.sh` | Erstellt einen neuen Git-Tag mit automatisch inkrementierter Versionsnummer (z.B. v0.80 → v0.81) und pusht ihn |
-
----
-
-## Projektstruktur
-
-```
-/
-├── etc/apache2/sites-available/
-│   ├── deepseek-chat.conf              (disabled — HTTP only, redirects to HTTPS)
-│   └── deepseek-chat-ssl.conf          (active — SSL, CGI, API key via envvars)
-├── shell-scripts/
-│   ├── repo2text.sh                    Gesamtes Repo als einzelne Textdatei exportieren
-│   ├── deploy.sh                       Kopiert Quell-Repo → Produktion
-│   ├── sync-back.sh                    Kopiert Produktion → Quell-Repo
-│   ├── install.sh                      Installiert deploy/sync-back-Skripte
-│   └── tag-release.sh                  Erstellt und pusht Git-Versions-Tags
-├── var/www/deepseek-chat/
-│   ├── index.html                      Hauptanwendung (gesamtes JS/CSS/HTML)
-│   ├── language.xml                    Alle UI-Texte in allen Sprachen (EN, DE, ES, Custom)
-│   ├── manifest                        Design-Manifest (alle Konventionen, ~20KB)
-│   ├── changelog                       Vollständige Entwicklungshistorie (78+ Einträge, ~44KB)
-│   ├── files-directorys                Dateiübersicht / Verzeichnisliste
-│   ├── cgi-bin/
-│   │   ├── openai-api.py              Streaming-Proxy zur OpenAI API
-│   │   ├── deepseek-api.py            Streaming-Proxy zur DeepSeek API
-│   │   ├── google-api.py              Streaming-Proxy zur Google Gemini API
-│   │   ├── hugging-api.py             Streaming-Proxy zur Hugging Face Inference API
-│   │   ├── groq-api.py                Streaming-Proxy zur GroqCloud API (LPU-beschleunigt)
-│   │   ├── deepseek-models.py         Fragt /v1/models-Endpunkt ab
-│   │   ├── save-session.py            Speichert Chat-Sessions (POST)
-│   │   ├── load-session.py            Lädt Session-Liste (GET) oder Session (GET ?id=)
-│   │   ├── delete-session.py          Löscht Session (DELETE)
-│   │   ├── export-pdf.py              PDF-Export mit ReportLab
-│   │   ├── export-markdown.py         Markdown-Export
-│   │   ├── export-txt.py              TXT-Export
-│   │   ├── export-rtf.py              RTF-Export (keine externe Bibliothek)
-│   │   ├── feedback-log.py            Like/Dislike-Logging
-│   │   ├── get-log.py                 Liest und gibt Log-Datei zurück
-│   │   └── deepseek-chat.log          Server-Log-Datei (automatisch erstellt)
-│   └── sessions/                      Chat-Session-JSON-Dateien (automatisch erstellt)
-
-```
-
----
-
-## Modell-Konfiguration
-
-Das `MODEL_CONFIG`-Objekt in `index.html` ist die einzige Wahrheitsquelle für alle modellspezifischen Limits. Es deckt alle fünf Anbieter ab:
-
 ```javascript
 const MODEL_CONFIG = {
     // OpenAI
@@ -872,14 +776,97 @@ const MODEL_CONFIG = {
     'meta-llama/Meta-Llama-3.1-405B-Instruct': { maxContextTokens: 128000, maxOutputTokens: 8192, maxContextMessages: 80 },
     'mistralai/Mixtral-8x7B-Instruct-v0.1':    { maxContextTokens: 32768,  maxOutputTokens: 4096, maxContextMessages: 40 },
     // GroqCloud
-    'llama-3.3-70b-versatile': { maxContextTokens: 128000, maxOutputTokens: 8192,  maxContextMessages: 80 },
-    'llama-3.1-8b-instant':    { maxContextTokens: 131072, maxOutputTokens: 8192,  maxContextMessages: 80 },
-    'mixtral-8x7b-32768':      { maxContextTokens: 32768,  maxOutputTokens: 32768, maxContextMessages: 40 },
-    'gemma2-9b-it':            { maxContextTokens: 8192,   maxOutputTokens: 8192,  maxContextMessages: 50 }
+    'llama-3.3-70b-versatile':                   { maxContextTokens: 128000, maxOutputTokens: 8192, maxContextMessages: 80 },
+    'llama-3.1-8b-instant':                      { maxContextTokens: 131072, maxOutputTokens: 8192, maxContextMessages: 80 },
+    'meta-llama/llama-4-scout-17b-16e-instruct': { maxContextTokens: 131072, maxOutputTokens: 8192, maxContextMessages: 80 },
+    'qwen/qwen3-32b':                            { maxContextTokens: 131072, maxOutputTokens: 8192, maxContextMessages: 80 },
+    'moonshotai/kimi-k2-instruct-0905':          { maxContextTokens: 131072, maxOutputTokens: 8192, maxContextMessages: 80 }
 };
+const OPENAI_MODELS_FREE = ['gpt-4o-mini', 'gpt-5-mini'];
+const OPENAI_MODELS_PAID = ['gpt-5.4', 'gpt-5.2-chat-latest', 'gpt-4o', 'gpt-4.1', 'gpt-4o-mini'];
+const DEEPSEEK_MODELS    = ['deepseek-chat', 'deepseek-reasoner'];
+const GOOGLE_MODELS_FREE = ['gemini-2.5-flash'];
+const GOOGLE_MODELS_PAID = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-1.5-pro', 'gemini-2.0-flash'];
+const HF_MODELS_FREE     = ['Qwen/Qwen2.5-72B-Instruct', 'mistralai/Mistral-7B-Instruct-v0.3', 'microsoft/Phi-3.5-mini-instruct'];
+const HF_MODELS_PAID     = ['meta-llama/Meta-Llama-3.1-70B-Instruct', 'meta-llama/Meta-Llama-3.1-405B-Instruct', 'Qwen/Qwen2.5-72B-Instruct', 'mistralai/Mixtral-8x7B-Instruct-v0.1'];
+const GROQ_MODELS_FREE   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'meta-llama/llama-4-scout-17b-16e-instruct', 'qwen/qwen3-32b'];
+const GROQ_MODELS_PAID   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'meta-llama/llama-4-scout-17b-16e-instruct', 'qwen/qwen3-32b', 'moonshotai/kimi-k2-instruct-0905'];
+// Modelle mit nativem Audio-Input-Support (Mikrofon-Aufnahme-Button)
+const AUDIO_CAPABLE_MODELS = ['gemini-2.5-flash','gemini-2.5-pro','gemini-1.5-pro','gemini-2.0-flash','gpt-4o','gpt-4.1'];
 ```
 
-Quellen: [OpenAI API Docs](https://platform.openai.com/docs), [DeepSeek API Docs](https://api-docs.deepseek.com), [Google Gemini Docs](https://ai.google.dev/gemini-api/docs), [Hugging Face Inference Providers](https://huggingface.co/docs/inference-providers), [GroqCloud Docs](https://console.groq.com/docs/models) (Stand 11.03.2026).
+**API-Key-Konfiguration** (`/etc/apache2/envvars`):
+```bash
+export OPENAI_API_KEY="sk-proj-..."
+export DEEPSEEK_API_KEY="sk-..."
+export GOOGLE_API_KEY="AIza..."
+export HF_API_KEY="hf_..."
+export GRQ_API_KEY="gsk_..."
+```
+
+**Sprachkonfiguration** (`language.xml`):
+- Einen neuen `<language id="custom" name="..." visible="true">`-Block hinzufügen, um den benutzerdefinierten Sprachslot zu aktivieren.
+- `has_address_form="true"` für Sprachen mit formell/informell-Unterscheidung setzen.
+
+### Deploy-Skripte
+
+| Skript | Funktion |
+|--------|----------|
+| `deploy.sh <user>` | Kopiert Dateien von `/home/<user>/multi-llm-chat/var/www/deepseek-chat/` nach `/var/www/deepseek-chat/`, setzt Berechtigungen, lädt Apache neu |
+| `sync-back.sh <user>` | Kopiert geänderte Dateien aus der Produktion zurück ins Quell-Repo |
+| `install.sh` | Installiert `deploy.sh` und `sync-back.sh` im Produktionsverzeichnis |
+| `tag-release.sh` | Erstellt einen neuen Git-Tag mit automatisch inkrementierter Versionsnummer (z.B. v0.93 → v0.94) und pusht ihn. Führt automatisch `git fetch --tags` aus, um Konflikte mit bereits vorhandenen Remote-Tags zu vermeiden. |
+
+---
+
+## Projektstruktur
+
+```
+/
+├── etc/apache2/sites-available/
+│   ├── deepseek-chat.conf              (deaktiviert — nur HTTP, leitet zu HTTPS weiter)
+│   └── deepseek-chat-ssl.conf          (aktiv — SSL, CGI, API-Key via envvars)
+├── shell-scripts/
+│   ├── repo2text.sh                    Gesamtes Repo als einzelne Textdatei exportieren
+│   ├── deploy.sh                       Kopiert Quell-Repo → Produktion
+│   ├── sync-back.sh                    Kopiert Produktion → Quell-Repo
+│   ├── install.sh                      Installiert deploy/sync-back-Skripte
+│   └── tag-release.sh                  Erstellt und pusht Git-Versions-Tags
+├── var/www/deepseek-chat/
+│   ├── index.html                      Hauptanwendung (gesamtes JS/CSS/HTML)
+│   ├── language.xml                    Alle UI-Texte in allen Sprachen (EN, DE, ES, Custom)
+│   ├── manifest                        Design-Manifest (alle Konventionen)
+│   ├── changelog                       Vollständige Entwicklungshistorie
+│   ├── files-directorys                Dateiübersicht / Verzeichnisliste
+│   ├── cgi-bin/
+│   │   ├── openai-api.py              Streaming-Proxy zur OpenAI API
+│   │   ├── deepseek-api.py            Streaming-Proxy zur DeepSeek API
+│   │   ├── google-api.py              Streaming-Proxy zur Google Gemini API
+│   │   ├── hugging-api.py             Streaming-Proxy zur Hugging Face Inference API
+│   │   ├── groq-api.py                Streaming-Proxy zur GroqCloud API (LPU-beschleunigt)
+│   │   ├── compress-context.py        Kontext-Komprimierung via zweitem LLM-Aufruf
+│   │   ├── deepseek-models.py         Fragt /v1/models-Endpunkt ab
+│   │   ├── save-session.py            Speichert Chat-Sessions (POST)
+│   │   ├── load-session.py            Lädt Session-Liste (GET) oder Session (GET ?id=)
+│   │   ├── delete-session.py          Löscht Session (DELETE)
+│   │   ├── export-pdf.py              PDF-Export mit ReportLab
+│   │   ├── export-markdown.py         Markdown-Export
+│   │   ├── export-txt.py              TXT-Export
+│   │   ├── export-rtf.py              RTF-Export (keine externe Bibliothek)
+│   │   ├── feedback-log.py            Like/Dislike-Logging
+│   │   └── get-log.py                 Liest und gibt Log-Datei zurück
+│   ├── logs/                          Server-Log-Dateien (automatisch erstellt)
+│   ├── kompressor/                    Komprimierungs-Ergebnisdateien (automatisch erstellt)
+│   └── sessions/                      Chat-Session-JSON-Dateien (automatisch erstellt)
+```
+
+---
+
+## Modell-Konfiguration
+
+Das `MODEL_CONFIG`-Objekt in `index.html` ist die einzige Wahrheitsquelle für alle modellspezifischen Limits. Es deckt alle fünf Anbieter ab (vollständiges Objekt siehe Abschnitt Konfiguration).
+
+Quellen: [OpenAI API Docs](https://platform.openai.com/docs), [DeepSeek API Docs](https://api-docs.deepseek.com), [Google Gemini Docs](https://ai.google.dev/gemini-api/docs), [Hugging Face Inference Providers](https://huggingface.co/docs/inference-providers), [GroqCloud Docs](https://console.groq.com/docs/models) (Stand 19.03.2026).
 
 ---
 
@@ -895,8 +882,8 @@ Das Projekt enthält eine **`manifest`-Datei**, die alle Design-Entscheidungen u
 - **Keine externen JS-Frameworks** — kein Node, kein React, kein Vue.
 - **Formatierungs-Beibehaltung**: Bestehende Einrückung und Formatierung in `index.html` darf niemals geändert werden.
 - **`AUDIO_CAPABLE_MODELS` nachführen**: Sobald ein Modell Audio-Unterstützung erhält oder verliert, muss die Konstante sofort aktualisiert werden (Manifest-Regel E.1).
+- **Guthaben/Tageslimit-Banner implementieren**: Beim Hinzufügen eines neuen LLM-Anbieters muss der entsprechende Banner (rot für bezahlt, blau für kostenlos) im CGI-Skript und Client implementiert werden (Manifest-Regel E.1).
 - Das Manifest ist eine **separate Datei** und darf nie in `index.html` eingebettet werden.
-- **Kompressor-Anbieterliste aktuell halten**: Nur bezahlte Anbieter (DeepSeek, OpenAI, Google) sind für die Komprimierung zulässig. Bei Hinzufügen eines neuen Anbieters muss dessen Eignung für den Kompressor bewertet und dokumentiert werden.
 
 ---
 
@@ -906,9 +893,10 @@ Das Projekt enthält eine **`manifest`-Datei**, die alle Design-Entscheidungen u
 Alle aktuellen Sprachmodelle neigen dazu, Inhalte am **Anfang und Ende** eines langen Kontexts zuverlässig zu erinnern, aber Inhalte **in der Mitte** werden manchmal übersehen oder halluziniert. (Liu et al., 2023: „Lost in the Middle: How Language Models Use Long Contexts")
 
 **Praktische Auswirkung auf dieses Projekt**:
-- Ein Repository-Export von ~270.000 Zeichen ≈ ~67.500 Token.
-- DeepSeek-Kontextfenster: 100.000 Token → ~67% Auslastung → Inhalte in der Mitte könnten unzuverlässig sein.
-- **Empfehlung**: Für spezifische Aufgaben nur die relevanten Dateien einzeln hochladen statt des gesamten Repository-Exports.
+- Ein Repository-Export von ~686.000 Zeichen ≈ ~171.500 Token.
+- DeepSeek-Kontextfenster: 100.000 Token → der vollständige Repository-Export **überschreitet** das DeepSeek-Kontextfenster und kann nicht als einzelne Datei geladen werden. Der Client blockiert den Upload mit einer klaren Fehlermeldung.
+- Google Gemini (1–2 Mio. Token Kontext) kann den vollständigen Export problemlos verarbeiten.
+- **Empfehlung**: Bei der Arbeit mit DeepSeek oder anderen Modellen mit kleinerem Kontextfenster nur die relevanten Einzeldateien hochladen statt des gesamten Repository-Exports.
 
 ### GitHub Raw URL Caching
 Nach einem `git push` ist die neue Version **nicht sofort** via `raw.githubusercontent.com`-URLs verfügbar — GitHub cached diese bis zu 10 Minuten. Das ist normal und kann nicht umgangen werden. Die Dateien sind korrekt auf GitHub gespeichert, sobald `git push` erfolgreich ist.
@@ -925,12 +913,15 @@ Nach einem `git push` ist die neue Version **nicht sofort** via `raw.githubuserc
 ### Linux/X11/Firefox Einfüge-Verhalten
 Unter Linux mit X11 und Firefox blockiert `e.preventDefault()` in Paste-Event-Handlern nicht zuverlässig das browsernative Einfügeverhalten für Inhalte aus Dateimanagern. Die hier implementierte Lösung (Einfügen erlauben, Inhalt in `setTimeout(0)` prüfen, leeren wenn Dateipfade erkannt) ist der zuverlässige Workaround für diese plattformspezifische Einschränkung.
 
+### Erkennung der Kontextfenster-Überschreitung
+Die Erkennung des Kontext-Überlaufs in allen fünf CGI-Skripten verwendet HTTP-Statuscode-Analyse kombiniert mit Schlüsselwortabgleich im API-Antwort-Body. Obwohl die Schlüsselwörter breit genug sind um die meisten API-Antworten abzufangen, können Ausnahmefälle mit ungewöhnlichen Fehlermeldungen durch Änderungen in der Anbieter-Infrastruktur nicht sofort erkannt werden und würden auf eine generische Fehlermeldung zurückfallen.
+
 ---
 
 ## Abhängigkeiten
 
 | Komponente | Zweck | Installation |
-|-----------|---------|-------------|
+|------------|-------|-------------|
 | Apache2 | Webserver, CGI-Unterstützung | `apt install apache2` |
 | Python 3 | Serverseitige CGI-Skripte | `apt install python3` |
 | reportlab | PDF-Export | `pip3 install reportlab` |
@@ -959,32 +950,31 @@ Dieses Projekt demonstriert professionelle Webentwicklung in einem minimalistisc
 - Intelligentes Zwischenablage-Handling für Text, Bilder und Dateipfad-Schutz.
 - **Audio-Aufnahme** direkt im Browser — Mikrofon-Input für Google Gemini (alle Modelle) und OpenAI gpt-4o / gpt-4.1.
 - **Kompressor** — automatische Kontext-Komprimierung ermöglicht unbegrenzt lange Gespräche, unabhängig von der Grösse des Kontextfensters.
+- **Kontextfenster-Überschreitung** — interaktive Box im Chat mit intelligentem Kontext-Übernahme über Sessions hinweg (Option C).
+- **Guthaben/Tageslimit-Banner** — klare, dauerhafte visuelle Rückmeldung bei erschöpftem Guthaben oder Tageslimit.
+- **In Zwischenablage kopieren** — gesamter Chat mit einem Klick direkt in die Systemzwischenablage exportiert.
 - Mehrsprachige Unterstützung mit Anredeformunterscheidung, aus externem XML geladen.
 
 **Engineering**:
 - Magic-Byte-Prüfung, die Malware unabhängig von der Dateinamenserweiterung erkennt.
 - Umlaut-Platzhalter-System löst eine grundlegende DeepSeek API-Einschränkung.
 - Vorwärtskompatible Modell-Fähigkeits-Map, bereit für bildunterstützende Modelle.
+- Präzises Verwerfen der Kompressor-Zusammenfassung: Zusammenfassung wird ungültig wenn Kontext nach manuellem Löschen unter den zuletzt ausgelösten Schwellwert fällt.
 - Vollständige Audit-Trail via Git und detailliertem Changelog.
 
 **Tooling**:
-- `repo2text.sh` als praktisches Tool für KI-gestützte Entwicklung.
+- `repo2text.sh` als praktisches Tool für KI-gestützte Entwicklung, mit eindeutigem Begrenzer und Deduplizierung via `sort -z -u`.
 - Deployment-Skripte für konsistente, berechtigungskorrekte Deployments.
-- Versions-Tagging für sauberes Release-Management.
+- Versions-Tagging für sauberes Release-Management, mit automatischer Remote-Tag-Synchronisierung.
 
 **Für einen professionellen Entwickler** demonstriert dieses Projekt:
 - **Sicherheitsbewusstsein** — API-Key-Schutz, Malware-Erkennung, sichere Session-Speicherung.
 - **Strukturierte Disziplin** — Manifest, Versions-Tags, strikte Design-Konventionen, dokumentierter Changelog.
-- **Problemlösungstiefe** — X11-Einfügeverhalten, Umlaut-Korruption, PDF-Binärausgabe, „Lost in the Middle".
+- **Problemlösungstiefe** — X11-Einfügeverhalten, Umlaut-Korruption, PDF-Binärausgabe, „Lost in the Middle", Kontext-Überlauf-Behandlung.
 - **Vollständige Dokumentation** — sowohl inline als auch in dedizierten Dateien.
 
 Multi-LLM Chat Client ist ein **Showcase für professionelle Webentwicklung** — ohne unnötigen Overhead, aber mit höchsten Ansprüchen an Sicherheit, Korrektheit und Benutzerfreundlichkeit.
 
 ---
 
-*Zuletzt aktualisiert: 13.03.2026*
-
-
-
-
-
+*Zuletzt aktualisiert: 19.03.2026*
