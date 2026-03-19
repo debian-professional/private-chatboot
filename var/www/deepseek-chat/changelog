@@ -1191,5 +1191,25 @@
     - Manifest: Eintrag 80 und 81 im Changelog nachgetragen,
       Abschnitt B.7 Export-Optionsliste aktualisiert
 
+    84. [19.03.2026] Dynamisches Upload-Limit abhängig vom aktiven Modell
+    - Problem: Festes MAX_FILE_CONTENT_LENGTH = 250.000 Zeichen war unabhängig
+      vom aktiven Modell — zu klein für Grosskontext-Modelle (Google Gemini
+      mit 1-2M Token), zu gross bei keiner Nutzung des verfügbaren Kontexts
+    - Lösung: Neue Funktion getDynamicMaxFileChars() berechnet 75% des
+      Kontextfensters des aktiven Modells in Zeichen:
+        maxChars = Math.floor(config.maxContextTokens * 4 * 0.75)
+    - Beispiele:
+        deepseek-reasoner (65k Token)   → max. ~195.000 Zeichen
+        deepseek-chat     (100k Token)  → max. ~300.000 Zeichen
+        gpt-4o            (128k Token)  → max. ~384.000 Zeichen
+        gemini-2.5-flash  (1M Token)    → max. ~3.145.000 Zeichen
+        gemini-1.5-pro    (2M Token)    → max. ~6.291.000 Zeichen
+    - extractTextFromPDF(): neuer optionaler Parameter maxChars, wird mit
+      dynMax aufgerufen (Fallback: MAX_FILE_CONTENT_LENGTH = 250.000)
+    - TXT-Upload: Kürzung auf dynMax statt auf festes MAX_FILE_CONTENT_LENGTH
+    - Clipboard-Paste: ebenfalls dynamisch begrenzt via getDynamicMaxFileChars()
+    - MAX_FILE_CONTENT_LENGTH = 250.000 bleibt als Fallback-Konstante erhalten
+    - Datei: index.html
+
     ============================================================================
 
