@@ -1147,5 +1147,49 @@
     - language.xml: IDs 258 ("In Zwischenablage kopieren"), 259 (Context-Exceeded Text),
       260 (Mit Kontext), 261 (Ohne Kontext) in allen 4 Sprachen eingetragen
 
+
+    82. [19.03.2026] Kontextfenster-Prüfung beim Datei-Upload
+    - Problem: TXT-Dateien wurden auf 250.000 Zeichen gekürzt und stillschweigend
+      an die API gesendet, obwohl der ursprüngliche Inhalt das Kontextfenster
+      des aktiven Modells bereits überschritt (z.B. Repo-Export ~686.570 Zeichen
+      ≈ ~171.600 Token übersteigt DeepSeek-Limit von 100.000 Token)
+    - Lösung: Prüfung direkt nach vollständigem Einlesen der TXT-Datei,
+      VOR der Kürzung auf MAX_FILE_CONTENT_LENGTH
+    - Bei Überschreitung: alert(tf(262, estimatedFileTokens, maxContextTokens))
+      → Upload wird abgebrochen, Datei nicht angehängt
+    - Prüfung berücksichtigt aktiv gewähltes Modell aller 5 Anbieter
+    - language.xml: ID 262 in allen 4 Sprachen:
+      DE: \"Diese Datei (~{0} Token) überschreitet das Kontextfenster des aktuellen
+          Modells ({1} Token). Bitte wähle ein Modell mit grösserem Kontextfenster
+          (z.B. Google Gemini) oder lade nur einen Teil der Datei hoch.\"
+    - Getestet: Warnung erscheint korrekt mit konkreten Zahlen
+      (~171.643 Token / 100.000 Token) beim Hochladen des Repo-Exports
+    - Datei: index.html, language.xml
+
+    83. [19.03.2026] Readme DE/EN/ES vollständig aktualisiert
+    - Readme_EN.md: Alle neuen Features dokumentiert:
+       * Kompressor lastTriggeredThreshold (intelligentes Verwerfen der Zusammenfassung)
+       * Guthaben/Tageslimit-Banner (rot/blau)
+       * Context-Exceeded Box mit Option C (Kontext-Übernahme über Sessions)
+       * In Zwischenablage kopieren (globaler Export)
+       * Kontextfenster-Prüfung beim Datei-Upload mit Fehlermeldung
+       * GroqCloud-Modelle aktualisiert (llama-4-scout, qwen3-32b, kimi-k2)
+       * Zahlen korrigiert: ~270.000 → ~686.000 Zeichen, ~67.500 → ~171.500 Token
+       * Hinweis: vollständiger Repo-Export überschreitet DeepSeek-Kontextfenster,
+         Client blockiert Upload aktiv mit klarer Fehlermeldung
+       * Log-Pfad korrigiert: logs/multi-llm-chat.log
+       * compress-context.py in Architektur und Projektstruktur ergänzt
+       * SETTINGS_VERSION: 1.7
+       * Datum: 19.03.2026
+    - Readme_DE.md: 1:1-Übersetzung der aktualisierten EN-Version
+       * Alle neuen Features auf Deutsch dokumentiert
+       * Alle englischen Satzfragmente aus alter Version bereinigt
+       * Datum: 19.03.2026
+    - Readme_ES.md: 1:1-Übersetzung der aktualisierten EN-Version
+       * Alle neuen Features auf Spanisch dokumentiert
+       * Datum: 19.03.2026
+    - Manifest: Eintrag 80 und 81 im Changelog nachgetragen,
+      Abschnitt B.7 Export-Optionsliste aktualisiert
+
     ============================================================================
 
